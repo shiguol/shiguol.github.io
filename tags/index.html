@@ -182,7 +182,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shiguol.github.io/tags/index.html" data-id="cii59yzje0005qy89uzu2nyne" class="article-share-link">分享到</a>
+      <a data-url="http://shiguol.github.io/tags/index.html" data-id="cii5athyk00052489htckfdxi" class="article-share-link">分享到</a>
       
         <a href="http://shiguol.github.io/tags/index.html#ds-thread" class="article-comment-link">评论</a>
       
@@ -342,10 +342,10 @@ ga('send', 'pageview');
 
 <!--page counter part-->
 <script>
-function addCount (Counter) {
+function addCount (SAPVCounter) {
         url=$('.article-date').attr('href').trim();
     title = $('.article-title').text().trim();
-    var query=new AV.Query(Counter);
+    var query=new AV.Query(SAPVCounter);
     //use url as unique idnetfication
     query.equalTo("url",url);
     query.find({
@@ -359,7 +359,7 @@ function addCount (Counter) {
             }
             else
             {
-                var newcounter=new Counter();
+                var newcounter=new SAPVCounter();
                 newcounter.set("title",title);
                 newcounter.set("url",url);
                 newcounter.set("time",1);
@@ -380,7 +380,7 @@ function addCount (Counter) {
     });
 }
 $(function(){
-    var Counter=AV.Object.extend("SAPVCounter");
+    var SAPVCounter=AV.Object.extend("SAPVCounter");
     //only increse visit counting when intering a page
     if ($('.article-title').length == 1)
        addCount(Counter);

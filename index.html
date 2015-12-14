@@ -194,7 +194,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shiguol.github.io/2015/12/13/使用-Hexo-搭建-Blog/" data-id="cii59yzjv0009qy89wplntslf" class="article-share-link">分享到</a>
+      <a data-url="http://shiguol.github.io/2015/12/13/使用-Hexo-搭建-Blog/" data-id="cii5athyz00092489eh42u8gy" class="article-share-link">分享到</a>
       
         <a href="http://shiguol.github.io/2015/12/13/使用-Hexo-搭建-Blog/#ds-thread" class="article-comment-link">评论</a>
       
@@ -249,7 +249,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://shiguol.github.io/2015/12/13/2015-review/" data-id="cii59yzj00000qy89sdah5kfm" class="article-share-link">分享到</a>
+      <a data-url="http://shiguol.github.io/2015/12/13/2015-review/" data-id="cii5athxs000024892kmowdpb" class="article-share-link">分享到</a>
       
         <a href="http://shiguol.github.io/2015/12/13/2015-review/#ds-thread" class="article-comment-link">评论</a>
       
@@ -403,10 +403,10 @@ ga('send', 'pageview');
 
 <!--page counter part-->
 <script>
-function addCount (Counter) {
+function addCount (SAPVCounter) {
         url=$('.article-date').attr('href').trim();
     title = $('.article-title').text().trim();
-    var query=new AV.Query(Counter);
+    var query=new AV.Query(SAPVCounter);
     //use url as unique idnetfication
     query.equalTo("url",url);
     query.find({
@@ -420,7 +420,7 @@ function addCount (Counter) {
             }
             else
             {
-                var newcounter=new Counter();
+                var newcounter=new SAPVCounter();
                 newcounter.set("title",title);
                 newcounter.set("url",url);
                 newcounter.set("time",1);
@@ -441,7 +441,7 @@ function addCount (Counter) {
     });
 }
 $(function(){
-    var Counter=AV.Object.extend("SAPVCounter");
+    var SAPVCounter=AV.Object.extend("SAPVCounter");
     //only increse visit counting when intering a page
     if ($('.article-title').length == 1)
        addCount(Counter);
