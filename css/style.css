@@ -129,7 +129,7 @@ a:visited {
   color: #38b7ea;
 }
 .outer {
-  max-width: 1620px;
+  max-width: 1420px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -172,16 +172,16 @@ a:visited {
   #main {
     display: inline;
     float: left;
-    width: 61.25000000000001%;
-    margin: 0 0.625%;
+    width: 55.714285714285715%;
+    margin: 0 0.714285714285714%;
   }
 }
 @media screen and (min-width: 800px) and (max-width: 1199px) {
   #main {
     display: inline;
     float: left;
-    width: 55.00000000000001%;
-    margin: 0 0.625%;
+    width: 62.857142857142854%;
+    margin: 0 0.714285714285714%;
   }
 }
 .archive-article-header a,
@@ -616,8 +616,8 @@ a:visited {
 #profile {
   display: inline;
   float: left;
-  width: 17.5%;
-  margin: 0 0.625%;
+  width: 20%;
+  margin: 0 0.714285714285714%;
   display: none;
 }
 @media screen and (min-width: 1200px) {
@@ -1756,16 +1756,16 @@ pre .javascript .function {
   #sidebar {
     display: inline;
     float: left;
-    width: 17.5%;
-    margin: 0 0.625%;
+    width: 20%;
+    margin: 0 0.714285714285714%;
   }
 }
 @media screen and (min-width: 800px) and (max-width: 1199px) {
   #sidebar {
     display: inline;
     float: left;
-    width: 23.75%;
-    margin: 0 0.625%;
+    width: 27.142857142857142%;
+    margin: 0 0.714285714285714%;
   }
 }
 .widget {
