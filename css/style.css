@@ -178,10 +178,7 @@ a:visited {
 }
 @media screen and (min-width: 800px) and (max-width: 1199px) {
   #main {
-    display: inline;
-    float: left;
-    width: 57.99999999999999%;
-    margin: 0 1%;
+    width: 100%;
   }
 }
 .archive-article-header a,
@@ -2016,10 +2013,4 @@ pre .javascript .function {
 }
 #recent-post li:hover .item-title a {
   color: #38b7ea;
-}
-#main {
-  float: right;
-}
-#profile {
-  float: right;
 }
