@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://shiguol.github.io/2016/04/18/Setup-DevEnv-with-zsh-and-vim/</loc>
+    <lastmod>2016-04-18T02:53:28.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2016/04/02/How-to-enable-Chrome-into-immerse-mode/</loc>
     <lastmod>2016-04-02T02:38:47.000Z</lastmod>
   </url>
