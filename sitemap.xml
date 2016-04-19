@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://shiguol.github.io/2016/04/19/Learn/</loc>
+    <lastmod>2016-04-19T11:54:53.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2016/04/18/Setup-DevEnv-with-zsh-and-vim/</loc>
     <lastmod>2016-04-18T02:56:51.000Z</lastmod>
   </url>
