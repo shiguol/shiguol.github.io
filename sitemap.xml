@@ -2,15 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2015/12/13/2015-review/</loc>
     
     <lastmod>2022-11-12</lastmod>
@@ -21,6 +12,15 @@
   
   <url>
     <loc>http://shiguol.github.io/2016/01/10/Command-Tab-and-option-to-retore-window/</loc>
+    
+    <lastmod>2022-11-12</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -65,7 +65,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2019/11/15/Xcode-some-directories/</loc>
+    <loc>http://shiguol.github.io/2016/01/07/Mac-develop-tool-chain/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -83,7 +83,25 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/2016/04/18/Setup-DevEnv-with-zsh-and-vim/</loc>
+    
+    <lastmod>2022-11-12</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2020/04/08/VIM-survival-manuals/</loc>
+    
+    <lastmod>2022-11-12</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2019/11/15/Xcode-some-directories/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -101,25 +119,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2016/01/07/Mac-develop-tool-chain/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2017/08/12/git-reset-soft/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2016/04/18/Setup-DevEnv-with-zsh-and-vim/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -137,15 +137,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2019/11/04/upgrade-hexo-to-4-0-0/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2017/07/13/simple-grep-command/</loc>
     
     <lastmod>2022-11-12</lastmod>
@@ -155,7 +146,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2015/12/13/%E4%BD%BF%E7%94%A8-Hexo-%E6%90%AD%E5%BB%BA-Blog/</loc>
+    <loc>http://shiguol.github.io/2016/03/17/%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80-gitignore/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -173,7 +164,16 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2016/03/17/%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80-gitignore/</loc>
+    <loc>http://shiguol.github.io/2019/11/04/upgrade-hexo-to-4-0-0/</loc>
+    
+    <lastmod>2022-11-12</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2015/12/13/%E4%BD%BF%E7%94%A8-Hexo-%E6%90%AD%E5%BB%BA-Blog/</loc>
     
     <lastmod>2022-11-12</lastmod>
     
@@ -218,14 +218,14 @@
 
   
   <url>
-    <loc>http://shiguol.github.io/tags/movie/</loc>
+    <loc>http://shiguol.github.io/tags/2015/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/2015/</loc>
+    <loc>http://shiguol.github.io/tags/movie/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -253,14 +253,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/xcode/</loc>
-    <lastmod>2022-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/Emoji/</loc>
+    <loc>http://shiguol.github.io/tags/2016/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -274,28 +267,14 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/Emoji/</loc>
+    <lastmod>2022-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/%E7%BC%96%E7%A8%8B/</loc>
-    <lastmod>2022-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/linux/</loc>
-    <lastmod>2022-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/2016/</loc>
-    <lastmod>2022-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/git/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -316,6 +295,27 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/xcode/</loc>
+    <lastmod>2022-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/linux/</loc>
+    <lastmod>2022-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/git/</loc>
+    <lastmod>2022-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/2017/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
@@ -323,14 +323,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/hexo/</loc>
-    <lastmod>2022-11-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/github/</loc>
+    <loc>http://shiguol.github.io/tags/GIT/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -351,7 +344,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/GIT/</loc>
+    <loc>http://shiguol.github.io/tags/hexo/</loc>
+    <lastmod>2022-11-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/github/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -381,14 +381,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/Programming/programming/</loc>
+    <loc>http://shiguol.github.io/categories/vim/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/vim/</loc>
+    <loc>http://shiguol.github.io/categories/Programming/programming/</loc>
     <lastmod>2022-11-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
