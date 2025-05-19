@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>VIM survival manuals | WALL-E`s Blog</title><meta name="author" content="SAlex,a@a.co"><meta name="copyright" content="SAlex"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VIM survival manuals">
+<meta property="og:url" content="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/index.html">
+<meta property="og:site_name" content="WALL-E&#96;s Blog">
+<meta property="og:description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg">
+<meta property="article:published_time" content="2020-04-08T13:27:31.000Z">
+<meta property="article:modified_time" content="2023-06-11T07:10:53.000Z">
+<meta property="article:author" content="SAlex">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'VIM survival manuals',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2023-06-11 15:10:53'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/images/walle.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">26</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">WALL-E`s Blog</a></span><div id="menus"><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">VIM survival manuals</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-08T13:27:31.000Z" title="发表于 2020-04-08 21:27:31">2020-04-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-06-11T07:10:53.000Z" title="更新于 2023-06-11 15:10:53">2023-06-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/vim/">vim</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="VIM survival manuals"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><table>
+<thead>
+<tr>
+<th>Cmd</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>I</td>
+<td>insert mode；</td>
+</tr>
+<tr>
+<td>Esc</td>
+<td>command mode；</td>
+</tr>
+<tr>
+<td>o</td>
+<td>append mode；</td>
+</tr>
+<tr>
+<td>:shell</td>
+<td>temp enter shell；</td>
+</tr>
+<tr>
+<td>Ctrl+z</td>
+<td>temp enter shell(v2);</td>
+</tr>
+<tr>
+<td>fg</td>
+<td>return back to vim;</td>
+</tr>
+<tr>
+<td>shift + &gt;</td>
+<td>insert tab；</td>
+</tr>
+<tr>
+<td>&#x2F;word</td>
+<td>search word；</td>
+</tr>
+<tr>
+<td>n</td>
+<td>search next；</td>
+</tr>
+<tr>
+<td>b，w</td>
+<td>jump word；</td>
+</tr>
+<tr>
+<td>gg，</td>
+<td>G jump start, end；</td>
+</tr>
+<tr>
+<td>10g</td>
+<td>go to 10 line;</td>
+</tr>
+<tr>
+<td>Ctrl + d,u</td>
+<td>page down, up；</td>
+</tr>
+<tr>
+<td>v</td>
+<td>visual mode；</td>
+</tr>
+<tr>
+<td>y</td>
+<td>yank(copy);</td>
+</tr>
+<tr>
+<td>dd</td>
+<td>cut;</td>
+</tr>
+<tr>
+<td>p</td>
+<td>paste;</td>
+</tr>
+<tr>
+<td>:vsp</td>
+<td>vertical split tab；</td>
+</tr>
+<tr>
+<td>:sp</td>
+<td>horizontal slpit tab;</td>
+</tr>
+<tr>
+<td>Ctrl + w</td>
+<td>change focus window；</td>
+</tr>
+<tr>
+<td>Ctrl + n</td>
+<td>nerd tree</td>
+</tr>
+<tr>
+<td>:q!</td>
+<td>quick not save;</td>
+</tr>
+<tr>
+<td>:qw</td>
+<td>quick + save;</td>
+</tr>
+<tr>
+<td>:u</td>
+<td>undo</td>
+</tr>
+<tr>
+<td>:s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace current line “one” from “two”</td>
+</tr>
+<tr>
+<td>%s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace all</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">SAlex</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/">http://shiguol.github.io/2020/04/08/VIM-survival-manuals/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://shiguol.github.io" target="_blank">WALL-E`s Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a></div><div class="post_share"><div class="social-share" data-image="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/11/13/How-to-read-the-book-and-write-down-note/"><img class="prev-cover" src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">How to read the book and write down note</div></div></a></div><div class="next-post pull-right"><a href="/2019/11/16/Xcode-some-directories/"><img class="next-cover" src="/images/cover/xcode.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Xcode_some_directories</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2016/01/11/OS-X-%E5%BF%AB%E9%80%9F%E8%B0%83%E5%87%BA-Emoji-%E9%9D%A2%E6%9D%BF/" title="OS X 快速调出 Emoji 面版"><img class="cover" src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2016-01-11</div><div class="title">OS X 快速调出 Emoji 面版</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/images/walle.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">SAlex</div><div class="author-info__description">An iOS Developer.</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">26</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/shiguol"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/shiguol" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is a man's blog.</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/05/19/A-good-start-for-Dockerfile/" title="A good start for Dockerfile"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="A good start for Dockerfile"/></a><div class="content"><a class="title" href="/2025/05/19/A-good-start-for-Dockerfile/" title="A good start for Dockerfile">A good start for Dockerfile</a><time datetime="2025-05-19T05:12:17.000Z" title="发表于 2025-05-19 13:12:17">2025-05-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/05/19/Read-mail/" title="Read mail"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Read mail"/></a><div class="content"><a class="title" href="/2025/05/19/Read-mail/" title="Read mail">Read mail</a><time datetime="2025-05-19T05:11:25.000Z" title="发表于 2025-05-19 13:11:25">2025-05-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/05/19/Crontab-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" title="Crontab 定时任务"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Crontab 定时任务"/></a><div class="content"><a class="title" href="/2025/05/19/Crontab-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" title="Crontab 定时任务">Crontab 定时任务</a><time datetime="2025-05-19T05:10:25.000Z" title="发表于 2025-05-19 13:10:25">2025-05-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/05/19/Upgrade-Hexo-to-7-0-0/" title="Upgrade Hexo to 7.0.0"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Upgrade Hexo to 7.0.0"/></a><div class="content"><a class="title" href="/2025/05/19/Upgrade-Hexo-to-7-0-0/" title="Upgrade Hexo to 7.0.0">Upgrade Hexo to 7.0.0</a><time datetime="2025-05-19T05:09:41.000Z" title="发表于 2025-05-19 13:09:41">2025-05-19</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/05/19/Git-rebase/" title="Git rebase"><img src="https://i.loli.net/2020/05/01/gkihqEjXxJ5UZ1C.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Git rebase"/></a><div class="content"><a class="title" href="/2025/05/19/Git-rebase/" title="Git rebase">Git rebase</a><time datetime="2025-05-19T05:08:34.000Z" title="发表于 2025-05-19 13:08:34">2025-05-19</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2025 By SAlex</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
