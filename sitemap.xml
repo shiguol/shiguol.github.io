@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
+    
+    <lastmod>2025-05-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2020/04/08/VIM-survival-manuals/</loc>
     
     <lastmod>2025-05-20</lastmod>
@@ -57,15 +66,6 @@
   
   <url>
     <loc>http://shiguol.github.io/2025/05/19/CMake-CPP/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
     
     <lastmod>2025-05-20</lastmod>
     
@@ -376,20 +376,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Chrome/</loc>
-    <lastmod>2025-05-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/2022/</loc>
-    <lastmod>2025-05-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/2016/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
@@ -432,7 +418,21 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/Chrome/</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/xcode/</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/2022/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
