@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
+    <loc>http://shiguol.github.io/2019/11/15/Xcode-some-directories/</loc>
     
     <lastmod>2025-05-20</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2022/11/15/2022-upgrade-my-blog-to-6-3-0-hexo/</loc>
+    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
     
     <lastmod>2025-05-20</lastmod>
     
@@ -29,7 +29,16 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2019/11/15/Xcode-some-directories/</loc>
+    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
+    
+    <lastmod>2025-05-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2022/11/15/2022-upgrade-my-blog-to-6-3-0-hexo/</loc>
     
     <lastmod>2025-05-20</lastmod>
     
@@ -93,15 +102,6 @@
   
   <url>
     <loc>http://shiguol.github.io/2025/05/19/Crontab-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/</loc>
-    
-    <lastmod>2025-05-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
     
     <lastmod>2025-05-19</lastmod>
     
@@ -432,6 +432,13 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/hexo/</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/xcode/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
@@ -461,13 +468,6 @@
   
   <url>
     <loc>http://shiguol.github.io/tags/VIM/</loc>
-    <lastmod>2025-05-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/hexo/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -553,21 +553,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/hexo/</loc>
+    <loc>http://shiguol.github.io/categories/Hexo/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/vim/</loc>
-    <lastmod>2025-05-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/categories/Programming/Programming/</loc>
+    <loc>http://shiguol.github.io/categories/VIM/</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
