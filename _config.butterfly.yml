@@ -1,0 +1,10 @@
+# Butterfly Theme Configuration Override
+# This file overrides settings in themes/butterfly/_config.yml
+# See: https://butterfly.js.org/posts/4aa8abbe/
+
+# Inject custom scripts
+inject:
+  head:
+  bottom:
+    # Busuanzi fallback - show N/A if busuanzi fails to load or return data within 8 seconds
+    - <script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script>
