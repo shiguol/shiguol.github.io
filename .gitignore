@@ -1,0 +1,28 @@
+# Hexo 生成的文件
+.deploy_git/
+public/
+db.json
+
+# Node.js 依赖
+node_modules/
+
+# 日志文件
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+*.bak
+
+# 打包文件
+*.tgz
