@@ -2,7 +2,7 @@
 title: Prompt Engineering：如何跟 AI 好好说话
 date: 2026-06-20 21:40:00
 categories:
-  - Programming
+  - AI
 tags:
   - AI
   - 编程

@@ -2,7 +2,7 @@
 title: Embedding：把万物变成数字
 date: 2026-06-20 21:50:00
 categories:
-  - Programming
+  - AI
 tags:
   - AI
   - 编程

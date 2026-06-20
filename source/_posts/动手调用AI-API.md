@@ -2,7 +2,7 @@
 title: 动手调用 AI API
 date: 2026-06-20 22:50:00
 categories:
-  - Programming
+  - AI
 tags:
   - AI
   - 编程
