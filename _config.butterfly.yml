@@ -2,6 +2,11 @@
 # This file overrides settings in themes/butterfly/_config.yml
 # See: https://butterfly.js.org/posts/4aa8abbe/
 
+# Avatar
+avatar:
+  img: /images/wall-e-ai.png
+  effect: false
+
 # Inject custom scripts
 inject:
   head:
