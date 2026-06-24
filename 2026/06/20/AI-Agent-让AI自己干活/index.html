@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI Agent：让 AI 自己干活 | WALL-E`s Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="你有没有过这种体验：跟 AI 聊天的时候，它回答得头头是道，但你真正想让它”替你做点什么”的时候，它就只会说”你可以这样做……”而不是直接帮你做了？这就好像你打客服热线，对面的人业务很熟，但你每问一句它才答一句，绝不会主动帮你搞定整件事。如果 AI 能从”被动回答”升级成”主动行动”，那才是真正的生产力飞跃。今天我们就来聊聊让 AI 从”客服热线”变成”私人助理”的关键技术——AI Agent。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent：让 AI 自己干活">
+<meta property="og:url" content="http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/index.html">
+<meta property="og:site_name" content="WALL-E&#96;s Blog">
+<meta property="og:description" content="你有没有过这种体验：跟 AI 聊天的时候，它回答得头头是道，但你真正想让它”替你做点什么”的时候，它就只会说”你可以这样做……”而不是直接帮你做了？这就好像你打客服热线，对面的人业务很熟，但你每问一句它才答一句，绝不会主动帮你搞定整件事。如果 AI 能从”被动回答”升级成”主动行动”，那才是真正的生产力飞跃。今天我们就来聊聊让 AI 从”客服热线”变成”私人助理”的关键技术——AI Agent。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/wall-e-ai.png">
+<meta property="article:published_time" content="2026-06-20T14:10:00.000Z">
+<meta property="article:modified_time" content="2026-06-20T14:55:31.925Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/wall-e-ai.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI Agent：让 AI 自己干活",
+  "url": "http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/",
+  "image": "http://shiguol.github.io/images/wall-e-ai.png",
+  "datePublished": "2026-06-20T14:10:00.000Z",
+  "dateModified": "2026-06-20T14:55:31.925Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI Agent：让 AI 自己干活',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E`s Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">AI Agent：让 AI 自己干活</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">AI Agent：让 AI 自己干活</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-20T14:10:00.000Z" title="发表于 2026-06-20 22:10:00">2026-06-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-20T14:55:31.925Z" title="更新于 2026-06-20 22:55:31">2026-06-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/">AI</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>你有没有过这种体验：跟 AI 聊天的时候，它回答得头头是道，但你真正想让它”替你做点什么”的时候，它就只会说”你可以这样做……”而不是直接帮你做了？这就好像你打客服热线，对面的人业务很熟，但你每问一句它才答一句，绝不会主动帮你搞定整件事。如果 AI 能从”被动回答”升级成”主动行动”，那才是真正的生产力飞跃。今天我们就来聊聊让 AI 从”客服热线”变成”私人助理”的关键技术——AI Agent。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「小白讲 AI」系列的第 08 篇。前几篇我们聊了大模型、Token、Prompt Engineering、RAG 等概念，这一篇我们来看看当 AI 学会”自己干活”之后，会发生什么。</p>
+</blockquote>
+<h2 id="一、开场类比：客服热线-vs-私人助理"><a href="#一、开场类比：客服热线-vs-私人助理" class="headerlink" title="一、开场类比：客服热线 vs 私人助理"></a>一、开场类比：客服热线 vs 私人助理</h2><p>先来一个直觉上的对比。</p>
+<p><strong>普通 AI（聊天机器人）</strong> 就像一条客服热线。你问一个问题，它给一个回答。你不问，它就沉默。它的能力仅限于”回答”这一个动作，而且每次回答都只基于你当次发过来的信息。对话结束后，它对你毫无记忆。下次你打过去，一切从头来过。</p>
+<p><strong>AI Agent</strong> 则更像你的一个私人助理。你跟它说”帮我定一张下周三北京到上海的高铁票，靠窗，下午出发”，它不是回你一段文字说”你可以打开 12306 APP，点击……”——它会自己去查班次、比较时间、找到靠窗的座位、帮你下单，中间遇到什么问题还会回来问你：”下午两点和四点各有一班，你选哪个？”</p>
+<p>区别在哪里？普通 AI 只有一个能力：<strong>说话</strong>。Agent 则多了三个关键能力：<strong>行动</strong>（调用工具去做事）、<strong>观察</strong>（看看做完之后发生了什么）、<strong>决策</strong>（根据观察结果决定下一步怎么办）。</p>
+<p>简单一句话概括：<strong>普通 AI 告诉你怎么做，Agent 替你把事情做了。</strong></p>
+<h2 id="二、Agent-的核心循环：ReAct-模式"><a href="#二、Agent-的核心循环：ReAct-模式" class="headerlink" title="二、Agent 的核心循环：ReAct 模式"></a>二、Agent 的核心循环：ReAct 模式</h2><p>那 Agent 到底是怎么”自己干活”的呢？它背后有一个非常优雅的工作循环，学术圈把它叫做 <strong>ReAct（Reasoning + Acting）模式</strong>。名字听起来高大上，但拆开来看特别简单：</p>
+<ol>
+<li><strong>感知（Perceive）</strong>：接收到一个任务或一条新信息。比如你说”帮我查一下明天北京的天气”。</li>
+<li><strong>思考（Reason）</strong>：Agent 在心里想——“用户要查天气，我需要调用天气 API，参数是’北京’和’明天的日期’”。</li>
+<li><strong>行动（Act）</strong>：它真的去调用天气查询工具，发出一个请求。</li>
+<li><strong>观察（Observe）</strong>：拿到返回结果——“明天北京，晴，最高 32 度，最低 22 度”。</li>
+<li><strong>再思考（Reason again）</strong>：Agent 看了结果，判断任务完成了，可以回复用户了。如果没完成（比如 API 报错了），它会决定换一种方式重试。</li>
+<li><strong>回复</strong>：把整理好的结果告诉你。</li>
+</ol>
+<p>这个循环可以转很多圈。比如你说”帮我写一篇关于量子计算的博客文章”，Agent 可能会：第一圈——搜索量子计算的最新进展；第二圈——找到几篇参考文章并阅读摘要；第三圈——列出文章大纲；第四圈——逐段撰写正文；第五圈——检查全文是否通顺、有无事实错误。每一圈都是”想一想 → 做一做 → 看一看”的循环。</p>
+<p>你可以把它想象成一个做菜的过程：看菜谱（感知）→ 想想先做哪一步（思考）→ 切菜（行动）→ 看看切得怎么样（观察）→ 决定下一步是炒还是煮（再思考）→ 继续操作。整个做菜的过程就是一个不断循环的 ReAct。</p>
+<h2 id="三、工具调用（Tool-Use）：Agent-的超能力"><a href="#三、工具调用（Tool-Use）：Agent-的超能力" class="headerlink" title="三、工具调用（Tool Use）：Agent 的超能力"></a>三、工具调用（Tool Use）：Agent 的超能力</h2><p>如果说 ReAct 循环是 Agent 的”大脑”，那<strong>工具调用</strong>就是它的”双手”。</p>
+<p>大模型本身只会做一件事：生成文本。它不能上网、不能执行代码、不能发邮件、不能操作数据库。但通过工具调用机制，Agent 可以”伸出手”去使用各种外部工具。</p>
+<p>这些工具可以是什么？几乎可以是任何东西：</p>
+<ul>
+<li><strong>搜索引擎</strong>：去网上查最新的信息</li>
+<li><strong>代码解释器</strong>：写一段 Python 代码然后直接运行</li>
+<li><strong>文件系统</strong>：读写你电脑上的文件</li>
+<li><strong>API 接口</strong>：调用天气服务、发送邮件、操作数据库</li>
+<li><strong>浏览器</strong>：打开网页、点击按钮、填写表单</li>
+<li><strong>计算器</strong>：做精确的数学计算（大模型自己算数经常翻车）</li>
+</ul>
+<p>工具调用的过程大概是这样的：Agent 在”思考”阶段决定需要用某个工具，然后它会生成一段结构化的”指令”（比如一段 JSON），告诉系统”我要调用搜索工具，关键词是 xxx”。系统收到后去执行，把结果返回给 Agent，Agent 再基于这个结果继续思考和行动。</p>
+<p>一个形象的比喻：大模型就像一个被关在房间里的天才。它脑子里装了百科全书级别的知识，但它看不到外面的世界，也摸不到任何东西。工具调用就是给这个房间装了一扇窗（能看到外面的信息）和一个机械臂（能操作外面的东西）。Agent 还是那个天才，但有了窗户和机械臂之后，它能做的事情就完全不一样了。</p>
+<h2 id="四、记忆系统：不再”贵人多忘事”"><a href="#四、记忆系统：不再”贵人多忘事”" class="headerlink" title="四、记忆系统：不再”贵人多忘事”"></a>四、记忆系统：不再”贵人多忘事”</h2><p>你跟普通聊天 AI 对话的时候，可能有过这种经历：聊了半天之后，它突然”忘了”你前面说过的内容。这是因为大模型有一个”上下文窗口”的限制（我们在 Token 那篇聊过），超过这个长度的信息就会被丢掉。</p>
+<p>Agent 为了解决这个问题，搭建了一套<strong>记忆系统</strong>，通常分两层：</p>
+<p><strong>短期记忆（Working Memory）</strong>：就是当前对话的上下文。Agent 在执行一个任务的过程中，前面几步做了什么、得到了什么结果，都存在短期记忆里。它就像你工作时摊在桌面上的那些文件——随时能看到，但桌子空间有限，放不下太多东西。</p>
+<p><strong>长期记忆（Long-term Memory）</strong>：当桌面放不下的时候怎么办？存进柜子里。Agent 的长期记忆通常是通过<strong>向量数据库</strong>或者<strong>文件系统</strong>来实现的。它会把重要的信息（比如用户的偏好、历史对话的关键结论、已经查到的资料）存到外部存储里。需要的时候再去检索——没错，这就是我们之前讲过的 RAG 技术。</p>
+<p>有了记忆系统，Agent 就不再是一个”金鱼记忆”的助手了。它能记住你喜欢什么风格的文章、你的项目用的什么技术栈、上次对话中你提到的一个重要决定。这让它在多次交互中变得越来越好用，越来越像一个真正了解你的助手。</p>
+<h2 id="五、多-Agent-协作：像团队一样分工"><a href="#五、多-Agent-协作：像团队一样分工" class="headerlink" title="五、多 Agent 协作：像团队一样分工"></a>五、多 Agent 协作：像团队一样分工</h2><p>一个 Agent 已经很强了，那如果让多个 Agent 组成团队呢？</p>
+<p>这就是<strong>多 Agent 协作</strong>的概念。想象一个软件开发团队：有人写代码、有人做测试、有人做代码审查、有人写文档。多 Agent 系统做的就是同样的事情——只不过团队成员全是 AI。</p>
+<p>举个例子，一个”AI 开发团队”可能由这些 Agent 组成：</p>
+<ul>
+<li><strong>产品经理 Agent</strong>：接收用户需求，拆解成具体的技术任务</li>
+<li><strong>开发者 Agent</strong>：根据任务写代码</li>
+<li><strong>测试 Agent</strong>：运行代码、编写测试用例、发现 bug</li>
+<li><strong>Review Agent</strong>：审查代码质量，提出改进建议</li>
+<li><strong>文档 Agent</strong>：根据代码自动生成使用文档</li>
+</ul>
+<p>它们之间的协作方式跟人类团队很像：开发者写完代码后，交给测试 Agent 去跑，测试发现了 bug 就反馈给开发者修复，修完之后再交给 Review Agent 看看代码质量。整个过程是一条流水线，每个 Agent 各司其职。</p>
+<p>多 Agent 的好处是<strong>专业化</strong>。一个 Agent 什么都能做但什么都做得一般，不如几个 Agent 各自专精一件事。这跟人类社会的”分工协作”是同一个道理——一个人又当厨师又当服务员又当收银员，效率肯定不如三个人各管一摊。</p>
+<h2 id="六、现实中的-Agent-产品"><a href="#六、现实中的-Agent-产品" class="headerlink" title="六、现实中的 Agent 产品"></a>六、现实中的 Agent 产品</h2><p>Agent 不是实验室里的概念，它已经在真实的产品中落地了。以下是几个代表性产品：</p>
+<p><strong>Claude Code（Anthropic）</strong>：一个运行在命令行里的编程 Agent。你给它一个任务（比如”重构这个模块的错误处理逻辑”），它会自己读代码、理解项目结构、写出修改方案、直接编辑文件，甚至能运行测试确认改动没有引入新 bug。它的特点是深度集成了文件系统和终端，能像一个真正的程序员一样在项目里”干活”。</p>
+<p><strong>Cursor</strong>：一个基于 AI Agent 的代码编辑器。它不只是代码补全，而是能理解你整个项目的上下文，帮你做跨文件的重构、生成测试、解释复杂逻辑。它的 Agent 模式可以自主地规划和执行多步骤的编码任务。</p>
+<p><strong>Devin</strong>：号称”第一个 AI 软件工程师”。它能独立地完成从需求理解到部署上线的完整开发流程——打开浏览器查文档、在终端里装依赖、写代码、调试、部署。虽然目前处理的任务复杂度还有限，但它展示了 Agent 在软件开发领域的巨大潜力。</p>
+<p><strong>AutoGPT</strong>：Agent 领域的早期探索者。它的核心思路是让 GPT 自己给自己下任务——你给它一个目标，它会自动拆解成子任务，然后一步一步执行。虽然实际效果参差不齐，但它启发了整个 Agent 生态的发展。</p>
+<p>这些产品的共同点是：它们都不是简单的”聊天机器人”，而是能<strong>自主规划、使用工具、迭代执行</strong>的智能体。</p>
+<h2 id="七、Agent-的局限：为什么还会”翻车”"><a href="#七、Agent-的局限：为什么还会”翻车”" class="headerlink" title="七、Agent 的局限：为什么还会”翻车”"></a>七、Agent 的局限：为什么还会”翻车”</h2><p>说了这么多 Agent 的厉害之处，我们也得聊聊它目前的局限。坦率地说，现阶段的 Agent 还远远不是”全自动驾驶”，更像是”辅助驾驶”——大多数时候很好用，但关键时刻还需要人类把关。</p>
+<p><strong>幻觉累积</strong>：我们之前聊过，大模型会”一本正经地胡说八道”（幻觉问题）。在单次对话中，幻觉的影响可能还可控。但 Agent 的工作方式是多步骤的循环——第一步的输出是第二步的输入，第二步的输出又是第三步的输入。如果第一步就产生了一个小错误，这个错误会像滚雪球一样越滚越大。就好比你抄笔记的时候第一行就抄错了一个字，后面每一行都基于错误的理解往下写，到最后整页笔记都跑偏了。</p>
+<p><strong>规划能力不足</strong>：人类在做复杂任务的时候，会先想一个大致的计划，然后在执行过程中灵活调整。但目前的 Agent 在长期规划上还比较弱——它可能在局部的每一步都做得不错，但从全局来看走了很多弯路，甚至走进了死胡同。这就像一个路痴开车：每个路口他都做了一个”看起来合理”的选择，但最后发现绕了一大圈才到目的地。</p>
+<p><strong>成本和速度</strong>：Agent 每一次”思考 → 行动 → 观察”的循环都需要调用大模型，每次调用都要花钱、花时间。一个复杂任务可能需要几十上百次循环，Token 消耗量巨大。这让 Agent 在处理复杂任务时成本很高、速度偏慢。</p>
+<p><strong>安全边界</strong>：Agent 能操作工具，这意味着它能对真实世界产生影响——它能删除文件、发送邮件、执行代码。如果 Agent 的判断出了差错，后果可能不只是”回答错了”，而是”做错了事”。这就是为什么现在的 Agent 产品普遍会在关键操作前询问用户确认，而不是完全自动执行。</p>
+<p>尽管有这些局限，Agent 技术正在飞速进步。模型的推理能力越来越强，工具生态越来越丰富，安全机制越来越完善。也许再过一两年，Agent 就能从”辅助驾驶”进化到”高度自动驾驶”了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>让我们回顾一下今天的内容：</p>
+<ul>
+<li><strong>Agent 不是更聪明的聊天机器人，而是能自主行动的 AI 助手</strong>。它从”被动回答”进化到了”主动执行”。</li>
+<li><strong>ReAct 循环</strong>是 Agent 的核心工作方式：感知 → 思考 → 行动 → 观察 → 再思考，不断迭代直到完成任务。</li>
+<li><strong>工具调用</strong>是 Agent 的”双手”，让它能搜索、写代码、调 API、操作文件。</li>
+<li><strong>记忆系统</strong>让 Agent 不再”金鱼记忆”，分为短期的上下文记忆和长期的外部存储。</li>
+<li><strong>多 Agent 协作</strong>让 AI 像团队一样分工合作，各自专精。</li>
+<li><strong>现实产品</strong>如 Claude Code、Cursor、Devin 已经在将 Agent 概念落地。</li>
+<li><strong>Agent 仍有局限</strong>——幻觉累积、规划不足、成本较高、安全风险——但正在快速改善。</li>
+</ul>
+<p>Agent 是当下 AI 领域最令人兴奋的方向之一。它标志着 AI 从”语言工具”向”行动工具”的跨越——不只是帮你想，更是帮你做。</p>
+<hr>
+<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><ol>
+<li><strong><a target="_blank" rel="noopener" href="https://lilianweng.github.io/posts/2023-06-23-agent/">LLM Powered Autonomous Agents - Lilian Weng</a></strong> —— OpenAI 研究员 Lilian Weng 写的 Agent 综述博客，系统地梳理了 Agent 的架构设计，包括规划、记忆和工具使用，图文并茂，是该领域引用率最高的科普文章之一。</li>
+<li><strong><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2210.03629">ReAct: Synergizing Reasoning and Acting in Language Models</a></strong> —— ReAct 模式的原始论文。如果你想了解”思考 + 行动”循环的学术起源，可以读读摘要和引言部分，不需要啃公式。</li>
+<li><strong><a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/building-effective-agents">Anthropic: Building effective agents</a></strong> —— Anthropic 官方关于如何构建高效 Agent 的工程实践指南，涵盖了架构设计、工具集成和常见陷阱，适合想动手搭建 Agent 的开发者。</li>
+</ol>
+<hr>
+<blockquote>
+<p>小白讲 AI 系列第 08 篇完。下一篇我们聊聊 AI 安全与对齐——如何让 AI 不翻车。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/">http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E`s Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a></div><div class="post-share"><div class="social-share" data-image="/images/wall-e-ai.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/20/%E5%A4%9A%E6%A8%A1%E6%80%81AI-%E4%B8%8D%E5%8F%AA%E6%98%AF%E6%96%87%E5%AD%97/" title="多模态 AI：不只是文字"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">多模态 AI：不只是文字</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 09 篇。前面几篇我们聊的 AI，大多在跟文字打交道——你输入一段话，它回你一段话。但你有没有想过，人类从来不是只靠文字来理解世界的？你看到一张照片、听到一段旋律、闻到饭菜的香味，这些信息同时涌入大脑，拼凑出你对这个世界的完整感知。现在的 AI，也正在学习这件事。这就是今天要聊的主题——多模态 AI。   一、人类天生就是”多模态”的想象你走进一家咖啡店。你的眼睛看到菜单上的图片和文字，耳朵听到咖啡机的声响和店员的招呼，鼻子闻到咖啡豆的香气，手指感受到杯子的温度。你的大脑不会把这些信息拆开单独处理——它会自动把它们融合在一起，让你形成一个统一的判断：”嗯，这是一家不错的咖啡店。” 这就是”多模态”最通俗的解释：同时使用多种感官通道来获取和理解信息。 过去几年的 AI 更像一个”偏科生”：搞文字的只搞文字（比如 ChatGPT 早期版本），搞图片的只搞图片（比如图片分类器），搞语音的只搞语音（比如语音助手）。它们各自干得不错，但彼此之间互不相通。你没法把一张照片丢给文字 AI 问”这是什么”，也没法让图片 AI 根据你的一句话画出一幅画。 多模态 AI...</div></div></div></a><a class="pagination-related" href="/2026/06/20/Fine-tuning-vs-RAG-%E8%AE%A9AI%E5%AD%A6%E4%BC%9A%E4%BD%A0%E7%9A%84%E7%9F%A5%E8%AF%86/" title="Fine-tuning vs RAG：让 AI 学会你的知识"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Fine-tuning vs RAG：让 AI 学会你的知识</div></div><div class="info-2"><div class="info-item-1">欢迎来到”小白讲 AI”系列第 07 篇。当你想让 AI 回答关于你们公司产品的问题，或者让它掌握某个专业领域的知识时，通常有两条路可以走：Fine-tuning（微调）和 RAG（检索增强生成）。今天我们就用最通俗的方式，把这两种方法讲清楚，帮你做出正确的选择。   1. 开场类比：上专业课 vs 开卷考试想象你有一个刚毕业的大学生（这就是大语言模型），他什么都懂一点，但对你公司的业务一窍不通。现在你要让他能回答客户的专业问题，怎么办？ Fine-tuning 就像把他送去上专业课。 你花时间把公司的产品手册、技术文档、历史案例统统教给他。课程结束后，他把这些知识”刻进了脑子里”，以后回答问题时直接从记忆中提取，不需要翻任何资料。好处是反应快、回答自然；缺点是培训成本高，而且如果产品更新了，你得重新送他回去”进修”。 RAG 就像让他开卷考试。 你不需要把所有东西都教给他，而是给他准备一个资料库。每次客户提问时，他先快速翻阅相关资料，找到最相关的几页，然后基于这些资料来组织答案。好处是资料随时可以更新，他永远能拿到最新的信息；缺点是每次回答都要先”翻书”，会稍慢一点，回答质量也...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/20/AI%E5%AE%89%E5%85%A8%E4%B8%8E%E5%AF%B9%E9%BD%90-%E5%A6%82%E4%BD%95%E8%AE%A9AI%E4%B8%8D%E7%BF%BB%E8%BD%A6/" title="AI 安全与对齐：如何让 AI 不翻车"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">AI 安全与对齐：如何让 AI 不翻车</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 11 篇。前面几篇我们聊了 AI 怎么学习、怎么生成内容，但有一个更根本的问题一直没展开——AI 会不会”翻车”？ 翻车了怎么办？怎么才能尽量不让它翻车？今天我们就来聊聊 AI 安全与对齐这个大话题。   一、开场类比：教一个超级聪明的外星人做人想象这样一个场景：有一天，一个智力远超人类的外星人降落在你家门口。它能在几秒钟内算出火箭轨道，能流利地说一百种语言，但它对人类社会的规则一无所知。 你让它去超市帮你买菜，它可能会觉得”效率最高的方式”是直接把菜拿走——因为没人告诉它要排队结账。你让它帮你写一封邮件，它可能会用极其直白甚至冒犯的语气，因为它不理解人类的社交礼仪。 AI 对齐（AI Alignment） 要解决的，就是类似的问题。AI 模型本质上就是一个”超级聪明但没有常识的外星人”。它拥有强大的能力，但如果我们不花大力气去”教”它什么该做、什么不该做，它就可能做出各种离谱的事情。 “对齐”这个词的意思是：让 AI 的目标、行为和价值观与人类的意图对齐，也就是保持一致。听起来简单，做起来却是当今 AI 领域最难的问题之一。 二、AI 会犯什么错？...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Agent-%E6%9E%B6%E6%9E%84%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%8E%E8%83%BD%E8%B7%91%E5%88%B0%E8%83%BD%E7%94%A8/" title="Agent 架构与设计模式：从&quot;能跑&quot;到&quot;能用&quot;"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">Agent 架构与设计模式：从&quot;能跑&quot;到&quot;能用&quot;</div></div><div class="info-2"><div class="info-item-1">你手里有了材料（模型选好了）、工具（框架选好了）、也知道了基本工艺（Loop、Harness 都懂了）。但真正住人的房子和路边的简易棚，差距在哪？在于设计图——承重墙怎么布局、管线怎么走、逃生通道在哪里。Agent 也是一样：同样的模型、同样的框架，用不同的架构模式来设计，出来的效果天差地别。今天我们来聊聊那些经过实战验证的 Agent 设计模式——它们是你从”demo 能跑”到”生产能用”的关键。    这是「小白讲 AI」系列的第 18 篇。上一篇我们对比了五大 Agent 框架，选好了”工具”。这一篇我们往上走一层：不管你用什么框架，这些跨框架通用的设计模式都是你需要掌握的。  一、先搞清楚：你需要几个 Agent？在选择具体的设计模式之前，第一个问题是：你的场景需要一个 Agent 还是多个 Agent？ 这个问题很重要，因为多 Agent 架构的复杂度远高于单 Agent。不要因为”多 Agent 听起来很酷”就上多 Agent——很多场景一个 Agent 就够了。 什么时候一个 Agent 就够？  任务类型单一（比如”回答用户问题”） 工具数量有限（10 个以内） ...</div></div></div></a><a class="pagination-related" href="/2026/06/24/MCP-%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-Agent%E4%B8%96%E7%95%8C%E7%9A%84USB%E6%8E%A5%E5%8F%A3/" title="MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;</div></div><div class="info-2"><div class="info-item-1">还记得 2000 年代初手机充电器的混乱吗？诺基亚用小圆口，摩托罗拉用 mini-USB，索尼爱立信有自己的专用接口，三星又是另一种。出门要带三根线，借别人的充电器发现插不上。后来 USB 统一了一切——不管你是什么品牌的设备，一根线就搞定。AI Agent 的世界正在经历类似的变革：每个 AI 模型调用工具的方式都不一样，每个工具服务的接入方法都不同。这时候就需要一个”USB 标准”来统一它们——这就是 MCP（Model Context Protocol，模型上下文协议）。    这是「小白讲 AI」系列的第 16 篇。前三篇我们沿着进化线走完了 Context Engineering → Harness 工程 → Loop 工程。这一篇我们聊一个让 Agent 能力倍增的关键技术：MCP 协议——它正在成为 Agent 世界的基础设施。  一、开场类比：从充电口的混乱到 USB 的统一在没有 MCP 之前，Agent 想调用外部工具是什么体验？ 假设你在搭建一个 Agent，它需要用到三种工具：搜索引擎、日历服务和代码执行器。每个工具的接入方式都不一样：  搜索引擎用 RE...</div></div></div></a><a class="pagination-related" href="/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/" title="Prompt Engineering：如何跟 AI 好好说话"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">Prompt Engineering：如何跟 AI 好好说话</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 05 篇。前几篇我们聊了大模型是什么、怎么训练、Token 怎么算。今天我们来聊一个你每天都在做、但可能从没认真想过的事情——怎么跟 AI 说话。这件事有个听起来很高大上的名字：Prompt Engineering，翻译过来就是”提示词工程”。别被名字吓到，它的核心其实很简单：你说得越清楚，AI 干得越好。   1. 开场类比：给实习生写工作交接文档想象一下，你公司来了个新实习生，聪明、学东西快，但对你的业务一无所知。你让他帮你写一份周报，如果你只说”帮我写个周报”，他大概率会交上来一份格式奇怪、内容空洞的东西。但如果你说”帮我写一份上周的周报，包含三个部分：本周完成的任务、遇到的问题、下周计划。每个部分用三到五个要点概括，语气正式但不要太生硬，参考这份样例……”他交上来的东西就会靠谱得多。 跟 AI 对话也是一模一样的道理。AI 本质上就是那个”超级实习生”——它读过海量的书、看过无数的代码，能力很强，但它不知道你此刻的上下文、你的偏好、你想要什么样的结果。Prompt 就是你给这个实习生写的”工作交接文档”。文档写得越清楚，产出质量越高。 这就是...</div></div></div></a><a class="pagination-related" href="/2026/06/20/%E5%A4%A7%E8%AF%AD%E8%A8%80%E6%A8%A1%E5%9E%8B%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84/" title="大语言模型（LLM）是怎么工作的"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">大语言模型（LLM）是怎么工作的</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 03 篇。今天我们来聊一个很多人都好奇的问题：ChatGPT、Claude 这些 AI 聊天助手，到底是怎么工作的？它们真的”懂”我们说的话吗？别担心，这篇文章不会有任何数学公式，我会用最通俗的类比，带你搞明白大语言模型（Large Language Model，简称 LLM）的核心原理。   一、开场类比：LLM &#x3D; 世界上最强的”文字接龙”选手小时候我们都玩过文字接龙游戏——我说一个词，你接一个词，要求语义通顺、前后连贯。 大语言模型，本质上就是一个把”文字接龙”玩到了极致的选手。你给它一句话的开头，它能一个词一个词地往后接，最终接出一整篇文章、一段代码、甚至一首诗。 但跟我们不同的是，这位选手读过整个互联网的文字内容，记忆力惊人，而且能同时考虑到上下文中的每一个细节。所以它接出来的内容，往往看起来像是一个真正有思想的人写出来的。 当然，它并不是真的”理解”了文字的含义。它更像是一个超级模式匹配器——在海量文本中学到了”什么样的词通常跟在什么样的词后面”，然后利用这些规律来生成内容。 接下来，我们就来拆解它是怎么变成这样一个”接龙高手”...</div></div></div></a><a class="pagination-related" href="/2026/06/24/%E5%AE%9E%E6%88%98%E8%BF%9B%E9%98%B6-%E7%94%A8MCP%E6%89%93%E9%80%A0%E5%A4%9A%E5%B7%A5%E5%85%B7Agent/" title="实战进阶：用 MCP 打造多工具 Agent"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">实战进阶：用 MCP 打造多工具 Agent</div></div><div class="info-2"><div class="info-item-1">上一篇我们手写了一个”单机游戏”式的 Agent——工具是自己定义的、能力是固定的，就像一个只能在自家小区逛的孩子。今天我们要让它”联网”——通过 MCP 协议接入外部工具生态，瞬间获得读写文件、查询数据库、操作 GitHub 等成千上万种能力。就像游戏角色走出新手村，接入了整个世界地图，可以接任务、买装备、组队打副本。    这是「小白讲 AI」系列的第 20 篇，也是 Agent 系列的最终章。从第 5 篇的一条 Prompt，到今天用 MCP 打造多工具 Agent——我们走了一段不短的路。这一篇既是实战教程，也是对整个系列的总结和回顾。  一、上一篇的 Agent 缺什么？回顾一下第 19 篇手写的研究助手 Agent——它能跑，但有几个明显的限制：  工具是硬编码的：只有 search 和 fetch_url 两个工具，想加新工具就得改代码 不能操作本地文件：Agent 查到了信息却没法保存下来 单打独斗：只有一个 Agent 在干活，没有分工协作 代码量随复杂度增长：工具越多、逻辑越复杂，手写代码越难维护  今天我们要解决这些问题：  用 MCP 让 Agent 动态...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">50</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%80%E5%9C%BA%E7%B1%BB%E6%AF%94%EF%BC%9A%E5%AE%A2%E6%9C%8D%E7%83%AD%E7%BA%BF-vs-%E7%A7%81%E4%BA%BA%E5%8A%A9%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text">一、开场类比：客服热线 vs 私人助理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Agent-%E7%9A%84%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF%EF%BC%9AReAct-%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.</span> <span class="toc-text">二、Agent 的核心循环：ReAct 模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8%EF%BC%88Tool-Use%EF%BC%89%EF%BC%9AAgent-%E7%9A%84%E8%B6%85%E8%83%BD%E5%8A%9B"><span class="toc-number">3.</span> <span class="toc-text">三、工具调用（Tool Use）：Agent 的超能力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%EF%BC%9A%E4%B8%8D%E5%86%8D%E2%80%9D%E8%B4%B5%E4%BA%BA%E5%A4%9A%E5%BF%98%E4%BA%8B%E2%80%9D"><span class="toc-number">4.</span> <span class="toc-text">四、记忆系统：不再”贵人多忘事”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%A4%9A-Agent-%E5%8D%8F%E4%BD%9C%EF%BC%9A%E5%83%8F%E5%9B%A2%E9%98%9F%E4%B8%80%E6%A0%B7%E5%88%86%E5%B7%A5"><span class="toc-number">5.</span> <span class="toc-text">五、多 Agent 协作：像团队一样分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%8E%B0%E5%AE%9E%E4%B8%AD%E7%9A%84-Agent-%E4%BA%A7%E5%93%81"><span class="toc-number">6.</span> <span class="toc-text">六、现实中的 Agent 产品</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Agent-%E7%9A%84%E5%B1%80%E9%99%90%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%98%E4%BC%9A%E2%80%9D%E7%BF%BB%E8%BD%A6%E2%80%9D"><span class="toc-number">7.</span> <span class="toc-text">七、Agent 的局限：为什么还会”翻车”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-number">9.</span> <span class="toc-text">延伸阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/%E5%AE%9E%E6%88%98%E8%BF%9B%E9%98%B6-%E7%94%A8MCP%E6%89%93%E9%80%A0%E5%A4%9A%E5%B7%A5%E5%85%B7Agent/" title="实战进阶：用 MCP 打造多工具 Agent">实战进阶：用 MCP 打造多工具 Agent</a><time datetime="2026-06-24T05:18:01.000Z" title="发表于 2026-06-24 13:18:01">2026-06-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/%E5%8A%A8%E6%89%8B%E6%9E%84%E5%BB%BA%E4%BD%A0%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AAAgent-%E4%BB%8E%E9%9B%B6%E5%88%B0%E8%83%BD%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/" title="动手构建你的第一个 Agent：从零到&quot;能自己干活&quot;">动手构建你的第一个 Agent：从零到&quot;能自己干活&quot;</a><time datetime="2026-06-24T05:15:37.000Z" title="发表于 2026-06-24 13:15:37">2026-06-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Agent-%E6%9E%B6%E6%9E%84%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%8E%E8%83%BD%E8%B7%91%E5%88%B0%E8%83%BD%E7%94%A8/" title="Agent 架构与设计模式：从&quot;能跑&quot;到&quot;能用&quot;">Agent 架构与设计模式：从&quot;能跑&quot;到&quot;能用&quot;</a><time datetime="2026-06-24T05:13:06.000Z" title="发表于 2026-06-24 13:13:06">2026-06-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/Agent-%E6%A1%86%E6%9E%B6%E5%AF%B9%E6%AF%94%E4%B8%8E%E9%80%89%E5%9E%8B-%E9%80%89%E5%AF%B9%E8%BD%AE%E5%AD%90%E5%B0%91%E8%B5%B0%E5%BC%AF%E8%B7%AF/" title="Agent 框架对比与选型：选对轮子少走弯路">Agent 框架对比与选型：选对轮子少走弯路</a><time datetime="2026-06-24T05:10:55.000Z" title="发表于 2026-06-24 13:10:55">2026-06-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/MCP-%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-Agent%E4%B8%96%E7%95%8C%E7%9A%84USB%E6%8E%A5%E5%8F%A3/" title="MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;">MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;</a><time datetime="2026-06-24T05:08:44.000Z" title="发表于 2026-06-24 13:08:44">2026-06-24</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
