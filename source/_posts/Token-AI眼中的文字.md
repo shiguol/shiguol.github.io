@@ -1,4 +1,5 @@
 ---
+cover: /images/cover/ai/token.png
 title: Token：AI 眼中的"文字"
 date: 2026-06-20 21:30:00
 categories:

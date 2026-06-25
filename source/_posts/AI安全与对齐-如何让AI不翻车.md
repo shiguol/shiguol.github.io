@@ -1,4 +1,5 @@
 ---
+cover: /images/cover/ai/ai-safety.png
 title: AI 安全与对齐：如何让 AI 不翻车
 date: 2026-06-20 22:40:00
 categories:

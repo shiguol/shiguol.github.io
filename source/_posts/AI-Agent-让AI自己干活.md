@@ -1,4 +1,5 @@
 ---
+cover: /images/cover/ai/ai-agent.png
 title: AI Agent：让 AI 自己干活
 date: 2026-06-20 22:10:00
 categories:

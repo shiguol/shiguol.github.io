@@ -1,4 +1,5 @@
 ---
+cover: /images/cover/ai/fine-tuning-rag.png
 title: Fine-tuning vs RAG：让 AI 学会你的知识
 date: 2026-06-20 22:00:00
 categories:
