@@ -1,3 +1,5 @@
+---
+cover: /images/cover/crontab-linux.png
 title: Crontab 定时任务
 date: 2025-05-19 00:10:25
 categories: Linux

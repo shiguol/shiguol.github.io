@@ -1,3 +1,5 @@
+---
+cover: /images/cover/cmake-cpp.png
 title: CMake CPP
 date: 2025-05-19 00:06:03
 categories: 
@@ -6,7 +8,6 @@ categories:
 tags: 
 - CMake
 - C++
-
 ---
 
 目录结构

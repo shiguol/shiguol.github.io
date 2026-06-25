@@ -1,10 +1,11 @@
+---
+cover: /images/cover/lldb-debug.png
 title: Debug with LLDB
 date: 2025-05-19 00:01:29
 categories: Programming
 tags: 
 - Unix
 - LLDB
-
 ---
 
 First, compile codes with DSYM:

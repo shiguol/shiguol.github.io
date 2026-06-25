@@ -1,3 +1,5 @@
+---
+cover: /images/cover/dockerfile.png
 title: A good start for Dockerfile
 date: 2025-05-19 00:12:17
 categories:
@@ -5,8 +7,6 @@ categories:
 
 tags:
 - 2025
-
-
 ---
 
 构建 Docker 镜像，这样开发调试都是与真实线上环境一致。

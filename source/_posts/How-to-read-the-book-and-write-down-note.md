@@ -1,3 +1,5 @@
+---
+cover: /images/cover/reading-notes.png
 title: How to read the book and write down note
 uuid: e3d92187-447d-8fe4-3052-0dc0a0de9ddf
 date: 2022-11-12 18:29:39
@@ -6,7 +8,6 @@ categories:
 
 tags:
 - 2022
-
 ---
 
 俗话说，好记性，不如烂笔头。

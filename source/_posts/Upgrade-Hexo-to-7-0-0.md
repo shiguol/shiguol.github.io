@@ -1,9 +1,10 @@
+---
+cover: /images/cover/hexo-7.png
 title: Upgrade Hexo to 7.0.0
 date: 2025-05-19 00:09:41
 categories: Hexo
 tags:
 - hexo
-
 ---
 
 vim package.json

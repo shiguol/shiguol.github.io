@@ -1,3 +1,5 @@
+---
+cover: /images/cover/read-mail.png
 title: Read mail
 date: 2025-05-19 00:11:25
 categories: macOS

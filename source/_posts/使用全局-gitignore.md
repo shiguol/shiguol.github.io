@@ -1,3 +1,5 @@
+---
+cover: /images/cover/git-gitignore.png
 title: 使用全局 .gitignore
 uuid: bc5f9230-f714-c855-bef2-668b6c65903d
 date: 2016-03-17 10:04:02
@@ -6,7 +8,6 @@ categories:
 
 tags:
 - GIT
-
 ---
 
 !!Deprecated!!
