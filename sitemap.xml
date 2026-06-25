@@ -2,6 +2,159 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/Read-mail/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2017/07/20/crontab/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2017/01/19/iOS-symbolyize-crash/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2017/07/13/simple-grep-command/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/03/17/%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80-gitignore/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/03/17/%E8%BF%9E%E6%8E%A5-iOS-%E8%AE%BE%E5%A4%87%E4%B8%8D%E5%86%8D%E8%87%AA%E5%8A%A8%E5%BC%B9%E5%87%BA-iPhoto/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/Git-rebase/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/04/02/How-to-enable-Chrome-into-immerse-mode/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2022/11/12/How-to-read-the-book-and-write-down-note/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/Debug-with-LLDB/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2015/12/13/2015-review/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/CMake-CPP/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2016/01/10/Command-Tab-and-option-to-retore-window/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/Crontab-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2026/06/24/Agent-%E6%9E%B6%E6%9E%84%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-%E4%BB%8E%E8%83%BD%E8%B7%91%E5%88%B0%E8%83%BD%E7%94%A8/</loc>
     
     <lastmod>2026-06-25</lastmod>
@@ -92,7 +245,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2026/06/20/%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8EDiffusion-Model/</loc>
+    <loc>http://shiguol.github.io/2026/06/20/%E5%A4%9A%E6%A8%A1%E6%80%81AI-%E4%B8%8D%E5%8F%AA%E6%98%AF%E6%96%87%E5%AD%97/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -101,7 +254,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2026/06/20/%E5%A4%9A%E6%A8%A1%E6%80%81AI-%E4%B8%8D%E5%8F%AA%E6%98%AF%E6%96%87%E5%AD%97/</loc>
+    <loc>http://shiguol.github.io/2026/06/20/%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8EDiffusion-Model/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -191,25 +344,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
-    
-    <lastmod>2025-05-21</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2019/11/15/Xcode-some-directories/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
     
     <lastmod>2025-05-20</lastmod>
     
@@ -245,69 +380,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2016/03/17/%E4%BD%BF%E7%94%A8%E5%85%A8%E5%B1%80-gitignore/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2016/03/17/%E8%BF%9E%E6%8E%A5-iOS-%E8%AE%BE%E5%A4%87%E4%B8%8D%E5%86%8D%E8%87%AA%E5%8A%A8%E5%BC%B9%E5%87%BA-iPhoto/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Debug-with-LLDB/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/CMake-CPP/</loc>
-    
-    <lastmod>2025-05-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Read-mail/</loc>
-    
-    <lastmod>2025-05-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Crontab-%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/</loc>
-    
-    <lastmod>2025-05-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2025/05/19/Git-rebase/</loc>
-    
-    <lastmod>2025-05-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2023/06/11/tar-command/</loc>
     
     <lastmod>2025-05-19</lastmod>
@@ -336,24 +408,6 @@
   
   <url>
     <loc>http://shiguol.github.io/2017/08/12/git-reset-soft/</loc>
-    
-    <lastmod>2023-06-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
-    
-    <lastmod>2023-06-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2015/12/13/2015-review/</loc>
     
     <lastmod>2023-06-11</lastmod>
     
@@ -398,24 +452,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2016/04/02/How-to-enable-Chrome-into-immerse-mode/</loc>
-    
-    <lastmod>2023-06-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2016/01/10/Command-Tab-and-option-to-retore-window/</loc>
-    
-    <lastmod>2023-06-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/index.html</loc>
     
     <lastmod>2023-06-11</lastmod>
@@ -437,42 +473,6 @@
     <loc>http://shiguol.github.io/about/index.html</loc>
     
     <lastmod>2023-06-11</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2017/07/20/crontab/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2017/07/13/simple-grep-command/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2017/01/19/iOS-symbolyize-crash/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2022/11/12/How-to-read-the-book-and-write-down-note/</loc>
-    
-    <lastmod>2022-11-12</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -537,13 +537,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/macOS/</loc>
-    <lastmod>2026-06-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/CMake/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -552,6 +545,13 @@
   
   <url>
     <loc>http://shiguol.github.io/tags/C/</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/macOS/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -572,6 +572,13 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/Gmail/</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/Git/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -586,7 +593,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Emoji/</loc>
+    <loc>http://shiguol.github.io/tags/2022/</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/2016/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -594,6 +608,13 @@
   
   <url>
     <loc>http://shiguol.github.io/tags/Mac/</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/Emoji/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -614,20 +635,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Gmail/</loc>
-    <lastmod>2026-06-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/linux/</loc>
-    <lastmod>2026-06-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/hexo/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -642,7 +649,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/2016/</loc>
+    <loc>http://shiguol.github.io/tags/linux/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -663,13 +670,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/github/</loc>
-    <lastmod>2026-06-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/VIM/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -677,14 +677,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/GIT/</loc>
+    <loc>http://shiguol.github.io/tags/github/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/2022/</loc>
+    <loc>http://shiguol.github.io/tags/GIT/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -756,6 +756,13 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/categories/Hexo/</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/categories/macOS/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -764,13 +771,6 @@
   
   <url>
     <loc>http://shiguol.github.io/categories/VIM/</loc>
-    <lastmod>2026-06-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/categories/Hexo/</loc>
     <lastmod>2026-06-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
