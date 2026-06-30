@@ -3,7 +3,7 @@ cover: /images/cover/asm/hello-world.png
 title: x86 汇编入门（01）：Hello World 与系统调用
 date: 2026-07-02 10:00:00
 categories:
-  - Programming
+  - Assembly
 tags:
   - 汇编
   - NASM
