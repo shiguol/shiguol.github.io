@@ -1,0 +1,84 @@
+{
+  "root": "/Users/alex/SACodes/pyproj/blog/shiguol.github.io.src/source/images/cover/asm",
+  "backup_directory": "/Users/alex/SACodes/pyproj/blog/shiguol.github.io.src/source/images/cover/asm/_tinify_backup_20260630_111254",
+  "extensions": [
+    ".png"
+  ],
+  "counts": {
+    "discovered": 7,
+    "compressed": 7,
+    "skipped_not_smaller": 0,
+    "failed": 0
+  },
+  "totals": {
+    "before": 26164780,
+    "after": 11449416,
+    "saved": 14715364,
+    "saved_ratio_percent": 56.2411
+  },
+  "results": [
+    {
+      "relative_path": "calc.png",
+      "status": "compressed",
+      "before": 4090627,
+      "after": 1773699,
+      "saved": 2316928,
+      "saved_ratio_percent": 56.6399,
+      "message": ""
+    },
+    {
+      "relative_path": "env-setup.png",
+      "status": "compressed",
+      "before": 2668232,
+      "after": 1100532,
+      "saved": 1567700,
+      "saved_ratio_percent": 58.7543,
+      "message": ""
+    },
+    {
+      "relative_path": "file-io.png",
+      "status": "compressed",
+      "before": 4929936,
+      "after": 1929281,
+      "saved": 3000655,
+      "saved_ratio_percent": 60.866,
+      "message": ""
+    },
+    {
+      "relative_path": "function.png",
+      "status": "compressed",
+      "before": 3964973,
+      "after": 1879608,
+      "saved": 2085365,
+      "saved_ratio_percent": 52.5947,
+      "message": ""
+    },
+    {
+      "relative_path": "hello-world.png",
+      "status": "compressed",
+      "before": 2538104,
+      "after": 1260139,
+      "saved": 1277965,
+      "saved_ratio_percent": 50.3512,
+      "message": ""
+    },
+    {
+      "relative_path": "input.png",
+      "status": "compressed",
+      "before": 4115158,
+      "after": 1841975,
+      "saved": 2273183,
+      "saved_ratio_percent": 55.2393,
+      "message": ""
+    },
+    {
+      "relative_path": "loop.png",
+      "status": "compressed",
+      "before": 3857750,
+      "after": 1664182,
+      "saved": 2193568,
+      "saved_ratio_percent": 56.8613,
+      "message": ""
+    }
+  ]
+}
