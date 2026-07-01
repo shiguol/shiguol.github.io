@@ -15,7 +15,7 @@ tags:
 全局配置 .gitignore 之后，新建仓库，可以默认让 iOS 及 Android 项目生效：
 
 ```
-git config --global core.excludesfile=/Users/Admin/global_git_ignore/.gitignore
+git config --global core.excludesfile=/path/to/global_git_ignore/.gitignore
 
 ```
 

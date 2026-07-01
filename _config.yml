@@ -43,6 +43,7 @@ category_map:
   编程: Programming
   生活: Life
   汇编: Assembly
+  C++实战: CppInPractice
 tag_map: null
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
