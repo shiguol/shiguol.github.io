@@ -26,3 +26,6 @@ Thumbs.db
 
 # 打包文件
 *.tgz
+
+# 图片压缩备份
+**/_tinify_backup_*/
