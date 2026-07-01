@@ -50,7 +50,7 @@ time_format: HH:mm:ss
 per_page: 10
 pagination_dir: page
 theme: butterfly
-disqus_shortname: salexy
+disqus_shortname: shiguol
 sitemap:
   path: sitemap.xml
 deploy:
