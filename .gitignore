@@ -29,3 +29,6 @@ Thumbs.db
 
 # 图片压缩备份
 **/_tinify_backup_*/
+
+# 封面生成/压缩记录（开发用，不纳入版本库）
+source/images/cover/**/_*.json
