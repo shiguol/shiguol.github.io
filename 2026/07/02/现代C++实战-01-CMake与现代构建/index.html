@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>现代 C++ 实战（01）：CMake 与现代构建 | WALL-E`s Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects&#x2F;fetch_content&#x2F; 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 d">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代 C++ 实战（01）：CMake 与现代构建">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/index.html">
+<meta property="og:site_name" content="WALL-E&#96;s Blog">
+<meta property="og:description" content="上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects&#x2F;fetch_content&#x2F; 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 d">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cpp/cmake-build.png">
+<meta property="article:published_time" content="2026-07-02T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-02T02:05:18.566Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMake">
+<meta property="article:tag" content="FetchContent">
+<meta property="article:tag" content="现代C++">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cpp/cmake-build.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "现代 C++ 实战（01）：CMake 与现代构建",
+  "url": "http://shiguol.github.io/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/",
+  "image": "http://shiguol.github.io/images/cover/cpp/cmake-build.png",
+  "datePublished": "2026-07-02T02:00:00.000Z",
+  "dateModified": "2026-07-02T02:05:18.566Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '现代 C++ 实战（01）：CMake 与现代构建',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cpp/cmake-build.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E`s Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">现代 C++ 实战（01）：CMake 与现代构建</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">现代 C++ 实战（01）：CMake 与现代构建</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-02T02:00:00.000Z" title="发表于 2026-07-02 10:00:00">2026-07-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-02T02:05:18.566Z" title="更新于 2026-07-02 10:05:18">2026-07-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppInPractice/">CppInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：<strong>CMake</strong>。本系列 39 个 demo 全部用 CMake 构建，其中 <code>projects/fetch_content/</code> 是一个「集大成」示例——它用 <strong>FetchContent</strong> 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。</p>
+<p>搞懂这篇，后面所有带外部库的 demo 你都不会慌。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「现代 C++ 实战」系列的第 1 篇。对应 demo：<code>ref/cpp_demo/projects/fetch_content/</code>。建议先读 <a href="/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/">第 00 篇：环境搭建与项目导览</a>。</p>
+</blockquote>
+<h2 id="一、为什么需要-CMake？"><a href="#一、为什么需要-CMake？" class="headerlink" title="一、为什么需要 CMake？"></a>一、为什么需要 CMake？</h2><p>手写 Makefile 在小项目里够用，但现代 C++ 项目很快会遇到天花板：</p>
+<table>
+<thead>
+<tr>
+<th>痛点</th>
+<th>Makefile 的局限</th>
+<th>CMake 的做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>跨平台</strong></td>
+<td>Windows &#x2F; macOS &#x2F; Linux 语法不同</td>
+<td>一套 <code>CMakeLists.txt</code>，生成对应平台的构建文件</td>
+</tr>
+<tr>
+<td><strong>依赖管理</strong></td>
+<td>手动下载、编译、写 <code>-I</code> &#x2F; <code>-L</code></td>
+<td><code>FetchContent</code>、<code>find_package</code> 等模块</td>
+</tr>
+<tr>
+<td><strong>C++ 标准</strong></td>
+<td>编译器 flag 各写各的</td>
+<td><code>CMAKE_CXX_STANDARD</code> 统一声明</td>
+</tr>
+<tr>
+<td><strong>IDE 集成</strong></td>
+<td>难以生成索引数据库</td>
+<td><code>CMAKE_EXPORT_COMPILE_COMMANDS</code> → clangd</td>
+</tr>
+<tr>
+<td><strong>目标抽象</strong></td>
+<td>文件列表散落各处</td>
+<td><code>add_library</code> &#x2F; <code>add_executable</code> &#x2F; <code>target_link_libraries</code></td>
+</tr>
+</tbody></table>
+<p>CMake 不是编译器，而是<strong>构建系统生成器</strong>：它读 <code>CMakeLists.txt</code>，输出 Makefile、Ninja 或 Visual Studio 工程，再由底层工具完成编译链接。</p>
+<p>可以把它想成「建筑蓝图」：你画的是房间和管线（target 与依赖），至于用什么施工队（Make &#x2F; Ninja &#x2F; MSBuild），CMake 帮你对接。</p>
+<h2 id="二、最小-CMake-项目"><a href="#二、最小-CMake-项目" class="headerlink" title="二、最小 CMake 项目"></a>二、最小 CMake 项目</h2><p>一个能编译运行的 C++ 程序，最少需要三行 CMake：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.14</span>)</span><br><span class="line"><span class="keyword">project</span>(Hello VERSION <span class="number">1.0</span>.<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(hello src/main.cpp)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cmake_minimum_required</code></td>
+<td>声明所需最低 CMake 版本，低于此版本直接报错</td>
+</tr>
+<tr>
+<td><code>project</code></td>
+<td>定义项目名、版本，并初始化编译器检测</td>
+</tr>
+<tr>
+<td><code>add_executable</code></td>
+<td>从源文件生成可执行目标</td>
+</tr>
+</tbody></table>
+<p>典型工作流：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> build &amp;&amp; <span class="built_in">cd</span> build</span><br><span class="line">cmake ..                          <span class="comment"># 配置：生成构建文件</span></span><br><span class="line">cmake --build . -j$(<span class="built_in">nproc</span>)        <span class="comment"># 编译：并行构建</span></span><br><span class="line">./hello                           <span class="comment"># 运行</span></span><br></pre></td></tr></table></figure>
+
+<p>本系列 demo 把上述步骤封装进了 <code>./build.sh</code>，等价于：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/projects/fetch_content</span><br><span class="line">./build.sh          <span class="comment"># 增量编译</span></span><br><span class="line">./build.sh -c       <span class="comment"># 清理后重建</span></span><br><span class="line">./build.sh --run    <span class="comment"># 编译后运行</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="三、C-标准设置"><a href="#三、C-标准设置" class="headerlink" title="三、C++ 标准设置"></a>三、C++ 标准设置</h2><p>不同 demo 需要不同标准（C++11 ~ C++23）。在 CMake 里推荐这样写：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_CXX_STANDARD <span class="number">17</span>)</span><br><span class="line"><span class="keyword">set</span>(CMAKE_CXX_STANDARD_REQUIRED <span class="keyword">ON</span>)</span><br><span class="line"><span class="keyword">set</span>(CMAKE_CXX_EXTENSIONS <span class="keyword">OFF</span>)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>CMAKE_CXX_STANDARD</code></td>
+<td>目标 C++ 标准版本</td>
+</tr>
+<tr>
+<td><code>CMAKE_CXX_STANDARD_REQUIRED ON</code></td>
+<td>编译器不支持该标准时<strong>失败</strong>，而不是静默降级</td>
+</tr>
+<tr>
+<td><code>CMAKE_CXX_EXTENSIONS OFF</code></td>
+<td>禁用 GNU 扩展，保证可移植性</td>
+</tr>
+</tbody></table>
+<p>也可以在单个 target 上覆盖：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_compile_features</span>(my_app PRIVATE cxx_std_20)</span><br></pre></td></tr></table></figure>
+
+<p><code>fetch_content</code> demo 使用 C++17，因为它依赖的 fmt 10.x 和 nlohmann&#x2F;json 3.11 在 C++17 下体验最好。后面讲 C++20 特性的 demo 会把标准调到 20 或 23。</p>
+<h2 id="四、FetchContent：自动拉取依赖"><a href="#四、FetchContent：自动拉取依赖" class="headerlink" title="四、FetchContent：自动拉取依赖"></a>四、FetchContent：自动拉取依赖</h2><p>手动管理第三方库的痛苦，做过的人都懂：下载 tarball、写 include 路径、处理版本冲突、CI 上还要再配一遍。</p>
+<p>CMake 3.11 引入的 <strong>FetchContent</strong> 模块，可以在配置阶段自动下载并纳入构建：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">include</span>(FetchContent)</span><br><span class="line"></span><br><span class="line">FetchContent_Declare(</span><br><span class="line">  fmt</span><br><span class="line">  URL https://github.com/fmtlib/fmt/archive/refs/tags/<span class="number">10.1</span>.<span class="number">1</span>.tar.gz</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">FetchContent_MakeAvailable(fmt)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(demo main.cpp)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(demo PRIVATE fmt::fmt)</span><br></pre></td></tr></table></figure>
+
+<h3 id="为什么用-URL-而不是-Git？"><a href="#为什么用-URL-而不是-Git？" class="headerlink" title="为什么用 URL 而不是 Git？"></a>为什么用 URL 而不是 Git？</h3><p><code>fetch_content</code> demo 对所有依赖都用 <strong>URL + 版本 tag</strong> 的方式：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FetchContent_Declare(</span><br><span class="line">  nlohmann_json</span><br><span class="line">  URL https://github.com/nlohmann/json/archive/refs/tags/v3.<span class="number">11.3</span>.tar.gz</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>URL (tar.gz)</strong></td>
+<td>不依赖 git；CI &#x2F; 防火墙环境更友好</td>
+<td>需要知道 release 包的 URL</td>
+</tr>
+<tr>
+<td><strong>Git 仓库</strong></td>
+<td>可以锁定 commit</td>
+<td>需要 git；浅克隆有时踩坑</td>
+</tr>
+</tbody></table>
+<h3 id="demo-中的-6-个依赖"><a href="#demo-中的-6-个依赖" class="headerlink" title="demo 中的 6 个依赖"></a>demo 中的 6 个依赖</h3><table>
+<thead>
+<tr>
+<th>库</th>
+<th>版本</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Google Test</td>
+<td>v1.14.0</td>
+<td>单元测试（第 16 篇详讲）</td>
+</tr>
+<tr>
+<td>nlohmann&#x2F;json</td>
+<td>v3.11.3</td>
+<td>JSON 解析</td>
+</tr>
+<tr>
+<td>fmt</td>
+<td>10.1.1</td>
+<td>类型安全格式化</td>
+</tr>
+<tr>
+<td>spdlog</td>
+<td>v1.13.0</td>
+<td>高性能日志</td>
+</tr>
+<tr>
+<td>cpp-httplib</td>
+<td>v0.15.3</td>
+<td>HTTP 客户端&#x2F;服务端</td>
+</tr>
+<tr>
+<td>CLI11</td>
+<td>v2.4.1</td>
+<td>命令行参数解析</td>
+</tr>
+</tbody></table>
+<p>一次性拉取全部依赖：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FetchContent_MakeAvailable(googletest nlohmann_json fmt spdlog httplib CLI11)</span><br></pre></td></tr></table></figure>
+
+<p>首次 <code>./build.sh</code> 时，CMake 会下载这些库到 <code>build/_deps/</code>（已在 <code>.gitignore</code> 中忽略），之后增量编译不再重复下载。</p>
+<h3 id="关闭依赖自带的测试"><a href="#关闭依赖自带的测试" class="headerlink" title="关闭依赖自带的测试"></a>关闭依赖自带的测试</h3><p>很多库默认会构建自己的测试套件，拖慢编译。demo 里显式关闭：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(BUILD_GMOCK <span class="keyword">OFF</span> CACHE BOOL <span class="string">&quot;&quot;</span> FORCE)</span><br><span class="line"><span class="keyword">set</span>(JSON_BuildTests <span class="keyword">OFF</span> CACHE BOOL <span class="string">&quot;&quot;</span> FORCE)</span><br><span class="line"><span class="keyword">set</span>(FMT_TEST <span class="keyword">OFF</span> CACHE BOOL <span class="string">&quot;&quot;</span> FORCE)</span><br></pre></td></tr></table></figure>
+
+<p>这是工程实践中的常见优化：<strong>只引入你需要的 target，关掉上游的 test &#x2F; example</strong>。</p>
+<h2 id="五、目录组织：src-include-build"><a href="#五、目录组织：src-include-build" class="headerlink" title="五、目录组织：src &#x2F; include &#x2F; build"></a>五、目录组织：src &#x2F; include &#x2F; build</h2><p><code>fetch_content</code> 采用经典布局：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">projects/fetch_content/</span><br><span class="line">├── CMakeLists.txt          # 顶层构建配置</span><br><span class="line">├── build.sh                # 统一构建脚本</span><br><span class="line">├── compile_commands.json   # → build/ 的符号链接</span><br><span class="line">├── build/                  # 构建产物（不提交 Git）</span><br><span class="line">└── src/</span><br><span class="line">    ├── mylib.h             # 库头文件</span><br><span class="line">    ├── mylib.cpp           # 库实现</span><br><span class="line">    └── main.cpp            # 程序入口</span><br></pre></td></tr></table></figure>
+
+<p>CMake 里拆成<strong>库 + 可执行文件</strong>两个 target：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_library</span>(my_lib STATIC src/mylib.cpp src/mylib.h)</span><br><span class="line"><span class="keyword">target_include_directories</span>(my_lib PUBLIC <span class="variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span>/src)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(my_lib PUBLIC</span><br><span class="line">    nlohmann_json::nlohmann_json</span><br><span class="line">    fmt::fmt</span><br><span class="line">    spdlog::spdlog_header_only</span><br><span class="line">    httplib::httplib</span><br><span class="line">    CLI11::CLI11</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(my_app src/main.cpp)</span><br><span class="line"><span class="keyword">target_link_libraries</span>(my_app PRIVATE my_lib)</span><br></pre></td></tr></table></figure>
+
+<p>几个要点：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>STATIC</code> 库</td>
+<td>编译期把代码链进最终二进制，demo 够用；大项目可换 <code>SHARED</code></td>
+</tr>
+<tr>
+<td><code>PUBLIC</code> include</td>
+<td>链接 <code>my_lib</code> 的目标自动获得头文件搜索路径</td>
+</tr>
+<tr>
+<td><code>PUBLIC</code> link</td>
+<td>依赖沿传递链传播——<code>my_app</code> 链 <code>my_lib</code>，就间接拥有 json&#x2F;fmt 等</td>
+</tr>
+<tr>
+<td><code>PRIVATE</code> link</td>
+<td>仅自己用，不传播给下游</td>
+</tr>
+</tbody></table>
+<p>比「全局 <code>include_directories</code> + <code>link_libraries</code>」更安全：依赖关系绑定在具体 target 上，不会污染整个项目。</p>
+<h2 id="六、compile-commands-json-与-clangd"><a href="#六、compile-commands-json-与-clangd" class="headerlink" title="六、compile_commands.json 与 clangd"></a>六、compile_commands.json 与 clangd</h2><p>写 C++ 时，IDE 的跳转、补全、报错提示，依赖编译数据库。开启方式只需一行：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(CMAKE_EXPORT_COMPILE_COMMANDS <span class="keyword">ON</span>)</span><br></pre></td></tr></table></figure>
+
+<p>CMake 会在 <code>build/</code> 下生成 <code>compile_commands.json</code>。demo 在根目录做了符号链接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile_commands.json -&gt; build/compile_commands.json</span><br></pre></td></tr></table></figure>
+
+<p>配合 clangd（详见 <code>ref/cpp_demo/docs/CPP_IDE_SETUP.md</code>），打开 <code>src/main.cpp</code> 就能正确解析 <code>&lt;CLI/CLI.hpp&gt;</code> 等 FetchContent 下载的头文件。</p>
+<blockquote>
+<p><strong>提示</strong>：每次 <code>build.sh -c</code> 清理重建后，如果 IDE 报找不到头文件，重启 clangd 或重新打开项目即可。</p>
+</blockquote>
+<h2 id="七、动手：编译并运行-fetch-content-demo"><a href="#七、动手：编译并运行-fetch-content-demo" class="headerlink" title="七、动手：编译并运行 fetch_content demo"></a>七、动手：编译并运行 fetch_content demo</h2><p>进入 demo 目录，一键编译运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/projects/fetch_content</span><br><span class="line">./build.sh --run</span><br></pre></td></tr></table></figure>
+
+<p>首次运行会下载依赖，可能需要 1–3 分钟（视网络而定）。成功后终端大致输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">欢迎使用 MyApp, World! 🎉</span><br><span class="line"></span><br><span class="line">[INFO] JSON 库使用示例:</span><br><span class="line">示例 JSON 数据:</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;World&quot;,</span><br><span class="line">  &quot;features&quot;: [&quot;FetchContent&quot;, &quot;CMake&quot;, &quot;Modern C++&quot;],</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">[INFO] fmt 格式化示例:</span><br><span class="line">  整数格式化:         42</span><br><span class="line">  浮点格式化: 3.142</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<h3 id="试试命令行参数"><a href="#试试命令行参数" class="headerlink" title="试试命令行参数"></a>试试命令行参数</h3><p>demo 用 CLI11 解析参数，可以玩几个组合：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;--help&#x27;</span></span><br><span class="line">./build.sh --run-args <span class="string">&#x27;--show-config&#x27;</span></span><br><span class="line">./build.sh --run-args <span class="string">&#x27;-n Developer -l debug&#x27;</span></span><br><span class="line">./build.sh --run-args <span class="string">&#x27;--config &#123;&quot;app_name&quot;:&quot;TestApp&quot;,&quot;port&quot;:3000&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-n, --name</code></td>
+<td>设置用户名</td>
+</tr>
+<tr>
+<td><code>-l, --log-level</code></td>
+<td>日志级别：debug &#x2F; info &#x2F; warn &#x2F; error</td>
+</tr>
+<tr>
+<td><code>-c, --show-config</code></td>
+<td>打印当前配置 JSON</td>
+</tr>
+<tr>
+<td><code>--config</code></td>
+<td>从 JSON 字符串加载配置</td>
+</tr>
+</tbody></table>
+<h3 id="代码里发生了什么？"><a href="#代码里发生了什么？" class="headerlink" title="代码里发生了什么？"></a>代码里发生了什么？</h3><p><code>main.cpp</code> 把 6 个库串成一条演示链：</p>
+<ol>
+<li><strong>CLI11</strong> — 解析命令行，带类型检查和范围校验</li>
+<li><strong>spdlog</strong> — 初始化彩色日志，按级别过滤输出</li>
+<li><strong>fmt</strong> — 类型安全的字符串格式化（C++20 的 <code>std::format</code> 同源思路）</li>
+<li><strong>nlohmann&#x2F;json</strong> — 构建和打印 JSON 对象</li>
+<li><strong>httplib</strong> — HTTP 客户端已集成（默认注释，避免无意发起网络请求）</li>
+</ol>
+<p><code>mylib.cpp</code> 里的 <code>Config</code> 类展示了库与库之间的协作：JSON 解析失败时，用 fmt 格式化错误信息，再用 spdlog 输出。</p>
+<h2 id="八、CMake-常见踩坑"><a href="#八、CMake-常见踩坑" class="headerlink" title="八、CMake 常见踩坑"></a>八、CMake 常见踩坑</h2><table>
+<thead>
+<tr>
+<th>现象</th>
+<th>原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>首次 cmake 很慢</td>
+<td>FetchContent 正在下载</td>
+<td>正常，后续增量编译会快很多</td>
+</tr>
+<tr>
+<td>找不到 <code>fmt::fmt</code></td>
+<td>忘记 <code>FetchContent_MakeAvailable</code></td>
+<td>声明后必须 MakeAvailable</td>
+</tr>
+<tr>
+<td>clangd 报红但编译通过</td>
+<td>索引未刷新</td>
+<td>确认 <code>compile_commands.json</code> 链接存在</td>
+</tr>
+<tr>
+<td>C++20 demo 编译失败</td>
+<td>标准版本不够</td>
+<td>检查 <code>CMAKE_CXX_STANDARD</code> 与编译器版本</td>
+</tr>
+<tr>
+<td><code>_deps/</code> 目录很大</td>
+<td>缓存了所有下载的依赖</td>
+<td><code>build.sh -c</code> 可清理；不影响源码</td>
+</tr>
+</tbody></table>
+<h2 id="九、小结"><a href="#九、小结" class="headerlink" title="九、小结"></a>九、小结</h2><p>本篇围绕 <code>fetch_content</code> demo，把现代 C++ 项目的构建链路串了一遍：</p>
+<ul>
+<li><strong>CMake 三件套</strong>：<code>cmake_minimum_required</code> → <code>project</code> → <code>add_executable</code></li>
+<li><strong>C++ 标准</strong>：<code>CMAKE_CXX_STANDARD</code> + <code>REQUIRED</code> 防止静默降级</li>
+<li><strong>FetchContent</strong>：URL 方式拉取依赖，关掉上游多余测试</li>
+<li><strong>Target 模型</strong>：库与可执行文件分离，<code>PUBLIC</code> &#x2F; <code>PRIVATE</code> 控制传播</li>
+<li><strong>IDE 友好</strong>：<code>CMAKE_EXPORT_COMPILE_COMMANDS</code> 喂给 clangd</li>
+</ul>
+<blockquote>
+<p>现代 C++ 实战系列第 1 篇完。下一篇我们聊 <strong>C++ 版本演进</strong>——从 C++03 到 C++23，各版本加了什么、为什么加，给后面每一篇特性文章一张路线图。</p>
+</blockquote>
+<h3 id="系列导航"><a href="#系列导航" class="headerlink" title="系列导航"></a>系列导航</h3><table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>标题</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td><a href="/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/">环境搭建与项目导览</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>01</strong></td>
+<td><strong>CMake 与现代构建（本篇）</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>02</td>
+<td>C++ 版本演进一览</td>
+<td>下一篇</td>
+</tr>
+<tr>
+<td>03</td>
+<td>移动语义与右值引用</td>
+<td>待写</td>
+</tr>
+</tbody></table>
+<p>完整大纲见工作区 <code>docs/CPP_SERIES_OUTLINE.md</code>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/">http://shiguol.github.io/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E`s Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/CMake/">CMake</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E7%8E%B0%E4%BB%A3C/">现代C++</a><a class="post-meta__tags" href="/tags/FetchContent/">FetchContent</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cpp/cmake-build.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/03/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-02-%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E8%BE%93%E5%85%A5/" title="x86 汇编入门（02）：读取用户输入"><img class="cover" src="/images/cover/asm/input.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">x86 汇编入门（02）：读取用户输入</div></div><div class="info-2"><div class="info-item-1">上一篇程序只会「说」，不会「听」。真实程序几乎都要处理输入——命令行参数、用户键入、网络数据，本质都是往缓冲区里塞字节。这一篇我们学 sys_read，并认识汇编里的第三个地盘：.bss 段。    这是「x86 汇编入门」系列的第 2 篇。上一篇用 sys_write 输出了 Hello World。这一篇通过 02_input.asm，实现读取键盘输入并回显。  一、三段式内存布局到本篇为止，汇编程序的「地盘」凑齐了：    段 用途 类比    .data 已初始化的常量（字符串、数字） 写死在程序里的便签   .bss 未初始化的变量（缓冲区） 运行时用的空白草稿纸   .text 可执行指令 操作步骤   .bss 里的空间在程序加载时自动清零，用 resb N 预留 N 个字节： 12section .bss    name_buf    resb 64    ; 预留 64 字节缓冲区  二、sys_read 怎么用？sys_read 是 sys_write 的镜像操作：    寄存器 含义    rax 0（调用号）   rdi 文件描述符（0 &#x3D; st...</div></div></div></a><a class="pagination-related" href="/2026/07/02/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-01-Hello-World%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/" title="x86 汇编入门（01）：Hello World 与系统调用"><img class="cover" src="/images/cover/asm/hello-world.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">x86 汇编入门（01）：Hello World 与系统调用</div></div><div class="info-2"><div class="info-item-1">每个程序员的第一课都是 Hello World。汇编版也不例外——只不过这次没有 printf，没有标准库，只有你和内核之间四条寄存器传话。搞懂这一篇，你就摸到了 Linux 程序最底层的「打电话」方式。    这是「x86 汇编入门」系列的第 1 篇。上一篇我们搭好了 Docker 环境和编译流程。这一篇从 01_hello.asm 出发，理解汇编程序的基本结构和 Linux 系统调用机制。  一、程序长什么样？汇编程序可以粗分为两块：数据放哪里，代码放哪里。 123456789section .data    msg     db  &quot;Hello, Assembly World!&quot;, 10    msg_len equ $ - msgsection .text    global _start_start:    ; ... 系统调用写在这里 ...     部分 作用    section .data 存放已初始化的数据，比如字符串   section .text 存放可执行的机器指令   global _start 告诉链接器：程序从这里开始执行   ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/" title="现代 C++ 实战（00）：环境搭建与项目导览"><img class="cover" src="/images/cover/cpp/env-setup.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-01</div><div class="info-item-2">现代 C++ 实战（00）：环境搭建与项目导览</div></div><div class="info-2"><div class="info-item-1">学现代 C++，最怕的不是语法多，而是 demo 跑不起来、编译器版本对不上、CMake 报错看不懂。这一篇我们不讲任何语言特性，只把「能编译、能运行、知道 39 个 demo 在哪」这件事搞定。后面 27 篇会在这个环境里，逐个拆解 C++11 到 C++23 的核心特性。    这是「现代 C++ 实战」系列的第 0 篇。本系列基于 ref/cpp_demo 的 39 个独立 CMake 项目，在 Docker 或 macOS 本地编译运行。下一篇我们从 CMake 与现代构建说起，搞懂 FetchContent 依赖管理。  一、为什么这样学？你可能已经会写 C++，但面对 C++11 之后的「现代 C++」，往往有这样的困惑：特性太多、标准迭代太快、书和博客各说各话。本系列的选择很克制：    选择 原因    Demo 驱动 每个知识点对应可编译、可运行的代码，不是纸上谈兵   39 个独立项目 每个子目录自包含，可单独拷贝到其他机器   统一 build.sh 所有 demo 同一套构建命令，降低切换成本   Docker + macOS 双环境 容器保证 Linux...</div></div></div></a><a class="pagination-related" href="/2026/06/20/%E9%80%9A%E4%BF%97%E7%90%86%E8%A7%A3-Transformer/" title="通俗理解 Transformer"><img class="cover" src="/images/cover/ai/transformer.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">通俗理解 Transformer</div></div><div class="info-2"><div class="info-item-1">ChatGPT、Claude、Gemini……这些 AI 产品背后都有一个共同的核心架构——Transformer。这篇文章用最通俗的方式，帮你搞懂它到底是什么。   先讲个故事假设你在读一句话：  “小明把苹果递给小红，因为她饿了。”  你一下就知道”她”指的是小红，因为”饿了”跟”接苹果”更相关。但对计算机来说，”她”可以指小明（如果小明是女性）也可以指小红。 Transformer 的核心能力，就是让计算机也能像你一样，理解一句话里每个词和其他词之间的关系。 在 Transformer 之前在 Transformer 出现之前（2017 年以前），处理语言的主流方法是 RNN（循环神经网络）。你可以把 RNN 想象成一个人从左到右、一个字一个字地读文章： 1我 → 今 → 天 → 很 → 开 → 心  这有一个致命问题：读到后面，前面的内容就记不清了。就像你读一本 500 页的小说，读到最后一章时，第一章的细节早就模糊了。 而且，因为是一个字一个字读的，所以没法并行处理，速度很慢。 Transformer 的核心思想Transformer 换了一个思路：不再一个字一个字读，...</div></div></div></a><a class="pagination-related" href="/2025/05/19/CMake-CPP/" title="CMake CPP"><img class="cover" src="/images/cover/cmake-cpp.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-05-19</div><div class="info-item-2">CMake CPP</div></div><div class="info-2"><div class="info-item-1">目录结构 12345CMakeLists.txt/src/include/lib/build  其中 CMakeLists.txt 内容如下： 123456789101112131415161718# CMake 最低版本号要求cmake_minimum_required (VERSION 2.8)# C++ 11 支持:qset(CMAKE_CXX_FLAGS &quot;-std=c++11&quot;)# 项目信息project (my_demos)# 设置源码位置set(SRC $&#123;PROJECT_SOURCE_DIR&#125;/src/carrots.cpp)# 生成可执行文件的位置set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $&#123;PROJECT_SOURCE_DIR&#125;/bin)# 指定生成目标add_executable($&#123;PROJECT_NAME&#125; $&#123;SRC&#125;)  cd 到 build 目录下，生成 Makefile： 1cd build &amp;&amp; cma...</div></div></div></a><a class="pagination-related" href="/2026/07/05/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-04-%E5%BE%AA%E7%8E%AF%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC/" title="x86 汇编入门（04）：循环与条件跳转"><img class="cover" src="/images/cover/asm/loop.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">x86 汇编入门（04）：循环与条件跳转</div></div><div class="info-2"><div class="info-item-1">高级语言里写 for (i = 1; i &lt;= 10; i++) 一行搞定。汇编里没有 for，只有比较 + 跳转。这一篇用 04_loop.asm 打印 1 到 10，把循环拆成你能看见的每一步。    这是「x86 汇编入门」系列的第 4 篇。上一篇实现了算术和数字打印。这一篇通过 04_loop.asm，学习条件跳转指令和循环结构的汇编写法。  一、比较与跳转cmp a, b 做减法但不保存结果，只设置 CPU 标志位。然后根据标志位跳转：    指令 条件    je 相等 (ZF&#x3D;1)   jne 不相等   jl 小于（有符号）   jle 小于等于   jg 大于   jge 大于等于   jmp 无条件跳转   二、用跳转拼出循环04_loop.asm 的逻辑等价于： 123for (int i = 1; i &lt;= 10; i++) &#123;    printf(&quot;当前数字: %d\n&quot;, i);&#125;  汇编实现： 1234567891011121314mov     r12, 1               ...</div></div></div></a><a class="pagination-related" href="/2026/07/01/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="x86 汇编入门（00）：环境搭建与编译流程"><img class="cover" src="/images/cover/asm/env-setup.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-01</div><div class="info-item-2">x86 汇编入门（00）：环境搭建与编译流程</div></div><div class="info-2"><div class="info-item-1">学汇编，最怕的不是指令难记，而是环境配半天就跑不起来。这一篇我们不写任何寄存器，只把「能编译、能运行」这件事搞定。后面 6 篇会在这个环境里，一步步写出真正的汇编程序。    这是「x86 汇编入门」系列的第 0 篇。本系列基于 NASM 语法 + Linux x86_64 系统调用，在 Docker 容器中编译运行，不依赖 C 标准库。下一篇我们从 Hello World 开始，认识第一个系统调用。  一、为什么这样学？你可能听过汇编「难学、难调试、离硬件近」。这些都没错，但入门阶段更大的障碍往往是：工具链太杂。 本系列的选择很克制：    选择 原因    NASM 语法清晰，注释友好，Linux 社区资料多   Linux syscall 不链接 libc，直接跟内核对话，看清程序最底层在干什么   x86_64 64 位寄存器更多，调用约定也更规整   Docker 一次配好 nasm &#x2F; ld &#x2F; gdb，Mac 和 Linux 行为一致   可以把它想成学开车：我们先找一条封闭赛道（Docker），车况统一（Ubuntu 22.04 + 工具链），...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Harness-%E5%B7%A5%E7%A8%8B-%E7%BB%99Agent%E8%A3%85%E4%B8%8A%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" title="Harness 工程：给 Agent 装上&quot;操作系统&quot;"><img class="cover" src="/images/cover/ai/harness.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">Harness 工程：给 Agent 装上&quot;操作系统&quot;</div></div><div class="info-2"><div class="info-item-1">你见过赛车比赛吗？一个顶级赛车手，技术再好、反应再快，如果给他一辆没有刹车、没有仪表盘、油门踩到底就停不下来的车，你敢让他上赛道吗？大模型就像这个赛车手——它聪明、博学、反应快，但如果你不给它装上一套精心设计的”赛车系统”（刹车在哪、仪表盘显示什么、什么时候进站加油），它很可能跑着跑着就冲出赛道了。这个”赛车系统”，就是今天要聊的 Harness（工程骨架）。    这是「小白讲 AI」系列的第 14 篇。上一篇我们聊了 Context Engineering——怎么管好 AI 看到的信息。这一篇我们往上再走一层：不只是管信息，而是搭建一整套系统骨架，让 Agent 在可控的轨道上自主运行。  一、开场类比：赛车手需要一辆好车先来想一个问题：第 8 篇里我们说 Agent 能”自己干活”——它能调用工具、观察结果、决定下一步。但谁来决定它能调用哪些工具？谁来确保它不会无限循环下去？谁来在它做了一件危险操作之前拦住它？ 答案不是模型自己。模型只管”想”和”说”。管住模型的那套系统，才是 Harness。 回到赛车的类比：     赛车手（大模型） 赛车系统（Harness）    ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-CMake%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">一、为什么需要 CMake？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9C%80%E5%B0%8F-CMake-%E9%A1%B9%E7%9B%AE"><span class="toc-number">2.</span> <span class="toc-text">二、最小 CMake 项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81C-%E6%A0%87%E5%87%86%E8%AE%BE%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">三、C++ 标准设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81FetchContent%EF%BC%9A%E8%87%AA%E5%8A%A8%E6%8B%89%E5%8F%96%E4%BE%9D%E8%B5%96"><span class="toc-number">4.</span> <span class="toc-text">四、FetchContent：自动拉取依赖</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-URL-%E8%80%8C%E4%B8%8D%E6%98%AF-Git%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">为什么用 URL 而不是 Git？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#demo-%E4%B8%AD%E7%9A%84-6-%E4%B8%AA%E4%BE%9D%E8%B5%96"><span class="toc-number">4.2.</span> <span class="toc-text">demo 中的 6 个依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E4%BE%9D%E8%B5%96%E8%87%AA%E5%B8%A6%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="toc-number">4.3.</span> <span class="toc-text">关闭依赖自带的测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%9B%AE%E5%BD%95%E7%BB%84%E7%BB%87%EF%BC%9Asrc-include-build"><span class="toc-number">5.</span> <span class="toc-text">五、目录组织：src &#x2F; include &#x2F; build</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81compile-commands-json-%E4%B8%8E-clangd"><span class="toc-number">6.</span> <span class="toc-text">六、compile_commands.json 与 clangd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8A%A8%E6%89%8B%EF%BC%9A%E7%BC%96%E8%AF%91%E5%B9%B6%E8%BF%90%E8%A1%8C-fetch-content-demo"><span class="toc-number">7.</span> <span class="toc-text">七、动手：编译并运行 fetch_content demo</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%95%E8%AF%95%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0"><span class="toc-number">7.1.</span> <span class="toc-text">试试命令行参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E9%87%8C%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">7.2.</span> <span class="toc-text">代码里发生了什么？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81CMake-%E5%B8%B8%E8%A7%81%E8%B8%A9%E5%9D%91"><span class="toc-number">8.</span> <span class="toc-text">八、CMake 常见踩坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">九、小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="toc-number">9.1.</span> <span class="toc-text">系列导航</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/07/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-06-%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99/" title="x86 汇编入门（06）：文件读写"><img src="/images/cover/asm/file-io.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="x86 汇编入门（06）：文件读写"/></a><div class="content"><a class="title" href="/2026/07/07/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-06-%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99/" title="x86 汇编入门（06）：文件读写">x86 汇编入门（06）：文件读写</a><time datetime="2026-07-07T02:00:00.000Z" title="发表于 2026-07-07 10:00:00">2026-07-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/06/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-05-%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E4%B8%8E%E9%80%92%E5%BD%92%E9%98%B6%E4%B9%98/" title="x86 汇编入门（05）：函数调用与递归阶乘"><img src="/images/cover/asm/function.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="x86 汇编入门（05）：函数调用与递归阶乘"/></a><div class="content"><a class="title" href="/2026/07/06/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-05-%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E4%B8%8E%E9%80%92%E5%BD%92%E9%98%B6%E4%B9%98/" title="x86 汇编入门（05）：函数调用与递归阶乘">x86 汇编入门（05）：函数调用与递归阶乘</a><time datetime="2026-07-06T02:00:00.000Z" title="发表于 2026-07-06 10:00:00">2026-07-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/05/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-04-%E5%BE%AA%E7%8E%AF%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC/" title="x86 汇编入门（04）：循环与条件跳转"><img src="/images/cover/asm/loop.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="x86 汇编入门（04）：循环与条件跳转"/></a><div class="content"><a class="title" href="/2026/07/05/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-04-%E5%BE%AA%E7%8E%AF%E4%B8%8E%E6%9D%A1%E4%BB%B6%E8%B7%B3%E8%BD%AC/" title="x86 汇编入门（04）：循环与条件跳转">x86 汇编入门（04）：循环与条件跳转</a><time datetime="2026-07-05T02:00:00.000Z" title="发表于 2026-07-05 10:00:00">2026-07-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/04/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-03-%E7%AE%97%E6%9C%AF%E8%BF%90%E7%AE%97%E4%B8%8E%E6%95%B0%E5%AD%97%E8%BD%AC%E5%AD%97%E7%AC%A6%E4%B8%B2/" title="x86 汇编入门（03）：算术运算与数字转字符串"><img src="/images/cover/asm/calc.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="x86 汇编入门（03）：算术运算与数字转字符串"/></a><div class="content"><a class="title" href="/2026/07/04/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-03-%E7%AE%97%E6%9C%AF%E8%BF%90%E7%AE%97%E4%B8%8E%E6%95%B0%E5%AD%97%E8%BD%AC%E5%AD%97%E7%AC%A6%E4%B8%B2/" title="x86 汇编入门（03）：算术运算与数字转字符串">x86 汇编入门（03）：算术运算与数字转字符串</a><time datetime="2026-07-04T02:00:00.000Z" title="发表于 2026-07-04 10:00:00">2026-07-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/03/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-02-%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E8%BE%93%E5%85%A5/" title="x86 汇编入门（02）：读取用户输入"><img src="/images/cover/asm/input.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="x86 汇编入门（02）：读取用户输入"/></a><div class="content"><a class="title" href="/2026/07/03/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-02-%E8%AF%BB%E5%8F%96%E7%94%A8%E6%88%B7%E8%BE%93%E5%85%A5/" title="x86 汇编入门（02）：读取用户输入">x86 汇编入门（02）：读取用户输入</a><time datetime="2026-07-03T02:00:00.000Z" title="发表于 2026-07-03 10:00:00">2026-07-03</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
