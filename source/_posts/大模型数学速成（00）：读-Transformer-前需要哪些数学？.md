@@ -3,7 +3,7 @@ cover: /images/cover/ai/llm-math-intro.png
 title: 大模型数学速成（00）：读 Transformer 前需要哪些数学？
 date: 2026-07-04 10:00:00
 categories:
-  - Programming
+  - LLMMathPrimer
 tags:
   - AI
   - 数学
