@@ -1,0 +1,347 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>现代 C++ 实战（00）：环境搭建与项目导览 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="学现代 C++，最怕的不是语法多，而是 demo 跑不起来、编译器版本对不上、CMake 报错看不懂。这一篇我们不讲任何语言特性，只把「能编译、能运行、知道 39 个 demo 在哪」这件事搞定。后面 27 篇会在这个环境里，逐个拆解 C++11 到 C++23 的核心特性。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代 C++ 实战（00）：环境搭建与项目导览">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="学现代 C++，最怕的不是语法多，而是 demo 跑不起来、编译器版本对不上、CMake 报错看不懂。这一篇我们不讲任何语言特性，只把「能编译、能运行、知道 39 个 demo 在哪」这件事搞定。后面 27 篇会在这个环境里，逐个拆解 C++11 到 C++23 的核心特性。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cpp/env-setup.png">
+<meta property="article:published_time" content="2026-07-01T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-01T11:53:52.716Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMake">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="现代C++">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cpp/env-setup.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "现代 C++ 实战（00）：环境搭建与项目导览",
+  "url": "http://shiguol.github.io/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/",
+  "image": "http://shiguol.github.io/images/cover/cpp/env-setup.png",
+  "datePublished": "2026-07-01T02:00:00.000Z",
+  "dateModified": "2026-07-01T11:53:52.716Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '现代 C++ 实战（00）：环境搭建与项目导览',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cpp/env-setup.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">现代 C++ 实战（00）：环境搭建与项目导览</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">现代 C++ 实战（00）：环境搭建与项目导览</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-01T02:00:00.000Z" title="发表于 2026-07-01 10:00:00">2026-07-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-01T11:53:52.716Z" title="更新于 2026-07-01 19:53:52">2026-07-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppInPractice/">CppInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>学现代 C++，最怕的不是语法多，而是 demo 跑不起来、编译器版本对不上、CMake 报错看不懂。这一篇我们不讲任何语言特性，只把「能编译、能运行、知道 39 个 demo 在哪」这件事搞定。后面 27 篇会在这个环境里，逐个拆解 C++11 到 C++23 的核心特性。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「现代 C++ 实战」系列的第 0 篇。本系列基于 <code>ref/cpp_demo</code> 的 39 个独立 CMake 项目，在 Docker 或 macOS 本地编译运行。下一篇我们从 CMake 与现代构建说起，搞懂 FetchContent 依赖管理。</p>
+</blockquote>
+<h2 id="一、为什么这样学？"><a href="#一、为什么这样学？" class="headerlink" title="一、为什么这样学？"></a>一、为什么这样学？</h2><p>你可能已经会写 C++，但面对 C++11 之后的「现代 C++」，往往有这样的困惑：特性太多、标准迭代太快、书和博客各说各话。本系列的选择很克制：</p>
+<table>
+<thead>
+<tr>
+<th>选择</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Demo 驱动</strong></td>
+<td>每个知识点对应可编译、可运行的代码，不是纸上谈兵</td>
+</tr>
+<tr>
+<td><strong>39 个独立项目</strong></td>
+<td>每个子目录自包含，可单独拷贝到其他机器</td>
+</tr>
+<tr>
+<td><strong>统一 build.sh</strong></td>
+<td>所有 demo 同一套构建命令，降低切换成本</td>
+</tr>
+<tr>
+<td><strong>Docker + macOS 双环境</strong></td>
+<td>容器保证 Linux 一致性，本地 Apple Clang 也支持</td>
+</tr>
+<tr>
+<td><strong>C++11→23 递进</strong></td>
+<td>按标准版本组织，不跳步</td>
+</tr>
+</tbody></table>
+<p>可以把它想成学开车：我们先找一条封闭赛道（统一工具链），车况一致（CMake 3.14+），专心练操作，而不是先纠结「我这辆车该加几号油」。</p>
+<h2 id="二、项目全景"><a href="#二、项目全景" class="headerlink" title="二、项目全景"></a>二、项目全景</h2><p>示例代码在本地 <code>ref/cpp_demo</code> 目录（与博客同工作区）。8 大分类、39 个独立 CMake 项目：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ref/cpp_demo/</span><br><span class="line">├── README.md                 # 总索引</span><br><span class="line">├── run_as_cpp_docker.sh      # Docker 开发环境</span><br><span class="line">├── docs/CPP_IDE_SETUP.md     # clangd 配置指南</span><br><span class="line">├── basics/                   # 23 个子项目：语言特性、设计模式、测试</span><br><span class="line">├── smart_pointers/           # 9 个智能指针演示</span><br><span class="line">├── concurrency/              # 线程、线程池、C++20 同步原语</span><br><span class="line">├── algorithms/               # 7 类算法与数据结构</span><br><span class="line">├── networking/               # HTTP+JSON、WebSocket</span><br><span class="line">├── database/                 # SQLite3 CRUD</span><br><span class="line">└── projects/                 # 进阶项目 + FetchContent 示例</span><br></pre></td></tr></table></figure>
+
+<p>每个子目录都是<strong>独立自包含</strong>的项目，标准结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;项目目录&gt;/</span><br><span class="line">├── CMakeLists.txt       # CMake 构建配置</span><br><span class="line">├── build.sh             # 跨平台构建脚本</span><br><span class="line">├── README.md            # 项目说明</span><br><span class="line">└── src/ 或 *.cpp        # 源代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、统一构建方式"><a href="#三、统一构建方式" class="headerlink" title="三、统一构建方式"></a>三、统一构建方式</h2><p>所有 demo 遵循同一套构建命令，进入任意项目目录即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/basics/lambda_demo   <span class="comment"># 任选一个 demo</span></span><br><span class="line">./build.sh          <span class="comment"># 增量编译</span></span><br><span class="line">./build.sh -c       <span class="comment"># 清理后重新编译</span></span><br><span class="line">./build.sh -d       <span class="comment"># Debug 模式</span></span><br><span class="line">./build.sh --run    <span class="comment"># 编译后运行所有可执行文件</span></span><br><span class="line">./build.sh -h       <span class="comment"># 查看帮助</span></span><br></pre></td></tr></table></figure>
+
+<p><code>build.sh</code> 会自动完成：创建 <code>build/</code> 目录 → 运行 CMake 配置 → 并行编译 → 可选运行。首次编译时还会把 <code>compile_commands.json</code> 链接到项目根目录，方便 clangd 识别头文件。</p>
+<h3 id="快速验证"><a href="#快速验证" class="headerlink" title="快速验证"></a>快速验证</h3><p>选最简单的 demo 跑一遍，确认环境没问题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/basics/lambda_demo</span><br><span class="line">./build.sh --run</span><br></pre></td></tr></table></figure>
+
+<p>如果终端输出了 Lambda 相关的演示结果，说明 CMake + 编译器链路已经通了。</p>
+<h2 id="四、Docker-环境"><a href="#四、Docker-环境" class="headerlink" title="四、Docker 环境"></a>四、Docker 环境</h2><p>跨平台一致性靠 Docker。根目录的 <code>run_as_cpp_docker.sh</code> 会启动预配置的 Ubuntu 容器：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo</span><br><span class="line">./run_as_cpp_docker.sh</span><br></pre></td></tr></table></figure>
+
+<p>容器基于 Ubuntu 22.04 开发镜像，预装 GCC、Clang、CMake 等工具链。镜像名可在 <code>run_as_cpp_docker.sh</code> 中自行配置。进入容器后，工作目录挂载到 <code>/workspace</code>，你可以在里面编译任意 demo。</p>
+<blockquote>
+<p><strong>注意</strong>：脚本中的 volume 挂载路径需改成你本机 <code>ref/cpp_demo</code> 的实际绝对路径，例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-v /path/to/ref/cpp_demo:/workspace</span><br></pre></td></tr></table></figure></blockquote>
+<h2 id="五、macOS-本地编译"><a href="#五、macOS-本地编译" class="headerlink" title="五、macOS 本地编译"></a>五、macOS 本地编译</h2><p>不想开 Docker 也可以直接在 macOS 上编译。要求：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Apple Clang</strong></td>
+<td>Xcode Command Line Tools，建议 14+</td>
+</tr>
+<tr>
+<td><strong>CMake</strong></td>
+<td>3.14 及以上</td>
+</tr>
+<tr>
+<td><strong>C++ 标准</strong></td>
+<td>各 demo 标注了所需标准（C++11 ~ C++23）</td>
+</tr>
+</tbody></table>
+<p>常见坑：</p>
+<ul>
+<li><strong>C++20&#x2F;23 demo 编译失败</strong>：确认 <code>cmake -DCMAKE_CXX_STANDARD=20</code> 或 23，且 Clang 版本足够新</li>
+<li><strong>WebSocket demo</strong>：依赖系统 Boost，需 <code>brew install boost</code></li>
+<li><strong>SQLite demo</strong>：依赖 pkg-config 和 sqlite3 开发库</li>
+</ul>
+<p>大部分 <code>basics/</code> 和 <code>algorithms/</code> 下的 demo 在 macOS 上可以直接 <code>./build.sh --run</code>，无需额外依赖。</p>
+<h2 id="六、IDE-配置速览"><a href="#六、IDE-配置速览" class="headerlink" title="六、IDE 配置速览"></a>六、IDE 配置速览</h2><p>用 Cursor &#x2F; VS Code 写 C++ 时，第三方库头文件可能报红（FetchContent 下载的依赖在 <code>build/_deps/</code> 下）。解决办法：</p>
+<ol>
+<li>先 <code>./build.sh</code> 编译一次，生成 <code>build/compile_commands.json</code></li>
+<li><code>build.sh</code> 会自动链接到项目根目录</li>
+<li>clangd 读取该文件，获得正确的头文件搜索路径</li>
+</ol>
+<p>详细步骤见 <code>ref/cpp_demo/docs/CPP_IDE_SETUP.md</code>。记住一点：<strong>IDE 报红不代表编译失败</strong>，以 <code>./build.sh</code> 的结果为准。</p>
+<h2 id="七、28-篇学习路线"><a href="#七、28-篇学习路线" class="headerlink" title="七、28 篇学习路线"></a>七、28 篇学习路线</h2><p>本系列共 28 篇，分五季发布：</p>
+<table>
+<thead>
+<tr>
+<th>季</th>
+<th>篇号</th>
+<th>主题</th>
+<th>篇数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第零季</td>
+<td>00–02</td>
+<td>环境与基础</td>
+<td>3</td>
+</tr>
+<tr>
+<td>第一季</td>
+<td>03–11</td>
+<td>现代 C++ 核心特性</td>
+<td>9</td>
+</tr>
+<tr>
+<td>第二季</td>
+<td>12–17</td>
+<td>并发与工程实践</td>
+<td>6</td>
+</tr>
+<tr>
+<td>第三季</td>
+<td>18–23</td>
+<td>算法与数据结构</td>
+<td>6</td>
+</tr>
+<tr>
+<td>第四季</td>
+<td>24–27</td>
+<td>网络、数据库与进阶项目</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<p>前几篇的路线图：</p>
+<table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>标题</th>
+<th>对应 demo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td>环境搭建与项目导览</td>
+<td>本篇</td>
+</tr>
+<tr>
+<td>01</td>
+<td>CMake 与现代构建</td>
+<td><code>projects/fetch_content/</code></td>
+</tr>
+<tr>
+<td>02</td>
+<td>C++ 版本演进一览</td>
+<td><code>basics/version_features/</code></td>
+</tr>
+<tr>
+<td>03</td>
+<td>移动语义与右值引用</td>
+<td><code>basics/right_ref_demo/</code></td>
+</tr>
+<tr>
+<td>04</td>
+<td>智能指针（上）</td>
+<td><code>smart_pointers/</code> 01–04</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p>完整大纲见工作区 <code>docs/CPP_SERIES_OUTLINE.md</code>。</p>
+<h2 id="八、常用命令备忘"><a href="#八、常用命令备忘" class="headerlink" title="八、常用命令备忘"></a>八、常用命令备忘</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入任意 demo 编译运行</span></span><br><span class="line"><span class="built_in">cd</span> ref/cpp_demo/&lt;分类&gt;/&lt;项目&gt;</span><br><span class="line">./build.sh --run</span><br><span class="line"></span><br><span class="line"><span class="comment"># Docker 环境</span></span><br><span class="line"><span class="built_in">cd</span> ref/cpp_demo &amp;&amp; ./run_as_cpp_docker.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理重建</span></span><br><span class="line">./build.sh -c &amp;&amp; ./build.sh --run</span><br></pre></td></tr></table></figure>
+
+<h2 id="九、小结"><a href="#九、小结" class="headerlink" title="九、小结"></a>九、小结</h2><p>本篇完成了系列的地基：项目全景、统一构建、Docker &#x2F; macOS 双环境、IDE 配置要点。你不需要记住 39 个 demo 的细节，只要确认 <code>./build.sh --run</code> 能跑通一个 demo 就行。</p>
+<blockquote>
+<p>现代 C++ 实战系列第 0 篇完。下一篇我们讲 CMake 与现代构建——搞懂 FetchContent，后面所有带第三方依赖的 demo 都不怕。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/">http://shiguol.github.io/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/CMake/">CMake</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/Docker/">Docker</a><a class="post-meta__tags" href="/tags/%E7%8E%B0%E4%BB%A3C/">现代C++</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cpp/env-setup.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/02/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-01-Hello-World%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/" title="x86 汇编入门（01）：Hello World 与系统调用"><img class="cover" src="/images/cover/asm/hello-world.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">x86 汇编入门（01）：Hello World 与系统调用</div></div><div class="info-2"><div class="info-item-1">每个程序员的第一课都是 Hello World。汇编版也不例外——只不过这次没有 printf，没有标准库，只有你和内核之间四条寄存器传话。搞懂这一篇，你就摸到了 Linux 程序最底层的「打电话」方式。    这是「x86 汇编入门」系列的第 1 篇。上一篇我们搭好了 Docker 环境和编译流程。这一篇从 01_hello.asm 出发，理解汇编程序的基本结构和 Linux 系统调用机制。  一、程序长什么样？汇编程序可以粗分为两块：数据放哪里，代码放哪里。 123456789section .data    msg     db  &quot;Hello, Assembly World!&quot;, 10    msg_len equ $ - msgsection .text    global _start_start:    ; ... 系统调用写在这里 ...     部分 作用    section .data 存放已初始化的数据，比如字符串   section .text 存放可执行的机器指令   global _start 告诉链接器：程序从这里开始执行   ...</div></div></div></a><a class="pagination-related" href="/2026/07/01/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="x86 汇编入门（00）：环境搭建与编译流程"><img class="cover" src="/images/cover/asm/env-setup.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">x86 汇编入门（00）：环境搭建与编译流程</div></div><div class="info-2"><div class="info-item-1">学汇编，最怕的不是指令难记，而是环境配半天就跑不起来。这一篇我们不写任何寄存器，只把「能编译、能运行」这件事搞定。后面 6 篇会在这个环境里，一步步写出真正的汇编程序。    这是「x86 汇编入门」系列的第 0 篇。本系列基于 NASM 语法 + Linux x86_64 系统调用，在 Docker 容器中编译运行，不依赖 C 标准库。下一篇我们从 Hello World 开始，认识第一个系统调用。  一、为什么这样学？你可能听过汇编「难学、难调试、离硬件近」。这些都没错，但入门阶段更大的障碍往往是：工具链太杂。 本系列的选择很克制：    选择 原因    NASM 语法清晰，注释友好，Linux 社区资料多   Linux syscall 不链接 libc，直接跟内核对话，看清程序最底层在干什么   x86_64 64 位寄存器更多，调用约定也更规整   Docker 一次配好 nasm &#x2F; ld &#x2F; gdb，Mac 和 Linux 行为一致   可以把它想成学开车：我们先找一条封闭赛道（Docker），车况统一（Ubuntu 22.04 + 工具链），...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/" title="现代 C++ 实战（01）：CMake 与现代构建"><img class="cover" src="/images/cover/cpp/cmake-build.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-02</div><div class="info-item-2">现代 C++ 实战（01）：CMake 与现代构建</div></div><div class="info-2"><div class="info-item-1">上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects/fetch_content/ 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 demo 你都不会慌。    这是「现代 C++ 实战」系列的第 1 篇。对应 demo：ref/cpp_demo/projects/fetch_content/。建议先读 第 00 篇：环境搭建与项目导览。  一、为什么需要 CMake？手写 Makefile 在小项目里够用，但现代 C++ 项目很快会遇到天花板：    痛点 Makefile 的局限 CMake 的做法    跨平台 Windows &#x2F; macOS &#x2F; Linux 语法不同 一套 CMakeLists.txt，生成对应平台的构建文件   依赖管理 手动下载、编译、写 -I &#x2F; -L Fet...</div></div></div></a><a class="pagination-related" href="/2026/07/06/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-05-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8B-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（05）：智能指针（下）——模式与循环引用"><img class="cover" src="/images/cover/cpp/smart-ptr-advanced.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-06</div><div class="info-item-2">现代 C++ 实战（05）：智能指针（下）——模式与循环引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们掌握了 unique_ptr 和 shared_ptr 的基本用法。但在真实项目里，智能指针不只是替代 new/delete——循环引用、工厂函数、Pimpl、Observer 等场景会逼你思考「谁该拥有、谁该观察」。 这一篇是智能指针的下半场：weak_ptr 如何打破循环引用，以及几种经典设计模式如何用智能指针落地。    这是「现代 C++ 实战」系列的第 5 篇。对应 demo：ref/cpp_demo/smart_pointers/ 第 05–09 节。建议先读 第 04 篇：智能指针（上）。  一、weak_ptr 与循环引用shared_ptr 的引用计数是双向的：A 持有 B，B 也持有 A 时，计数永远不归零——内存泄漏。 12345struct Node &#123;    std::shared_ptr&lt;Node&gt; next;    // std::shared_ptr&lt;Node&gt; parent;  // 危险：与子节点形成环    std::weak_ptr&lt;Node&gt; parent;         // 安...</div></div></div></a><a class="pagination-related" href="/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/" title="现代 C++ 实战（06）：Lambda 与类型推导"><img class="cover" src="/images/cover/cpp/lambda.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-07</div><div class="info-item-2">现代 C++ 实战（06）：Lambda 与类型推导</div></div><div class="info-2"><div class="info-item-1">智能指针解决「谁拥有资源」，Lambda 解决「怎么写小段逻辑」——回调、算法谓词、闭包、延迟执行，现代 C++ 里无处不在。从 C++11 的 [](){} 到 C++20 的模板 Lambda，每一版标准都在把它变强。 这一篇系统梳理 Lambda 语法、捕获方式、与 auto&#x2F;decltype 的类型推导，并对比函数指针与 std::function 的取舍。    这是「现代 C++ 实战」系列的第 6 篇。对应 demo：ref/cpp_demo/basics/lambda_demo/。建议先读 第 05 篇：智能指针（下）。  一、基本语法：[](){} 四部分Lambda 的完整形式： 1[捕获列表](参数列表) 可选说明符 -&gt; 返回类型 &#123; 函数体 &#125;     部分 含义 可省略？    [...] 捕获列表：把外部变量「带进」闭包 空 [] 表示不捕获   (...) 参数列表，同普通函数 无参时可写 () 或省略   -&gt; T 显式返回类型 可省略，编译器推导   {...} 函数体 不可省略   最小例子： 12a...</div></div></div></a><a class="pagination-related" href="/2026/07/09/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-08-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E7%AD%96%E7%95%A5/" title="现代 C++ 实战（08）：错误处理策略"><img class="cover" src="/images/cover/cpp/error-handling.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-09</div><div class="info-item-2">现代 C++ 实战（08）：错误处理策略</div></div><div class="info-2"><div class="info-item-1">C++ 没有统一的「错误处理方式」——return -1、throw、std::optional、std::expected 各有战场。选错方式要么性能吃亏，要么错误被静默忽略，要么 API 语义含糊。 这一篇用同一个「解析配置文件」场景，对比 四种主流错误处理策略，并给出选型指南。对应 demo：ref/cpp_demo/basics/error_handling_demo/。    这是「现代 C++ 实战」系列的第 8 篇。建议先读 第 07 篇：C++17 工具箱。  一、为什么错误处理值得单独讲？现代 C++ 项目里，错误处理往往比算法更影响可维护性：  调用方会不会忘记检查返回值？ 失败时资源会不会泄漏（文件句柄、锁、内存）？ API 语义是否清晰：「找不到」和「出错了」是一回事吗？  demo 用解析 host=...、port=... 的配置文件贯穿全文——同一功能，四种写法。 二、C 风格错误码：return -1 + 输出参数12345678enum class CErrorCode &#123; SUCCESS = 0, FILE_NOT_FOUND = -...</div></div></div></a><a class="pagination-related" href="/2026/07/04/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-03-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（03）：移动语义与右值引用"><img class="cover" src="/images/cover/cpp/move-semantics.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-04</div><div class="info-item-2">现代 C++ 实战（03）：移动语义与右值引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们把 C++ 版本地图铺好了。C++11 里有一项改动，几乎改变了整个语言写高性能代码的方式：移动语义（Move Semantics）。很多人第一次遇到 std::move 和 T&amp;&amp; 时会困惑：「这到底是在拷贝还是在移动？」 这一篇我们拆开来看：左值 &#x2F; 右值是什么、std::move 做了什么、移动构造如何省掉深拷贝，并带你跑 right_ref_demo demo。    这是「现代 C++ 实战」系列的第 3 篇。对应 demo：ref/cpp_demo/basics/right_ref_demo/。建议先读 第 02 篇：C++ 版本演进一览。  一、为什么需要移动语义？想象你在搬家：把书从旧书架搬到新书架，有两种做法：    做法 类比 C++ 中的对应    复印 把每本书复印一份放到新家，旧家原件还在 拷贝构造——两份独立数据   直接搬 把书整箱抬走，旧书架空了 移动构造——资源所有权转移   对 std::string、std::vector 这类在堆上持有大块内存的类型，深拷贝意味着：  分配同等大小的新内存 逐字节复制内容...</div></div></div></a><a class="pagination-related" href="/2026/07/08/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-07-C++17%E5%B7%A5%E5%85%B7%E7%AE%B1/" title="现代 C++ 实战（07）：C++17 工具箱"><img class="cover" src="/images/cover/cpp/cpp17-toolbox.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-08</div><div class="info-item-2">现代 C++ 实战（07）：C++17 工具箱</div></div><div class="info-2"><div class="info-item-1">C++17 不像 C++11 &#x2F; C++20 那样「改天换地」，却塞进了大量日常极好用的工具：std::any、std::filesystem、结构化绑定、if constexpr、折叠表达式、并行算法……写业务代码时经常伸手就能摸到。 这一篇把 C++17 工具箱里最常用的一批串起来，对应三个 demo：any_demo、filesystem_demo、parallel_algo_demo。    这是「现代 C++ 实战」系列的第 7 篇。建议先读 第 06 篇：Lambda 与类型推导。  一、std::any：运行期存任意类型C++17 的 std::any 是类型擦除容器——运行期可以换成 int、string、vector……类型信息保存在内部，取出时用 std::any_cast。 123456789#include &lt;any&gt;#include &lt;string&gt;std::any value = 42;value = std::string(&quot;hello&quot;);           // 可以改存别的类型value....</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">77</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">50</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E5%AD%A6%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">一、为什么这样学？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%A1%B9%E7%9B%AE%E5%85%A8%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">二、项目全景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%9F%E4%B8%80%E6%9E%84%E5%BB%BA%E6%96%B9%E5%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">三、统一构建方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E9%AA%8C%E8%AF%81"><span class="toc-number">3.1.</span> <span class="toc-text">快速验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Docker-%E7%8E%AF%E5%A2%83"><span class="toc-number">4.</span> <span class="toc-text">四、Docker 环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81macOS-%E6%9C%AC%E5%9C%B0%E7%BC%96%E8%AF%91"><span class="toc-number">5.</span> <span class="toc-text">五、macOS 本地编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81IDE-%E9%85%8D%E7%BD%AE%E9%80%9F%E8%A7%88"><span class="toc-number">6.</span> <span class="toc-text">六、IDE 配置速览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%8128-%E7%AF%87%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc-number">7.</span> <span class="toc-text">七、28 篇学习路线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E5%A4%87%E5%BF%98"><span class="toc-number">8.</span> <span class="toc-text">八、常用命令备忘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">九、小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/12/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8808%EF%BC%89%EF%BC%9AViT%E5%B1%82vs-LLM%E5%B1%82-%E6%A6%82%E5%BF%B5%E5%AF%B9%E7%85%A7%E6%80%BB%E8%A1%A8/" title="大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表"><img src="/images/cover/ai/vit-llm-compare.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表"/></a><div class="content"><a class="title" href="/2026/07/12/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8808%EF%BC%89%EF%BC%9AViT%E5%B1%82vs-LLM%E5%B1%82-%E6%A6%82%E5%BF%B5%E5%AF%B9%E7%85%A7%E6%80%BB%E8%A1%A8/" title="大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表">大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表</a><time datetime="2026-07-12T02:00:00.000Z" title="发表于 2026-07-12 10:00:00">2026-07-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/11/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8807%EF%BC%89%EF%BC%9ARoPE-%E7%94%A8%E6%97%8B%E8%BD%AC%E7%BC%96%E7%A0%81%E4%BD%8D%E7%BD%AE/" title="大模型数学速成（07）：RoPE——用旋转编码位置"><img src="/images/cover/ai/rope.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（07）：RoPE——用旋转编码位置"/></a><div class="content"><a class="title" href="/2026/07/11/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8807%EF%BC%89%EF%BC%9ARoPE-%E7%94%A8%E6%97%8B%E8%BD%AC%E7%BC%96%E7%A0%81%E4%BD%8D%E7%BD%AE/" title="大模型数学速成（07）：RoPE——用旋转编码位置">大模型数学速成（07）：RoPE——用旋转编码位置</a><time datetime="2026-07-11T02:00:00.000Z" title="发表于 2026-07-11 10:00:00">2026-07-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/11/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-10-Ranges%E4%B8%8E%E5%87%BD%E6%95%B0%E5%BC%8F%E9%A3%8E%E6%A0%BC/" title="现代 C++ 实战（10）：Ranges 与函数式风格"><img src="/images/cover/cpp/ranges.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（10）：Ranges 与函数式风格"/></a><div class="content"><a class="title" href="/2026/07/11/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-10-Ranges%E4%B8%8E%E5%87%BD%E6%95%B0%E5%BC%8F%E9%A3%8E%E6%A0%BC/" title="现代 C++ 实战（10）：Ranges 与函数式风格">现代 C++ 实战（10）：Ranges 与函数式风格</a><time datetime="2026-07-11T02:00:00.000Z" title="发表于 2026-07-11 10:00:00">2026-07-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8806%EF%BC%89%EF%BC%9A%E5%89%8D%E9%A6%88%E7%BD%91%E7%BB%9CFFN-GELU%E4%B8%8ESwiGLU/" title="大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU"><img src="/images/cover/ai/ffn-gelu-swiglu.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8806%EF%BC%89%EF%BC%9A%E5%89%8D%E9%A6%88%E7%BD%91%E7%BB%9CFFN-GELU%E4%B8%8ESwiGLU/" title="大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU">大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU</a><time datetime="2026-07-10T02:00:00.000Z" title="发表于 2026-07-10 10:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-09-C++20%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="现代 C++ 实战（09）：C++20 格式化与编译期计算"><img src="/images/cover/cpp/cpp20-format.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（09）：C++20 格式化与编译期计算"/></a><div class="content"><a class="title" href="/2026/07/10/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-09-C++20%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="现代 C++ 实战（09）：C++20 格式化与编译期计算">现代 C++ 实战（09）：C++20 格式化与编译期计算</a><time datetime="2026-07-10T02:00:00.000Z" title="发表于 2026-07-10 10:00:00">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
