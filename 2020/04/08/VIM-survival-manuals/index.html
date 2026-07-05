@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>VIM survival manuals | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VIM survival manuals">
+<meta property="og:url" content="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg">
+<meta property="article:published_time" content="2020-04-08T00:27:31.000Z">
+<meta property="article:modified_time" content="2025-05-20T13:17:09.475Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "VIM survival manuals",
+  "url": "http://shiguol.github.io/2020/04/08/VIM-survival-manuals/",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg",
+  "datePublished": "2020-04-08T00:27:31.000Z",
+  "dateModified": "2025-05-20T13:17:09.475Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'VIM survival manuals',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">VIM survival manuals</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">VIM survival manuals</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-08T00:27:31.000Z" title="发表于 2020-04-08 08:27:31">2020-04-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-20T13:17:09.475Z" title="更新于 2025-05-20 21:17:09">2025-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/VIM/">VIM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><table>
+<thead>
+<tr>
+<th>Cmd</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>I</td>
+<td>insert mode；</td>
+</tr>
+<tr>
+<td>Esc</td>
+<td>command mode；</td>
+</tr>
+<tr>
+<td>o</td>
+<td>append mode；</td>
+</tr>
+<tr>
+<td>:shell</td>
+<td>temp enter shell；</td>
+</tr>
+<tr>
+<td>Ctrl+z</td>
+<td>temp enter shell(v2);</td>
+</tr>
+<tr>
+<td>fg</td>
+<td>return back to vim;</td>
+</tr>
+<tr>
+<td>shift + &gt;</td>
+<td>insert tab；</td>
+</tr>
+<tr>
+<td>&#x2F;word</td>
+<td>search word；</td>
+</tr>
+<tr>
+<td>n</td>
+<td>search next；</td>
+</tr>
+<tr>
+<td>b，w</td>
+<td>jump word；</td>
+</tr>
+<tr>
+<td>gg，</td>
+<td>G jump start, end；</td>
+</tr>
+<tr>
+<td>10g</td>
+<td>go to 10 line;</td>
+</tr>
+<tr>
+<td>Ctrl + d,u</td>
+<td>page down, up；</td>
+</tr>
+<tr>
+<td>v</td>
+<td>visual mode；</td>
+</tr>
+<tr>
+<td>y</td>
+<td>yank(copy);</td>
+</tr>
+<tr>
+<td>dd</td>
+<td>cut;</td>
+</tr>
+<tr>
+<td>p</td>
+<td>paste;</td>
+</tr>
+<tr>
+<td>:vsp</td>
+<td>vertical split tab；</td>
+</tr>
+<tr>
+<td>:sp</td>
+<td>horizontal slpit tab;</td>
+</tr>
+<tr>
+<td>Ctrl + w</td>
+<td>change focus window；</td>
+</tr>
+<tr>
+<td>Ctrl + n</td>
+<td>nerd tree</td>
+</tr>
+<tr>
+<td>:q!</td>
+<td>quick not save;</td>
+</tr>
+<tr>
+<td>:qw</td>
+<td>quick + save;</td>
+</tr>
+<tr>
+<td>:u</td>
+<td>undo</td>
+</tr>
+<tr>
+<td>:s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace current line “one” from “two”</td>
+</tr>
+<tr>
+<td>%s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace all</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/">http://shiguol.github.io/2020/04/08/VIM-survival-manuals/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a></div><div class="post-share"><div class="social-share" data-image="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/11/12/How-to-read-the-book-and-write-down-note/" title="How to read the book and write down note"><img class="cover" src="/images/cover/reading-notes.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">How to read the book and write down note</div></div><div class="info-2"><div class="info-item-1">俗话说，好记性，不如烂笔头。 当开始阅读时，第一次不定能理解所有内容，这时，笔记的作用就来了，笔记可以帮助你整理思路，日后再看书时，可以更进一步地理解之前没有理解了的内容。 笔记的另一个好处是，可以帮助学习者建立起费曼学习法的过程。 一个新知识，只有用浅显地语言再讲出来时，才能说明学习者真正地理解了。 </div></div></div></a><a class="pagination-related" href="/2019/11/15/Xcode-some-directories/" title="Xcode_some_directories"><img class="cover" src="/images/cover/xcode.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Xcode_some_directories</div></div><div class="info-2"><div class="info-item-1">1/Library/Developer/CoreSimulator/Profiles/Runtimes  1~/Library/Developer/CoreSimulator/Devices  1~/Library/Caches/com.apple.dt.Xcode/Downloads  </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-13-C++20%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD/" title="现代 C++ 实战（13）：C++20 同步原语"><img class="cover" src="/images/cover/cpp/sync-primitives.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-14</div><div class="info-item-2">现代 C++ 实战（13）：C++20 同步原语</div></div><div class="info-2"><div class="info-item-1">第 12 篇用 thread、mutex、condition_variable 搭好了并发地基。C++20 补上最后几块拼图：jthread 自动 join 与协作式取消、semaphore 限流、latch &#x2F; barrier 多线程阶段同步——写法更短、语义更清晰。 这一篇对应 demo：ref/cpp_demo/concurrency/sync_primitives/。    这是「现代 C++ 实战」系列的第 13 篇。建议先读 第 12 篇：多线程基础。  一、C++20 补上了什么？   原语 解决的问题    std::jthread 忘记 join() 导致 terminate；需要优雅停止后台线程   std::counting_semaphore 限制同时访问资源的线程数（连接池、限流）   std::latch 一次性「等所有人到齐」   std::barrier 可重复的多阶段同步点   std::stop_token 协作式取消（配合 jthread）   编译要求：GCC 10+、Clang 10+、MSVC 2019+，-std=c++20...</div></div></div></a><a class="pagination-related" href="/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/" title="现代 C++ 实战（01）：CMake 与现代构建"><img class="cover" src="/images/cover/cpp/cmake-build.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-02</div><div class="info-item-2">现代 C++ 实战（01）：CMake 与现代构建</div></div><div class="info-2"><div class="info-item-1">上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects/fetch_content/ 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 demo 你都不会慌。    这是「现代 C++ 实战」系列的第 1 篇。对应 demo：ref/cpp_demo/projects/fetch_content/。建议先读 第 00 篇：环境搭建与项目导览。  一、为什么需要 CMake？手写 Makefile 在小项目里够用，但现代 C++ 项目很快会遇到天花板：    痛点 Makefile 的局限 CMake 的做法    跨平台 Windows &#x2F; macOS &#x2F; Linux 语法不同 一套 CMakeLists.txt，生成对应平台的构建文件   依赖管理 手动下载、编译、写 -I &#x2F; -L Fet...</div></div></div></a><a class="pagination-related" href="/2026/06/20/%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8EDiffusion-Model/" title="图像生成与 Diffusion Model"><img class="cover" src="/images/cover/ai/diffusion.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">图像生成与 Diffusion Model</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 10 篇。今天我们来聊一个让无数人直呼”魔法”的技术——Diffusion Model（扩散模型）。它是 Stable Diffusion、DALL·E、Midjourney 等 AI 画图工具背后的核心引擎。你只需要输入一句话，几秒钟后就能得到一张精美的图片。这到底是怎么做到的？别担心，本文零公式，全程用生活类比来解释，保证小白也能看懂。   1. 开场类比：反向洗衣机想象你有一张漂亮的照片，然后你把它扔进了一台疯狂的洗衣机。洗衣机每转一圈，照片就变得更模糊、更混乱。转了上千圈之后，照片彻底变成了一团看不出任何内容的”雪花噪点”——就像老式电视没信号时的那种沙沙画面。 现在问题来了：有没有可能训练一个 AI，让它学会”反向开洗衣机”？也就是说，给它一张全是噪点的图，它能一步一步把噪点去掉，最终还原出一张清晰的照片？ 答案是：可以！这就是 Diffusion Model 的核心思路。 整个过程分成两个阶段：  前向过程（加噪）：把好好的图片一步步加噪声，搅成一团糊。 反向过程（去噪）：训练 AI 学会一步步去掉噪声，从纯噪点变回图片——也就是”反向洗...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Loop-%E5%B7%A5%E7%A8%8B-Agent%E7%9A%84%E5%BF%83%E8%B7%B3%E6%98%AF%E6%80%8E%E4%B9%88%E8%B7%B3%E7%9A%84/" title="Loop 工程：Agent 的心跳是怎么跳的"><img class="cover" src="/images/cover/ai/loop.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">Loop 工程：Agent 的心跳是怎么跳的</div></div><div class="info-2"><div class="info-item-1">你有没有用过全自动洗衣机？你把衣服扔进去，按一下启动键，然后……它就自己开始干了：进水 → 搅洗 → 排水 → 漂洗 → 脱水。如果水太浑浊，它会自动多漂洗一轮；如果衣服不平衡，它会暂停重新调整再继续脱水。整个过程中你什么都不用管——但它的每一步都有明确的判断逻辑：什么时候进入下一步、什么时候多做一轮、什么时候彻底停下来。AI Agent 的工作方式跟这台洗衣机惊人地相似。今天我们就来拆解 Agent 内部的这台”自动洗衣机”——Loop 工程。    这是「小白讲 AI」系列的第 15 篇。我们正在走一条进化线：第 5 篇讲了 Prompt Engineering（怎么说话），第 13 篇讲了 Context Engineering（管好信息），第 14 篇讲了 Harness 工程（搭好骨架）。今天是进化线的终点站——Agent 骨架搭好之后，它的”心跳”到底是怎么跳的？  一、进化线全景回顾在正式进入 Loop 工程之前，让我们站在山顶上回看一下走过的路：    篇目 概念 核心问题 一句话概括    第 5 篇 Prompt Engineering 怎么跟 AI 说一句话...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Context-Engineering-%E4%BB%8E%E5%86%99%E5%A5%BD%E6%8F%90%E7%A4%BA%E8%AF%8D%E5%88%B0%E7%AE%A1%E5%A5%BD%E4%B8%8A%E4%B8%8B%E6%96%87/" title="Context Engineering：从&quot;写好提示词&quot;到&quot;管好上下文&quot;"><img class="cover" src="/images/cover/ai/context-engineering.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">Context Engineering：从&quot;写好提示词&quot;到&quot;管好上下文&quot;</div></div><div class="info-2"><div class="info-item-1">你学会了一道菜的做法，照着菜谱一步步操作，味道确实不错。但如果有一天你要同时做一桌子菜呢？光靠菜谱远远不够——你得管理整个厨房：哪些食材要提前解冻、调料瓶怎么摆才顺手、砧板上现在该放什么、冰箱里还剩什么……这就是从”会做一道菜”到”管好一个厨房”的跨越。AI 领域也有同样的进化：从”写好一条提示词”（Prompt Engineering）到”管好整个上下文”（Context Engineering）。今天我们就来聊聊这个正在重新定义 AI 应用开发方式的关键概念。    这是「小白讲 AI」系列的第 13 篇。第 5 篇我们聊了 Prompt Engineering——怎么写好一条指令让 AI 听懂你的意思。这一篇我们往上走一层：不再只关注”怎么说”，而是关注”AI 看到什么”。  一、开场类比：从”写菜谱”到”管厨房”先来回忆一下第 5 篇的核心观点。Prompt Engineering 要解决的问题是：怎么跟 AI 好好说话。你学会了写清晰的指令、给出示例、分配角色、控制输出格式。这些技巧确实很有用，就像一份写得漂亮的菜谱，能让一道菜做得有模有样。 但问题来了——真实世界的 ...</div></div></div></a><a class="pagination-related" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础"><img class="cover" src="/images/cover/cpp/threading.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-13</div><div class="info-item-2">现代 C++ 实战（12）：多线程基础</div></div><div class="info-2"><div class="info-item-1">第一季讲完语言特性，第二季进入并发与工程。第一课是 C++11 起就有的四件套：std::thread、mutex、condition_variable、atomic——创建并行任务、保护共享数据、线程间等待通知、无锁计数。 这一篇对应 demo：ref/cpp_demo/concurrency/thread_demos/（含 thread 基础、mutex、条件变量、atomic、线程安全队列）。    这是「现代 C++ 实战」系列的第 12 篇，第二季开篇。建议先读 第 11 篇：Concepts。  一、为什么需要多线程？ 利用多核：CPU 密集型任务拆到多个核并行 重叠 I&#x2F;O 与计算：一个线程等磁盘&#x2F;网络，另一个继续算 响应性：UI 线程不阻塞于后台任务  C++ 标准库从 C++11 起提供跨平台线程抽象，不必直接写 pthread（Linux）或 Win32 API。 二、std::thread：创建、join、detach1234567891011121314151617#include &lt;thread&gt;#include &lt;...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">83</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/" title="大模型数学速成（11）：KV Cache——推理加速的关键"><img src="/images/cover/ai/kv-cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（11）：KV Cache——推理加速的关键"/></a><div class="content"><a class="title" href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/" title="大模型数学速成（11）：KV Cache——推理加速的关键">大模型数学速成（11）：KV Cache——推理加速的关键</a><time datetime="2026-07-15T02:00:00.000Z" title="发表于 2026-07-15 10:00:00">2026-07-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8810%EF%BC%89%EF%BC%9AGQA-%E5%88%86%E7%BB%84%E6%9F%A5%E8%AF%A2%E6%B3%A8%E6%84%8F%E5%8A%9B/" title="大模型数学速成（10）：GQA——分组查询注意力"><img src="/images/cover/ai/gqa.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（10）：GQA——分组查询注意力"/></a><div class="content"><a class="title" href="/2026/07/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8810%EF%BC%89%EF%BC%9AGQA-%E5%88%86%E7%BB%84%E6%9F%A5%E8%AF%A2%E6%B3%A8%E6%84%8F%E5%8A%9B/" title="大模型数学速成（10）：GQA——分组查询注意力">大模型数学速成（10）：GQA——分组查询注意力</a><time datetime="2026-07-14T02:00:00.000Z" title="发表于 2026-07-14 10:00:00">2026-07-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-13-C++20%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD/" title="现代 C++ 实战（13）：C++20 同步原语"><img src="/images/cover/cpp/sync-primitives.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（13）：C++20 同步原语"/></a><div class="content"><a class="title" href="/2026/07/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-13-C++20%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD/" title="现代 C++ 实战（13）：C++20 同步原语">现代 C++ 实战（13）：C++20 同步原语</a><time datetime="2026-07-14T02:00:00.000Z" title="发表于 2026-07-14 10:00:00">2026-07-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/13/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8809%EF%BC%89%EF%BC%9A%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-%E5%A4%9A%E4%B8%AA%E4%B8%93%E5%AE%B6%E5%90%84%E7%9C%8B%E5%90%84%E7%9A%84/" title="大模型数学速成（09）：多头注意力——多个专家各看各的"><img src="/images/cover/ai/multi-head-attention.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（09）：多头注意力——多个专家各看各的"/></a><div class="content"><a class="title" href="/2026/07/13/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8809%EF%BC%89%EF%BC%9A%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-%E5%A4%9A%E4%B8%AA%E4%B8%93%E5%AE%B6%E5%90%84%E7%9C%8B%E5%90%84%E7%9A%84/" title="大模型数学速成（09）：多头注意力——多个专家各看各的">大模型数学速成（09）：多头注意力——多个专家各看各的</a><time datetime="2026-07-13T02:00:00.000Z" title="发表于 2026-07-13 10:00:00">2026-07-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础"><img src="/images/cover/cpp/threading.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（12）：多线程基础"/></a><div class="content"><a class="title" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础">现代 C++ 实战（12）：多线程基础</a><time datetime="2026-07-13T02:00:00.000Z" title="发表于 2026-07-13 10:00:00">2026-07-13</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>

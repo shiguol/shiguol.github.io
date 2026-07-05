@@ -1,0 +1,394 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>现代 C++ 实战（06）：Lambda 与类型推导 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="智能指针解决「谁拥有资源」，Lambda 解决「怎么写小段逻辑」——回调、算法谓词、闭包、延迟执行，现代 C++ 里无处不在。从 C++11 的 [](){} 到 C++20 的模板 Lambda，每一版标准都在把它变强。 这一篇系统梳理 Lambda 语法、捕获方式、与 auto&#x2F;decltype 的类型推导，并对比函数指针与 std::function 的取舍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代 C++ 实战（06）：Lambda 与类型推导">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="智能指针解决「谁拥有资源」，Lambda 解决「怎么写小段逻辑」——回调、算法谓词、闭包、延迟执行，现代 C++ 里无处不在。从 C++11 的 [](){} 到 C++20 的模板 Lambda，每一版标准都在把它变强。 这一篇系统梳理 Lambda 语法、捕获方式、与 auto&#x2F;decltype 的类型推导，并对比函数指针与 std::function 的取舍。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cpp/lambda.png">
+<meta property="article:published_time" content="2026-07-07T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-04T23:59:24.369Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="C++11">
+<meta property="article:tag" content="Lambda">
+<meta property="article:tag" content="现代C++">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cpp/lambda.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "现代 C++ 实战（06）：Lambda 与类型推导",
+  "url": "http://shiguol.github.io/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/",
+  "image": "http://shiguol.github.io/images/cover/cpp/lambda.png",
+  "datePublished": "2026-07-07T02:00:00.000Z",
+  "dateModified": "2026-07-04T23:59:24.369Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '现代 C++ 实战（06）：Lambda 与类型推导',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cpp/lambda.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">现代 C++ 实战（06）：Lambda 与类型推导</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">现代 C++ 实战（06）：Lambda 与类型推导</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-07T02:00:00.000Z" title="发表于 2026-07-07 10:00:00">2026-07-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-04T23:59:24.369Z" title="更新于 2026-07-05 07:59:24">2026-07-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppInPractice/">CppInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>智能指针解决「谁拥有资源」，Lambda 解决「怎么写小段逻辑」——回调、算法谓词、闭包、延迟执行，现代 C++ 里无处不在。从 C++11 的 <code>[](){}</code> 到 C++20 的模板 Lambda，每一版标准都在把它变强。</p>
+<p>这一篇系统梳理 <strong>Lambda 语法、捕获方式、与 <code>auto</code>&#x2F;<code>decltype</code> 的类型推导</strong>，并对比函数指针与 <code>std::function</code> 的取舍。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「现代 C++ 实战」系列的第 6 篇。对应 demo：<code>ref/cpp_demo/basics/lambda_demo/</code>。建议先读 <a href="/2026/07/06/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-05-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8B-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8/">第 05 篇：智能指针（下）</a>。</p>
+</blockquote>
+<h2 id="一、基本语法：-四部分"><a href="#一、基本语法：-四部分" class="headerlink" title="一、基本语法：[](){} 四部分"></a>一、基本语法：<code>[](){}</code> 四部分</h2><p>Lambda 的完整形式：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[捕获列表](参数列表) 可选说明符 -&gt; 返回类型 &#123; 函数体 &#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>含义</th>
+<th>可省略？</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[...]</code></td>
+<td><strong>捕获列表</strong>：把外部变量「带进」闭包</td>
+<td>空 <code>[]</code> 表示不捕获</td>
+</tr>
+<tr>
+<td><code>(...)</code></td>
+<td>参数列表，同普通函数</td>
+<td>无参时可写 <code>()</code> 或省略</td>
+</tr>
+<tr>
+<td><code>-&gt; T</code></td>
+<td>显式返回类型</td>
+<td>可省略，编译器推导</td>
+</tr>
+<tr>
+<td><code>{...}</code></td>
+<td>函数体</td>
+<td>不可省略</td>
+</tr>
+</tbody></table>
+<p>最小例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> square = [](<span class="type">int</span> x) &#123; <span class="keyword">return</span> x * x; &#125;;</span><br><span class="line">std::cout &lt;&lt; <span class="built_in">square</span>(<span class="number">5</span>) &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;  <span class="comment">// 25</span></span><br></pre></td></tr></table></figure>
+
+<p>Lambda 是<strong>匿名函数对象</strong>：编译器生成一个带 <code>operator()</code> 的 unnamed class，因此可以赋值给 <code>auto</code>，也可以传给 STL 算法。</p>
+<h2 id="二、捕获方式：值、引用与初始化捕获"><a href="#二、捕获方式：值、引用与初始化捕获" class="headerlink" title="二、捕获方式：值、引用与初始化捕获"></a>二、捕获方式：值、引用与初始化捕获</h2><h3 id="2-1-默认捕获"><a href="#2-1-默认捕获" class="headerlink" title="2.1 默认捕获"></a>2.1 默认捕获</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">1</span>, b = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">auto</span> f1 = [=]() &#123; <span class="keyword">return</span> a + b; &#125;;   <span class="comment">// 按值捕获所有用到的外部变量</span></span><br><span class="line"><span class="keyword">auto</span> f2 = [&amp;]() &#123; <span class="keyword">return</span> a + b; &#125;;   <span class="comment">// 按引用捕获</span></span><br><span class="line"><span class="keyword">auto</span> f3 = [a, &amp;b]() &#123; <span class="keyword">return</span> a + b; &#125;; <span class="comment">// 混合：a 值捕获，b 引用捕获</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>写法</th>
+<th>含义</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>[=]</code></td>
+<td>用到的变量<strong>按值</strong>复制进闭包</td>
+<td>闭包内修改不影响外部（除非 mutable）</td>
+</tr>
+<tr>
+<td><code>[&amp;]</code></td>
+<td>用到的变量<strong>按引用</strong>绑定</td>
+<td>闭包生命周期不能长于被引用对象</td>
+</tr>
+<tr>
+<td><code>[x, &amp;y]</code></td>
+<td>显式指定每个变量</td>
+<td>最清晰，推荐</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-mutable：修改值捕获的副本"><a href="#2-2-mutable：修改值捕获的副本" class="headerlink" title="2.2 mutable：修改值捕获的副本"></a>2.2 <code>mutable</code>：修改值捕获的副本</h3><p>按值捕获的变量在 Lambda 体内默认是 <code>const</code>；加 <code>mutable</code> 可修改<strong>闭包内的副本</strong>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> n = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">auto</span> counter = [n]() <span class="keyword">mutable</span> &#123; <span class="keyword">return</span> ++n; &#125;;</span><br><span class="line">std::cout &lt;&lt; <span class="built_in">counter</span>() &lt;&lt; <span class="built_in">counter</span>() &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;  <span class="comment">// 1 2（外部 n 仍为 0）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-C-14-初始化捕获（移动捕获）"><a href="#2-3-C-14-初始化捕获（移动捕获）" class="headerlink" title="2.3 C++14 初始化捕获（移动捕获）"></a>2.3 C++14 初始化捕获（移动捕获）</h3><p>可以把表达式结果<strong>移动</strong>进闭包，适合 <code>unique_ptr</code> 等不可拷贝类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> ptr = std::<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(<span class="number">42</span>);</span><br><span class="line"><span class="keyword">auto</span> f = [p = std::<span class="built_in">move</span>(ptr)]() &#123; <span class="keyword">return</span> *p; &#125;;</span><br><span class="line"><span class="comment">// ptr 此时为 nullptr；所有权已移入 Lambda</span></span><br></pre></td></tr></table></figure>
+
+<p>demo 中的写法：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> important = std::<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> add = [v1 = <span class="number">1</span>, v2 = std::<span class="built_in">move</span>(important)](<span class="type">int</span> x, <span class="type">int</span> y) -&gt; <span class="type">int</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> x + y + v1 + (*v2);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>初始化捕获</strong>语法：<code>[标识符 = 表达式]</code>，表达式可以是移动、常量或任意可拷贝&#x2F;移动的值。</p>
+<h2 id="三、泛型-Lambda（C-14）"><a href="#三、泛型-Lambda（C-14）" class="headerlink" title="三、泛型 Lambda（C++14）"></a>三、泛型 Lambda（C++14）</h2><p>参数写 <code>auto</code>，Lambda 自动成为函数模板：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> twice = [](<span class="keyword">auto</span> x) &#123; <span class="keyword">return</span> x + x; &#125;;</span><br><span class="line"><span class="built_in">twice</span>(<span class="number">3</span>);       <span class="comment">// int</span></span><br><span class="line"><span class="built_in">twice</span>(<span class="number">2.5</span>);     <span class="comment">// double</span></span><br><span class="line"><span class="built_in">twice</span>(std::<span class="built_in">string</span>(<span class="string">&quot;hi&quot;</span>));  <span class="comment">// string 拼接</span></span><br></pre></td></tr></table></figure>
+
+<p>等价于编译器生成 <code>operator()(T x)</code> 的模板成员。适合写通用算法谓词，无需手写 <code>template&lt;typename T&gt;</code>。</p>
+<h2 id="四、constexpr-Lambda（C-17）"><a href="#四、constexpr-Lambda（C-17）" class="headerlink" title="四、constexpr Lambda（C++17）"></a>四、constexpr Lambda（C++17）</h2><p>Lambda 默认可以在 <code>constexpr</code> 上下文使用（若函数体满足 constexpr 规则）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">constexpr</span> <span class="keyword">auto</span> sq = [](<span class="type">int</span> n) &#123; <span class="keyword">return</span> n * n; &#125;;</span><br><span class="line"><span class="built_in">static_assert</span>(<span class="built_in">sq</span>(<span class="number">10</span>) == <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
+
+<p>C++17 起，<strong>无捕获</strong>或<strong>仅捕获字面量</strong>的 Lambda 可用于编译期计算，与 <code>constexpr</code> 函数类似。</p>
+<h2 id="五、模板-Lambda（C-20）"><a href="#五、模板-Lambda（C-20）" class="headerlink" title="五、模板 Lambda（C++20）"></a>五、模板 Lambda（C++20）</h2><p>C++20 允许在 Lambda 上直接写模板参数列表：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> print = []&lt;<span class="keyword">typename</span> T&gt;(<span class="type">const</span> T&amp; v) &#123;</span><br><span class="line">    std::cout &lt;&lt; v &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">print</span>(<span class="number">42</span>);</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;hello&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>与 C++14 泛型 Lambda 相比，可以显式访问 <code>T</code>，做 <code>if constexpr</code>、Concepts 约束等更复杂的编译期逻辑。</p>
+<h2 id="六、auto-与-decltype：类型推导规则"><a href="#六、auto-与-decltype：类型推导规则" class="headerlink" title="六、auto 与 decltype：类型推导规则"></a>六、<code>auto</code> 与 <code>decltype</code>：类型推导规则</h2><p>Lambda 几乎总是配合 <code>auto</code> 存储——<strong>每个 Lambda 表达式都有唯一的编译器生成类型</strong>，无法直接写出名。</p>
+<h3 id="6-1-auto-推导"><a href="#6-1-auto-推导" class="headerlink" title="6.1 auto 推导"></a>6.1 <code>auto</code> 推导</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="type">int</span> x) -&gt; <span class="type">double</span> &#123; <span class="keyword">return</span> x * <span class="number">1.5</span>; &#125;;</span><br><span class="line"><span class="comment">// f 的类型类似 closure_type_xxx，不可手写</span></span><br></pre></td></tr></table></figure>
+
+<p>若需要类型擦除（存进容器、跨编译单元传递），才用 <code>std::function</code>（见第七节）。</p>
+<h3 id="6-2-decltype-与尾置返回类型"><a href="#6-2-decltype-与尾置返回类型" class="headerlink" title="6.2 decltype 与尾置返回类型"></a>6.2 <code>decltype</code> 与尾置返回类型</h3><p>泛型代码中常用 <code>decltype</code> 推导表达式类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">add</span><span class="params">(T a, U b)</span> -&gt; <span class="title">decltype</span><span class="params">(a + b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a + b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C++14 起可简写为 <code>auto add(T a, U b) { return a + b; }</code>，编译器自动推导返回类型。</p>
+<h3 id="6-3-推导要点（速查）"><a href="#6-3-推导要点（速查）" class="headerlink" title="6.3 推导要点（速查）"></a>6.3 推导要点（速查）</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>auto x = expr</code></td>
+<td>丢弃顶层 <code>const</code>、忽略引用</td>
+</tr>
+<tr>
+<td><code>auto&amp; x = expr</code></td>
+<td>保留引用，不拷贝</td>
+</tr>
+<tr>
+<td><code>decltype(expr)</code></td>
+<td>精确推导，含 const&#x2F;引用</td>
+</tr>
+<tr>
+<td>Lambda 存 <code>auto</code></td>
+<td>保留具体闭包类型，<strong>可内联优化</strong></td>
+</tr>
+</tbody></table>
+<h2 id="七、Lambda-vs-函数指针-vs-std-function"><a href="#七、Lambda-vs-函数指针-vs-std-function" class="headerlink" title="七、Lambda vs 函数指针 vs std::function"></a>七、Lambda vs 函数指针 vs <code>std::function</code></h2><table>
+<thead>
+<tr>
+<th>方式</th>
+<th>灵活性</th>
+<th>性能</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Lambda + <code>auto</code></strong></td>
+<td>高（捕获、泛型）</td>
+<td>最佳（可内联）</td>
+<td>局部回调、STL 算法</td>
+</tr>
+<tr>
+<td><strong>函数指针</strong></td>
+<td>低（无捕获、无状态）</td>
+<td>好</td>
+<td>C 接口、简单回调</td>
+</tr>
+<tr>
+<td><strong><code>std::function&lt;R(Args...)&gt;</code></strong></td>
+<td>高（类型擦除）</td>
+<td>有堆分配&#x2F;间接调用开销</td>
+<td>容器存多种可调用对象</td>
+</tr>
+</tbody></table>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 函数指针：不能捕获</span></span><br><span class="line"><span class="built_in">void</span> (*fp)(<span class="type">int</span>) = [](<span class="type">int</span> x)&#123; <span class="comment">/* 错误：有捕获的 Lambda 不能转函数指针 */</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// std::function：可存 Lambda，但有开销</span></span><br><span class="line">std::function&lt;<span class="type">int</span>(<span class="type">int</span>,<span class="type">int</span>)&gt; op = [](<span class="type">int</span> a, <span class="type">int</span> b)&#123; <span class="keyword">return</span> a + b; &#125;;</span><br><span class="line">std::vector&lt;std::function&lt;<span class="type">void</span>()&gt;&gt; tasks;  <span class="comment">// 任务队列</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>选型建议</strong>：</p>
+<ol>
+<li>能 <code>auto</code> 就 <code>auto</code>——模板代码里用 <code>auto&amp;&amp;</code> 转发 Lambda</li>
+<li>需要存在 <code>vector</code> 且类型各异 → <code>std::function</code></li>
+<li>与 C API 交互 → 无捕获 Lambda 或静态函数</li>
+</ol>
+<h2 id="八、与-STL-算法的配合"><a href="#八、与-STL-算法的配合" class="headerlink" title="八、与 STL 算法的配合"></a>八、与 STL 算法的配合</h2><p>Lambda 最常见的战场：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;<span class="type">int</span>&gt; v = &#123;<span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">5</span>&#125;;</span><br><span class="line">std::<span class="built_in">sort</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), [](<span class="type">int</span> a, <span class="type">int</span> b) &#123; <span class="keyword">return</span> a &gt; b; &#125;);  <span class="comment">// 降序</span></span><br><span class="line"></span><br><span class="line">std::<span class="built_in">count_if</span>(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(), [](<span class="type">int</span> x) &#123; <span class="keyword">return</span> x % <span class="number">2</span> == <span class="number">0</span>; &#125;);  <span class="comment">// 偶数个数</span></span><br></pre></td></tr></table></figure>
+
+<p>C++20 Ranges 进一步把 Lambda 管道化（系列第 10 篇详讲）。</p>
+<h2 id="九、demo-导览：lambda-demo"><a href="#九、demo-导览：lambda-demo" class="headerlink" title="九、demo 导览：lambda_demo"></a>九、demo 导览：lambda_demo</h2><p><code>ref/cpp_demo/basics/lambda_demo/</code> 演示 <strong>C++14 初始化捕获 + 移动 <code>unique_ptr</code></strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/basics/lambda_demo</span><br><span class="line">./build.sh --run</span><br></pre></td></tr></table></figure>
+
+<p>输出 <code>9</code>（3 + 4 + 1 + 1）。建议对照源码理解：<code>v2</code> 从外部 <code>unique_ptr</code> 移动进闭包后，外部指针为空。</p>
+<h2 id="十、小结"><a href="#十、小结" class="headerlink" title="十、小结"></a>十、小结</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>语法</strong></td>
+<td><code>[捕获](参数) -&gt; 返回 { 体 }</code></td>
+</tr>
+<tr>
+<td><strong>捕获</strong></td>
+<td><code>=</code> 值、<code>&amp;</code> 引用、<code>[x=expr]</code> 初始化&#x2F;移动捕获</td>
+</tr>
+<tr>
+<td><strong>泛型</strong></td>
+<td>C++14 <code>auto</code> 参数；C++20 模板 Lambda</td>
+</tr>
+<tr>
+<td><strong>constexpr</strong></td>
+<td>C++17 无捕获 Lambda 可编译期求值</td>
+</tr>
+<tr>
+<td><strong>存储</strong></td>
+<td>优先 <code>auto</code>；跨模块&#x2F;容器用 <code>std::function</code></td>
+</tr>
+<tr>
+<td><strong>性能</strong></td>
+<td>具体闭包类型 &gt; 函数指针 &gt; <code>std::function</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>现代 C++ 实战系列第 6 篇完。下一篇进入 <strong>C++17 工具箱</strong>——<code>any</code>、filesystem 与并行算法。</p>
+</blockquote>
+<h3 id="系列导航"><a href="#系列导航" class="headerlink" title="系列导航"></a>系列导航</h3><table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>标题</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>05</td>
+<td><a href="/2026/07/06/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-05-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8B-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8/">智能指针（下）</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>06</strong></td>
+<td><strong>Lambda 与类型推导（本篇）</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>07</td>
+<td>C++17 工具箱</td>
+<td>下一篇</td>
+</tr>
+</tbody></table>
+<p>完整大纲见工作区 <code>docs/CPP_SERIES_OUTLINE.md</code>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/">http://shiguol.github.io/2026/07/07/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-06-Lambda%E4%B8%8E%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E7%8E%B0%E4%BB%A3C/">现代C++</a><a class="post-meta__tags" href="/tags/C-11/">C++11</a><a class="post-meta__tags" href="/tags/Lambda/">Lambda</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cpp/lambda.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/08/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8804%EF%BC%89%EF%BC%9ALayerNorm-RMS-Norm-%E4%B8%8E%E6%AE%8B%E5%B7%AE%E8%BF%9E%E6%8E%A5/" title="大模型数学速成（04）：LayerNorm、RMS Norm 与残差连接"><img class="cover" src="/images/cover/ai/norm-residual.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">大模型数学速成（04）：LayerNorm、RMS Norm 与残差连接</div></div><div class="info-2"><div class="info-item-1">上一篇我们算出 Q、K、V——但在乘 $W_q$ 之前，输入通常先过 LayerNorm 或 RMS Norm。算完注意力或 FFN 之后，还要加一条 残差连接 把原输入「抄送」回来。 这一篇搞懂：为什么要归一化、两种 Norm 差在哪、Pre-LN 与 Post-LN 怎么排、残差为什么能训深网络。    这是「大模型数学速成」系列的第 4 篇。建议先读 第 03 篇：Q&#x2F;K&#x2F;V 投影。下一篇讲 注意力机制与 Softmax。  一、为什么需要归一化？深度网络堆叠几十层后，中间激活的数值尺度容易漂移：某些维爆炸、某些维趋近 0，梯度不稳定，训练变慢甚至发散。 归一化（Normalization） 对每个 token 的特征向量做「拉回标准尺度」——让均值为 0、方差为 1（或类似效果），再交给下一层矩阵乘法。 生活类比：音响均衡器——不管输入音量忽大忽小，先归一化到合适响度，再进功放。 在本系列约定下（第 01 篇）：  输入形状 [n_embd, n_tokens]，每一列是一个 token 的 $n_embd$ 维向量 Norm 按列操作：对每个 tok...</div></div></div></a><a class="pagination-related" href="/2026/07/07/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8803%EF%BC%89%EF%BC%9AQ-K-V-%E6%8A%95%E5%BD%B1-%E5%90%8C%E4%B8%80%E8%BE%93%E5%85%A5%E4%B8%89%E7%A7%8D%E8%A7%92%E8%89%B2/" title="大模型数学速成（03）：Q/K/V 投影——同一输入，三种角色"><img class="cover" src="/images/cover/ai/qkv-projection.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">大模型数学速成（03）：Q/K/V 投影——同一输入，三种角色</div></div><div class="info-2"><div class="info-item-1">上一篇我们学会了 $y &#x3D; W \cdot x + b$ 的「握手规则」。在 Transformer 的注意力层里，同一份输入特征会连乘三次——分别得到 Q、K、V。为什么要三套权重？权重 $W_q$ 和激活 Q 有什么区别？ 这一篇把 Q&#x2F;K&#x2F;V 投影一次讲透，为第 05 篇的注意力与 Softmax 铺路。    这是「大模型数学速成」系列的第 3 篇。建议先读 第 02 篇：矩阵乘法。下一篇讲 LayerNorm、RMS Norm 与残差连接。  一、三次投影：同一输入，三种「角色眼镜」LayerNorm 之后，每个 token 有一列通用特征 $X$，形状 [768, S]（S 为 token 数）。注意力层对 同一 X 做三次线性变换： $$Q &#x3D; W_q \cdot X + b_q,\quadK &#x3D; W_k \cdot X + b_k,\quadV &#x3D; W_v \cdot X + b_v$$ 12345678910              同一份 X（Norm 后的特征）              [768...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础"><img class="cover" src="/images/cover/cpp/threading.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-13</div><div class="info-item-2">现代 C++ 实战（12）：多线程基础</div></div><div class="info-2"><div class="info-item-1">第一季讲完语言特性，第二季进入并发与工程。第一课是 C++11 起就有的四件套：std::thread、mutex、condition_variable、atomic——创建并行任务、保护共享数据、线程间等待通知、无锁计数。 这一篇对应 demo：ref/cpp_demo/concurrency/thread_demos/（含 thread 基础、mutex、条件变量、atomic、线程安全队列）。    这是「现代 C++ 实战」系列的第 12 篇，第二季开篇。建议先读 第 11 篇：Concepts。  一、为什么需要多线程？ 利用多核：CPU 密集型任务拆到多个核并行 重叠 I&#x2F;O 与计算：一个线程等磁盘&#x2F;网络，另一个继续算 响应性：UI 线程不阻塞于后台任务  C++ 标准库从 C++11 起提供跨平台线程抽象，不必直接写 pthread（Linux）或 Win32 API。 二、std::thread：创建、join、detach1234567891011121314151617#include &lt;thread&gt;#include &lt;...</div></div></div></a><a class="pagination-related" href="/2026/07/06/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-05-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8B-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BE%AA%E7%8E%AF%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（05）：智能指针（下）——模式与循环引用"><img class="cover" src="/images/cover/cpp/smart-ptr-advanced.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-06</div><div class="info-item-2">现代 C++ 实战（05）：智能指针（下）——模式与循环引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们掌握了 unique_ptr 和 shared_ptr 的基本用法。但在真实项目里，智能指针不只是替代 new/delete——循环引用、工厂函数、Pimpl、Observer 等场景会逼你思考「谁该拥有、谁该观察」。 这一篇是智能指针的下半场：weak_ptr 如何打破循环引用，以及几种经典设计模式如何用智能指针落地。    这是「现代 C++ 实战」系列的第 5 篇。对应 demo：ref/cpp_demo/smart_pointers/ 第 05–09 节。建议先读 第 04 篇：智能指针（上）。  一、weak_ptr 与循环引用shared_ptr 的引用计数是双向的：A 持有 B，B 也持有 A 时，计数永远不归零——内存泄漏。 12345struct Node &#123;    std::shared_ptr&lt;Node&gt; next;    // std::shared_ptr&lt;Node&gt; parent;  // 危险：与子节点形成环    std::weak_ptr&lt;Node&gt; parent;         // 安...</div></div></div></a><a class="pagination-related" href="/2026/07/04/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-03-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（03）：移动语义与右值引用"><img class="cover" src="/images/cover/cpp/move-semantics.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-04</div><div class="info-item-2">现代 C++ 实战（03）：移动语义与右值引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们把 C++ 版本地图铺好了。C++11 里有一项改动，几乎改变了整个语言写高性能代码的方式：移动语义（Move Semantics）。很多人第一次遇到 std::move 和 T&amp;&amp; 时会困惑：「这到底是在拷贝还是在移动？」 这一篇我们拆开来看：左值 &#x2F; 右值是什么、std::move 做了什么、移动构造如何省掉深拷贝，并带你跑 right_ref_demo demo。    这是「现代 C++ 实战」系列的第 3 篇。对应 demo：ref/cpp_demo/basics/right_ref_demo/。建议先读 第 02 篇：C++ 版本演进一览。  一、为什么需要移动语义？想象你在搬家：把书从旧书架搬到新书架，有两种做法：    做法 类比 C++ 中的对应    复印 把每本书复印一份放到新家，旧家原件还在 拷贝构造——两份独立数据   直接搬 把书整箱抬走，旧书架空了 移动构造——资源所有权转移   对 std::string、std::vector 这类在堆上持有大块内存的类型，深拷贝意味着：  分配同等大小的新内存 逐字节复制内容...</div></div></div></a><a class="pagination-related" href="/2026/07/03/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/" title="现代 C++ 实战（02）：C++ 版本演进一览"><img class="cover" src="/images/cover/cpp/version-evolution.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-03</div><div class="info-item-2">现代 C++ 实战（02）：C++ 版本演进一览</div></div><div class="info-2"><div class="info-item-1">上一篇我们搞定了 CMake 构建。但在写代码之前，还有一个「地图」问题：C++ 到底演进了哪些版本？每个版本加了什么？ 如果你还在用 C++98 的思维读 C++20 的代码，很容易觉得「语法怎么又变了」。 这一篇不深入任何单一特性，而是把 C++03 → C++26 的演进脉络梳理清楚，并带你跑一遍 version_features demo——后面 25 篇特性文章，都可以在这张地图上找到位置。    这是「现代 C++ 实战」系列的第 2 篇。对应 demo：ref/cpp_demo/basics/version_features/。建议先读 第 01 篇：CMake 与现代构建。  一、C++ 标准时间线C++ 不像 Python 那样每年一个大版本，而是 3～5 年发布一次国际标准（由 ISO 委员会制定）。对开发者来说，真正重要的是：编译器支持到了哪个 -std=。    标准 发布年份 __cplusplus 宏 常用编译 flag 定位    C++98 &#x2F; C++03 1998 &#x2F; 2003 199711L -std=c++03 经典 C+...</div></div></div></a><a class="pagination-related" href="/2026/07/05/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-04-%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88%E4%B8%8A-%E6%89%80%E6%9C%89%E6%9D%83%E4%B8%8ERAII/" title="现代 C++ 实战（04）：智能指针（上）——所有权与 RAII"><img class="cover" src="/images/cover/cpp/smart-ptr-basic.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">现代 C++ 实战（04）：智能指针（上）——所有权与 RAII</div></div><div class="info-2"><div class="info-item-1">上一篇我们搞懂了移动语义——资源可以在对象之间「搬家」。但还有一个更根本的问题：这块内存到底谁负责释放？ C++ 没有垃圾回收，手动 new &#x2F; delete 一旦配对出错，就是泄漏或 double-free。 现代 C++ 的答案是 RAII + 智能指针：把所有权写进类型系统，让编译器和析构函数帮你收尾。这一篇聚焦 unique_ptr 与 shared_ptr 的上半场——独占 vs 共享、什么时候该用谁、以及 make_unique &#x2F; make_shared 为什么更推荐。    这是「现代 C++ 实战」系列的第 4 篇。对应 demo：ref/cpp_demo/smart_pointers/ 第 01–04 节。建议先读 第 03 篇：移动语义与右值引用。  一、RAII：资源获取即初始化RAII（Resource Acquisition Is Initialization） 是 C++ 资源管理的核心惯用法：    阶段 做什么    构造 获取资源（内存、文件句柄、锁……）   使用 通过对象访问资源   析构 自动释放资源——无论正常返回还...</div></div></div></a><a class="pagination-related" href="/2026/07/08/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-07-C++17%E5%B7%A5%E5%85%B7%E7%AE%B1/" title="现代 C++ 实战（07）：C++17 工具箱"><img class="cover" src="/images/cover/cpp/cpp17-toolbox.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-08</div><div class="info-item-2">现代 C++ 实战（07）：C++17 工具箱</div></div><div class="info-2"><div class="info-item-1">C++17 不像 C++11 &#x2F; C++20 那样「改天换地」，却塞进了大量日常极好用的工具：std::any、std::filesystem、结构化绑定、if constexpr、折叠表达式、并行算法……写业务代码时经常伸手就能摸到。 这一篇把 C++17 工具箱里最常用的一批串起来，对应三个 demo：any_demo、filesystem_demo、parallel_algo_demo。    这是「现代 C++ 实战」系列的第 7 篇。建议先读 第 06 篇：Lambda 与类型推导。  一、std::any：运行期存任意类型C++17 的 std::any 是类型擦除容器——运行期可以换成 int、string、vector……类型信息保存在内部，取出时用 std::any_cast。 123456789#include &lt;any&gt;#include &lt;string&gt;std::any value = 42;value = std::string(&quot;hello&quot;);           // 可以改存别的类型value....</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">83</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">53</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95%EF%BC%9A-%E5%9B%9B%E9%83%A8%E5%88%86"><span class="toc-number">1.</span> <span class="toc-text">一、基本语法：[](){} 四部分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8D%95%E8%8E%B7%E6%96%B9%E5%BC%8F%EF%BC%9A%E5%80%BC%E3%80%81%E5%BC%95%E7%94%A8%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8D%95%E8%8E%B7"><span class="toc-number">2.</span> <span class="toc-text">二、捕获方式：值、引用与初始化捕获</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%BB%98%E8%AE%A4%E6%8D%95%E8%8E%B7"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 默认捕获</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-mutable%EF%BC%9A%E4%BF%AE%E6%94%B9%E5%80%BC%E6%8D%95%E8%8E%B7%E7%9A%84%E5%89%AF%E6%9C%AC"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 mutable：修改值捕获的副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-C-14-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8D%95%E8%8E%B7%EF%BC%88%E7%A7%BB%E5%8A%A8%E6%8D%95%E8%8E%B7%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 C++14 初始化捕获（移动捕获）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%B3%9B%E5%9E%8B-Lambda%EF%BC%88C-14%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">三、泛型 Lambda（C++14）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81constexpr-Lambda%EF%BC%88C-17%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、constexpr Lambda（C++17）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%A8%A1%E6%9D%BF-Lambda%EF%BC%88C-20%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、模板 Lambda（C++20）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81auto-%E4%B8%8E-decltype%EF%BC%9A%E7%B1%BB%E5%9E%8B%E6%8E%A8%E5%AF%BC%E8%A7%84%E5%88%99"><span class="toc-number">6.</span> <span class="toc-text">六、auto 与 decltype：类型推导规则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-auto-%E6%8E%A8%E5%AF%BC"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 auto 推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-decltype-%E4%B8%8E%E5%B0%BE%E7%BD%AE%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 decltype 与尾置返回类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%8E%A8%E5%AF%BC%E8%A6%81%E7%82%B9%EF%BC%88%E9%80%9F%E6%9F%A5%EF%BC%89"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 推导要点（速查）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Lambda-vs-%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88-vs-std-function"><span class="toc-number">7.</span> <span class="toc-text">七、Lambda vs 函数指针 vs std::function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E4%B8%8E-STL-%E7%AE%97%E6%B3%95%E7%9A%84%E9%85%8D%E5%90%88"><span class="toc-number">8.</span> <span class="toc-text">八、与 STL 算法的配合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81demo-%E5%AF%BC%E8%A7%88%EF%BC%9Alambda-demo"><span class="toc-number">9.</span> <span class="toc-text">九、demo 导览：lambda_demo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">10.</span> <span class="toc-text">十、小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="toc-number">10.1.</span> <span class="toc-text">系列导航</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/" title="大模型数学速成（11）：KV Cache——推理加速的关键"><img src="/images/cover/ai/kv-cache.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（11）：KV Cache——推理加速的关键"/></a><div class="content"><a class="title" href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/" title="大模型数学速成（11）：KV Cache——推理加速的关键">大模型数学速成（11）：KV Cache——推理加速的关键</a><time datetime="2026-07-15T02:00:00.000Z" title="发表于 2026-07-15 10:00:00">2026-07-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8810%EF%BC%89%EF%BC%9AGQA-%E5%88%86%E7%BB%84%E6%9F%A5%E8%AF%A2%E6%B3%A8%E6%84%8F%E5%8A%9B/" title="大模型数学速成（10）：GQA——分组查询注意力"><img src="/images/cover/ai/gqa.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（10）：GQA——分组查询注意力"/></a><div class="content"><a class="title" href="/2026/07/14/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8810%EF%BC%89%EF%BC%9AGQA-%E5%88%86%E7%BB%84%E6%9F%A5%E8%AF%A2%E6%B3%A8%E6%84%8F%E5%8A%9B/" title="大模型数学速成（10）：GQA——分组查询注意力">大模型数学速成（10）：GQA——分组查询注意力</a><time datetime="2026-07-14T02:00:00.000Z" title="发表于 2026-07-14 10:00:00">2026-07-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-13-C++20%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD/" title="现代 C++ 实战（13）：C++20 同步原语"><img src="/images/cover/cpp/sync-primitives.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（13）：C++20 同步原语"/></a><div class="content"><a class="title" href="/2026/07/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-13-C++20%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD/" title="现代 C++ 实战（13）：C++20 同步原语">现代 C++ 实战（13）：C++20 同步原语</a><time datetime="2026-07-14T02:00:00.000Z" title="发表于 2026-07-14 10:00:00">2026-07-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/13/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8809%EF%BC%89%EF%BC%9A%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-%E5%A4%9A%E4%B8%AA%E4%B8%93%E5%AE%B6%E5%90%84%E7%9C%8B%E5%90%84%E7%9A%84/" title="大模型数学速成（09）：多头注意力——多个专家各看各的"><img src="/images/cover/ai/multi-head-attention.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（09）：多头注意力——多个专家各看各的"/></a><div class="content"><a class="title" href="/2026/07/13/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8809%EF%BC%89%EF%BC%9A%E5%A4%9A%E5%A4%B4%E6%B3%A8%E6%84%8F%E5%8A%9B-%E5%A4%9A%E4%B8%AA%E4%B8%93%E5%AE%B6%E5%90%84%E7%9C%8B%E5%90%84%E7%9A%84/" title="大模型数学速成（09）：多头注意力——多个专家各看各的">大模型数学速成（09）：多头注意力——多个专家各看各的</a><time datetime="2026-07-13T02:00:00.000Z" title="发表于 2026-07-13 10:00:00">2026-07-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础"><img src="/images/cover/cpp/threading.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（12）：多线程基础"/></a><div class="content"><a class="title" href="/2026/07/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础">现代 C++ 实战（12）：多线程基础</a><time datetime="2026-07-13T02:00:00.000Z" title="发表于 2026-07-13 10:00:00">2026-07-13</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
