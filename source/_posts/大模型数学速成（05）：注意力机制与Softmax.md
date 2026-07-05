@@ -1,4 +1,5 @@
 ---
+cover: /images/cover/ai/attention-softmax.png
 title: 大模型数学速成（05）：注意力机制与 Softmax
 date: 2026-07-09 10:00:00
 categories:
