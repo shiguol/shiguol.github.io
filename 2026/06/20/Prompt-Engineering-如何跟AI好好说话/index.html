@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Prompt Engineering：如何跟 AI 好好说话 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这是”小白讲 AI”系列的第 05 篇。前几篇我们聊了大模型是什么、怎么训练、Token 怎么算。今天我们来聊一个你每天都在做、但可能从没认真想过的事情——怎么跟 AI 说话。这件事有个听起来很高大上的名字：Prompt Engineering，翻译过来就是”提示词工程”。别被名字吓到，它的核心其实很简单：你说得越清楚，AI 干得越好。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Prompt Engineering：如何跟 AI 好好说话">
+<meta property="og:url" content="http://shiguol.github.io/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="这是”小白讲 AI”系列的第 05 篇。前几篇我们聊了大模型是什么、怎么训练、Token 怎么算。今天我们来聊一个你每天都在做、但可能从没认真想过的事情——怎么跟 AI 说话。这件事有个听起来很高大上的名字：Prompt Engineering，翻译过来就是”提示词工程”。别被名字吓到，它的核心其实很简单：你说得越清楚，AI 干得越好。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/ai/prompt-engineering.png">
+<meta property="article:published_time" content="2026-06-20T13:40:00.000Z">
+<meta property="article:modified_time" content="2026-06-25T01:49:26.951Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/ai/prompt-engineering.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Prompt Engineering：如何跟 AI 好好说话",
+  "url": "http://shiguol.github.io/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/",
+  "image": "http://shiguol.github.io/images/cover/ai/prompt-engineering.png",
+  "datePublished": "2026-06-20T13:40:00.000Z",
+  "dateModified": "2026-06-25T01:49:26.951Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Prompt Engineering：如何跟 AI 好好说话',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/ai/prompt-engineering.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Prompt Engineering：如何跟 AI 好好说话</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">Prompt Engineering：如何跟 AI 好好说话</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-20T13:40:00.000Z" title="发表于 2026-06-20 21:40:00">2026-06-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-25T01:49:26.951Z" title="更新于 2026-06-25 09:49:26">2026-06-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI/">AI</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>这是”小白讲 AI”系列的第 05 篇。前几篇我们聊了大模型是什么、怎么训练、Token 怎么算。今天我们来聊一个你每天都在做、但可能从没认真想过的事情——怎么跟 AI 说话。这件事有个听起来很高大上的名字：Prompt Engineering，翻译过来就是”提示词工程”。别被名字吓到，它的核心其实很简单：你说得越清楚，AI 干得越好。</p>
+<span id="more"></span>
+
+<h2 id="1-开场类比：给实习生写工作交接文档"><a href="#1-开场类比：给实习生写工作交接文档" class="headerlink" title="1. 开场类比：给实习生写工作交接文档"></a>1. 开场类比：给实习生写工作交接文档</h2><p>想象一下，你公司来了个新实习生，聪明、学东西快，但对你的业务一无所知。你让他帮你写一份周报，如果你只说”帮我写个周报”，他大概率会交上来一份格式奇怪、内容空洞的东西。但如果你说”帮我写一份上周的周报，包含三个部分：本周完成的任务、遇到的问题、下周计划。每个部分用三到五个要点概括，语气正式但不要太生硬，参考这份样例……”他交上来的东西就会靠谱得多。</p>
+<p>跟 AI 对话也是一模一样的道理。AI 本质上就是那个”超级实习生”——它读过海量的书、看过无数的代码，能力很强，但它不知道你此刻的上下文、你的偏好、你想要什么样的结果。Prompt 就是你给这个实习生写的”工作交接文档”。文档写得越清楚，产出质量越高。</p>
+<p>这就是 Prompt Engineering 的本质：不是什么黑魔法，而是把你脑子里模糊的想法，变成 AI 能准确理解的文字指令。</p>
+<h2 id="2-基础技巧：四个关键要素"><a href="#2-基础技巧：四个关键要素" class="headerlink" title="2. 基础技巧：四个关键要素"></a>2. 基础技巧：四个关键要素</h2><p>好的 Prompt 通常包含四个要素，我把它们叫做”角色、任务、格式、示例”。</p>
+<p><strong>角色设定</strong>：告诉 AI 它是谁。比如”你是一位资深的 Python 开发者”或者”你是一位面向小学生的科普作家”。角色不同，AI 的用词、深度、风格都会随之改变。就像你跟医生和跟朋友描述同一个症状，说法完全不一样。</p>
+<p><strong>任务描述</strong>：清楚地说明你要它做什么。”帮我写一段代码”太模糊了，”用 Python 写一个函数，输入一个列表，返回其中所有偶数的平方和”就清楚多了。任务描述要回答三个问题：做什么、输入是什么、输出是什么。</p>
+<p><strong>输出格式</strong>：指定你希望结果长什么样。要 JSON 还是 Markdown？要表格还是分段文字？要中文还是英文？很多时候 AI 给出的答案”内容没问题但格式不对”，就是因为你没告诉它你要什么格式。</p>
+<p><strong>示例（Few-shot）</strong>：给一两个示例，效果立竿见影。比如你想让 AI 把英文产品名翻译成中文，与其长篇大论描述翻译风格，不如直接给几个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iPhone → 苹果手机</span><br><span class="line">AirPods → 苹果无线耳机</span><br><span class="line">MacBook Pro → MacBook Pro 专业版</span><br><span class="line"></span><br><span class="line">现在请翻译：Apple Vision Pro →</span><br></pre></td></tr></table></figure>
+
+<p>AI 一看就明白你的翻译风格和命名习惯了。这种”给几个例子让 AI 学样”的方法就叫 Few-shot Prompting，是最实用的技巧之一。</p>
+<h2 id="3-思维链（Chain-of-Thought）：让-AI-“一步一步想”"><a href="#3-思维链（Chain-of-Thought）：让-AI-“一步一步想”" class="headerlink" title="3. 思维链（Chain of Thought）：让 AI “一步一步想”"></a>3. 思维链（Chain of Thought）：让 AI “一步一步想”</h2><p>这里介绍一个听起来简单、效果却非常显著的技巧：Chain of Thought，翻译过来就是”思维链”。</p>
+<p>做法很简单：在 Prompt 里加上一句 <strong>“请一步一步思考”</strong> 或者 <strong>“Let’s think step by step”</strong>。</p>
+<p>为什么这么一句话就能提升效果？回忆一下你自己做数学题的经历：如果让你心算 17 × 24，你可能会卡住或者算错；但如果你拿张纸写下来，先算 17 × 20 &#x3D; 340，再算 17 × 4 &#x3D; 68，最后 340 + 68 &#x3D; 408，就准确多了。</p>
+<p>AI 也是一样。大模型生成文本的时候是一个 Token 接一个 Token 往外蹦的，如果你让它直接给最终答案，它就必须在”一步之内”完成所有推理，很容易出错。但如果你让它先输出中间推理步骤，每个 Token 都在为下一步做铺垫，整体准确率就大幅提升。</p>
+<p>举个例子，你问 AI：”一个教室有 25 个学生，其中 40% 是男生，男生中有一半戴眼镜，戴眼镜的男生有几个？”如果直接问，AI 偶尔会给错答案。但如果加上”请一步一步推理”，AI 就会写出：</p>
+<ol>
+<li>总人数 25，男生占 40%，所以男生 &#x3D; 25 × 0.4 &#x3D; 10 人</li>
+<li>男生中一半戴眼镜，所以戴眼镜的男生 &#x3D; 10 ÷ 2 &#x3D; 5 人</li>
+</ol>
+<p>答案正确、过程清晰。一句话的成本，换来的是可靠性的飞跃。</p>
+<h2 id="4-常见反模式：这些坑你一定踩过"><a href="#4-常见反模式：这些坑你一定踩过" class="headerlink" title="4. 常见反模式：这些坑你一定踩过"></a>4. 常见反模式：这些坑你一定踩过</h2><p>知道怎么写好 Prompt 很重要，知道不该怎么写同样重要。以下是三个最常见的”反模式”。</p>
+<p><strong>模糊指令</strong>：这是最普遍的问题。”帮我优化一下这段代码”——优化什么？是提升性能、增强可读性、还是减少内存占用？”帮我写篇文章”——什么主题、多长、给谁看？模糊的指令就像跟出租车司机说”去个好地方”，你不满意结果只能怪自己。</p>
+<p><strong>过度约束</strong>：有些人走向另一个极端，写了几百字的约束条件，结果 AI 在满足 A 条件的时候违反了 B 条件，左右为难。Prompt 太长、规则太多的时候，AI 很容易”顾头不顾尾”。好的做法是保持约束精简，把最重要的规则放在最前面和最后面（因为 AI 对开头和结尾的注意力更强）。</p>
+<p><strong>自相矛盾的要求</strong>：比如”用通俗易懂的语言详细解释量子力学的数学推导”——通俗易懂和数学推导本身就很难兼得。再比如”写一段简短的、涵盖所有细节的产品介绍”——简短和涵盖所有细节互相矛盾。遇到这种情况，你需要先想清楚自己到底要什么，做出取舍，而不是把矛盾甩给 AI。</p>
+<h2 id="5-System-Prompt-vs-User-Prompt：不同角色各司其职"><a href="#5-System-Prompt-vs-User-Prompt：不同角色各司其职" class="headerlink" title="5. System Prompt vs User Prompt：不同角色各司其职"></a>5. System Prompt vs User Prompt：不同角色各司其职</h2><p>如果你用过 ChatGPT 的 API 或者搭建过自己的 AI 应用，你会发现 Prompt 其实有两种角色：<strong>System Prompt</strong> 和 <strong>User Prompt</strong>。</p>
+<p>打个比方：System Prompt 就像公司的”员工手册”，定义了 AI 的身份、行为准则和全局规则。比如”你是一个客服助手，只回答和产品相关的问题，语气友好专业，不讨论政治话题”。这些规则在整个对话过程中始终生效。</p>
+<p>User Prompt 就是用户的具体提问，”我的订单什么时候到？””这款产品支持退货吗？”每次都不一样。</p>
+<p>两者的分工很清楚：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>System Prompt</th>
+<th>User Prompt</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>谁写</td>
+<td>开发者&#x2F;产品经理</td>
+<td>最终用户</td>
+</tr>
+<tr>
+<td>什么时候设定</td>
+<td>部署前，一次性</td>
+<td>每次对话</td>
+</tr>
+<tr>
+<td>管什么</td>
+<td>身份、规则、边界</td>
+<td>具体任务、具体问题</td>
+</tr>
+<tr>
+<td>可见性</td>
+<td>用户通常看不到</td>
+<td>用户自己写的</td>
+</tr>
+</tbody></table>
+<p>如果你只是在网页上跟 ChatGPT 聊天，你写的每一条消息都是 User Prompt。但如果你在开发 AI 应用，合理设计 System Prompt 是非常关键的一环——它决定了你的 AI 助手的”人设”和”边界”。</p>
+<h2 id="6-实际案例对比：差-Prompt-vs-好-Prompt"><a href="#6-实际案例对比：差-Prompt-vs-好-Prompt" class="headerlink" title="6. 实际案例对比：差 Prompt vs 好 Prompt"></a>6. 实际案例对比：差 Prompt vs 好 Prompt</h2><p>光说不练假把式，我们来看一个真实的对比。</p>
+<p><strong>任务</strong>：让 AI 帮你写一封邮件，跟客户解释项目延期。</p>
+<p><strong>差 Prompt</strong>：</p>
+<blockquote>
+<p>帮我写封邮件说项目延期了。</p>
+</blockquote>
+<p>AI 可能会给出一封泛泛而谈的邮件，语气不确定、细节缺失、格式随缘。</p>
+<p><strong>好 Prompt</strong>：</p>
+<blockquote>
+<p>你是一位项目经理，需要给客户王总写一封邮件。背景：我们的电商平台改版项目原定 6 月 30 日上线，因为第三方支付接口联调出了问题，需要延期两周到 7 月 14 日。请写一封邮件，要求：</p>
+<ol>
+<li>语气诚恳、专业，不卑不亢</li>
+<li>简要说明延期原因（不要过度暴露技术细节）</li>
+<li>给出新的时间节点</li>
+<li>提出一个补偿措施（比如加送一个月免费运维）</li>
+<li>邮件控制在 200 字以内</li>
+</ol>
+</blockquote>
+<p>这封 Prompt 包含了角色、背景、具体要求、语气、格式和长度限制，AI 给出的结果通常一次就能用。</p>
+<p>两者的差距不在 AI 的能力，而在你”交代任务”的能力。好的 Prompt 不是在讨好 AI，而是在帮你自己想清楚需求。</p>
+<h2 id="7-Prompt-不是万能的：什么时候该用别的方案"><a href="#7-Prompt-不是万能的：什么时候该用别的方案" class="headerlink" title="7. Prompt 不是万能的：什么时候该用别的方案"></a>7. Prompt 不是万能的：什么时候该用别的方案</h2><p>Prompt Engineering 很强大，但它不是银弹。以下几种情况，光靠 Prompt 是不够的：</p>
+<p><strong>需要私有知识时 → 用 RAG</strong>。大模型的知识来自训练数据，它不知道你公司的内部文档、产品手册、客户数据。这时候你需要 RAG（检索增强生成）——简单说就是先从你的知识库里搜出相关内容，再把它塞进 Prompt 里让 AI 参考。这样 AI 就能基于你的私有数据回答问题。</p>
+<p><strong>需要稳定、特定风格时 → 用 Fine-tuning</strong>。如果你希望 AI 始终用某种特定格式输出（比如你公司独有的法律文书模板），或者你需要它在某个狭窄领域表现得特别好，微调（Fine-tuning）是更好的选择。相当于给 AI 做了一次”专项培训”。</p>
+<p><strong>需要 100% 准确时 → 不该单独用 AI</strong>。AI 会犯错，这是由它的工作原理决定的（概率模型嘛）。如果你的场景容错率为零——比如金融交易、医疗诊断——你应该让 AI 作为辅助，最终决策由人来把关。</p>
+<p>一个实用的判断标准：如果你反复调 Prompt 超过五六次还达不到满意的效果，大概率说明这个问题已经超出了 Prompt Engineering 的能力范围，该考虑 RAG 或 Fine-tuning 了。</p>
+<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><p>如果你想更深入地学习 Prompt Engineering，推荐以下资源：</p>
+<ol>
+<li><strong><a target="_blank" rel="noopener" href="https://www.promptingguide.ai/zh">Prompt Engineering Guide</a></strong>：目前最全面的 Prompt 技巧汇总，有中文版，覆盖了从基础到高级的各种方法。</li>
+<li><strong><a target="_blank" rel="noopener" href="https://platform.openai.com/docs/guides/prompt-engineering">OpenAI 官方 Prompt 最佳实践</a></strong>：来自 OpenAI 官方的指南，简洁实用，适合快速上手。</li>
+<li><strong><a target="_blank" rel="noopener" href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview">Anthropic Prompt Engineering 文档</a></strong>：Anthropic（Claude 的开发商）整理的提示词工程指南，对复杂任务的 Prompt 设计讲得尤为透彻。</li>
+</ol>
+<hr>
+<blockquote>
+<p>小白讲 AI 系列第 05 篇完。下一篇我们聊聊 AI 的”幻觉”问题——为什么 AI 有时候会一本正经地胡说八道。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/">http://shiguol.github.io/2026/06/20/Prompt-Engineering-%E5%A6%82%E4%BD%95%E8%B7%9FAI%E5%A5%BD%E5%A5%BD%E8%AF%B4%E8%AF%9D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/ai/prompt-engineering.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/20/Embedding-%E6%8A%8A%E4%B8%87%E7%89%A9%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97/" title="Embedding：把万物变成数字"><img class="cover" src="/images/cover/ai/embedding.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Embedding：把万物变成数字</div></div><div class="info-2"><div class="info-item-1">如果你曾经好奇过，AI 是怎么”理解”一段文字、一张图片、甚至一首歌的，那今天这篇文章就是为你准备的。答案藏在一个叫 Embedding（嵌入） 的概念里——简单来说，它就是把世间万物翻译成一串数字，然后放到一张巨大的地图上。在这张地图上，意思相近的东西会自然地靠在一起，而意思不同的东西则会远远分开。   这是”小白讲 AI”系列的第 06 篇。前几篇我们聊了大语言模型、Transformer、Token 等概念，今天我们来聊聊 AI 世界里一个无处不在、却常被忽视的基础设施——Embedding。 一、开场类比：一张概念地图想象你手里有一张巨大无比的地图。这张地图上不画山川河流，而是标注着各种各样的”概念”。比如”猫”被标在了某个位置，”狗”就在它旁边不远处，因为它们都是宠物、都是动物。而”汽车”则被标在了很远的地方，因为它和猫狗没什么关系。再看”卡车”，它就紧挨着”汽车”，因为它们都是交通工具。 这就是 Embedding 做的事情：给每一个概念分配一个坐标，让相近的概念在地图上靠得近，不相关的概念离得远。 不过，这张”地图”可不是二维的。现实中的 Embedding 通常是...</div></div></div></a><a class="pagination-related" href="/2026/06/20/Token-AI%E7%9C%BC%E4%B8%AD%E7%9A%84%E6%96%87%E5%AD%97/" title="Token：AI 眼中的&quot;文字&quot;"><img class="cover" src="/images/cover/ai/token.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Token：AI 眼中的"文字"</div></div><div class="info-2"><div class="info-item-1">你有没有想过，当你跟 ChatGPT 聊天的时候，它看到的并不是你输入的那些字？在 AI 的眼里，文字会被拆解成一个个叫做 Token 的小碎片。这些碎片既不是”字”，也不是”词”，而是 AI 自己发明的一套拆分规则。今天这篇文章，我们就来聊聊这个 AI 世界里最基础、却常被忽略的概念——Token。    这是「小白讲 AI」系列的第 04 篇。前几篇我们聊了大模型、Prompt 等概念，这一篇我们深入一层，看看 AI 到底是怎么”阅读”你的文字的。  一、开场类比：AI 拆积木的方式和你想的不一样想象你面前有一盒乐高积木，拼成了一座城堡。现在让你把它拆开，你会怎么拆？大多数人会一块一块地拆，对吧？ 但如果让 AI 来拆，它的做法完全不同。它可能会把城堡的一面墙当成一个整体拆下来，把一扇小窗户也当成一个整体，而城堡顶上那个不常见的装饰，却被拆成了好几个零散的小块。 这就是 Token 的核心逻辑：AI 不是按你直觉中的”一个字”或”一个词”来拆分文字的，而是按照自己学到的规律来拆分。常见的组合会被当作一个整体，罕见的组合则会被拆得更碎。 比如，英文单词 “understandi...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/24/MCP-%E5%8D%8F%E8%AE%AE%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90-Agent%E4%B8%96%E7%95%8C%E7%9A%84USB%E6%8E%A5%E5%8F%A3/" title="MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;"><img class="cover" src="/images/cover/ai/mcp.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">MCP 协议深度解析：Agent 世界的&quot;USB 接口&quot;</div></div><div class="info-2"><div class="info-item-1">还记得 2000 年代初手机充电器的混乱吗？诺基亚用小圆口，摩托罗拉用 mini-USB，索尼爱立信有自己的专用接口，三星又是另一种。出门要带三根线，借别人的充电器发现插不上。后来 USB 统一了一切——不管你是什么品牌的设备，一根线就搞定。AI Agent 的世界正在经历类似的变革：每个 AI 模型调用工具的方式都不一样，每个工具服务的接入方法都不同。这时候就需要一个”USB 标准”来统一它们——这就是 MCP（Model Context Protocol，模型上下文协议）。    这是「小白讲 AI」系列的第 16 篇。前三篇我们沿着进化线走完了 Context Engineering → Harness 工程 → Loop 工程。这一篇我们聊一个让 Agent 能力倍增的关键技术：MCP 协议——它正在成为 Agent 世界的基础设施。  一、开场类比：从充电口的混乱到 USB 的统一在没有 MCP 之前，Agent 想调用外部工具是什么体验？ 假设你在搭建一个 Agent，它需要用到三种工具：搜索引擎、日历服务和代码执行器。每个工具的接入方式都不一样：  搜索引擎用 RE...</div></div></div></a><a class="pagination-related" href="/2026/06/20/AI%E5%AE%89%E5%85%A8%E4%B8%8E%E5%AF%B9%E9%BD%90-%E5%A6%82%E4%BD%95%E8%AE%A9AI%E4%B8%8D%E7%BF%BB%E8%BD%A6/" title="AI 安全与对齐：如何让 AI 不翻车"><img class="cover" src="/images/cover/ai/ai-safety.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">AI 安全与对齐：如何让 AI 不翻车</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 11 篇。前面几篇我们聊了 AI 怎么学习、怎么生成内容，但有一个更根本的问题一直没展开——AI 会不会”翻车”？ 翻车了怎么办？怎么才能尽量不让它翻车？今天我们就来聊聊 AI 安全与对齐这个大话题。   一、开场类比：教一个超级聪明的外星人做人想象这样一个场景：有一天，一个智力远超人类的外星人降落在你家门口。它能在几秒钟内算出火箭轨道，能流利地说一百种语言，但它对人类社会的规则一无所知。 你让它去超市帮你买菜，它可能会觉得”效率最高的方式”是直接把菜拿走——因为没人告诉它要排队结账。你让它帮你写一封邮件，它可能会用极其直白甚至冒犯的语气，因为它不理解人类的社交礼仪。 AI 对齐（AI Alignment） 要解决的，就是类似的问题。AI 模型本质上就是一个”超级聪明但没有常识的外星人”。它拥有强大的能力，但如果我们不花大力气去”教”它什么该做、什么不该做，它就可能做出各种离谱的事情。 “对齐”这个词的意思是：让 AI 的目标、行为和价值观与人类的意图对齐，也就是保持一致。听起来简单，做起来却是当今 AI 领域最难的问题之一。 二、AI 会犯什么错？...</div></div></div></a><a class="pagination-related" href="/2026/06/24/%E5%AE%9E%E6%88%98%E8%BF%9B%E9%98%B6-%E7%94%A8MCP%E6%89%93%E9%80%A0%E5%A4%9A%E5%B7%A5%E5%85%B7Agent/" title="实战进阶：用 MCP 打造多工具 Agent"><img class="cover" src="/images/cover/ai/mcp-multi-tool.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">实战进阶：用 MCP 打造多工具 Agent</div></div><div class="info-2"><div class="info-item-1">上一篇我们手写了一个”单机游戏”式的 Agent——工具是自己定义的、能力是固定的，就像一个只能在自家小区逛的孩子。今天我们要让它”联网”——通过 MCP 协议接入外部工具生态，瞬间获得读写文件、查询数据库、操作 GitHub 等成千上万种能力。就像游戏角色走出新手村，接入了整个世界地图，可以接任务、买装备、组队打副本。    这是「小白讲 AI」系列的第 20 篇，也是 Agent 系列的最终章。从第 5 篇的一条 Prompt，到今天用 MCP 打造多工具 Agent——我们走了一段不短的路。这一篇既是实战教程，也是对整个系列的总结和回顾。  一、上一篇的 Agent 缺什么？回顾一下第 19 篇手写的研究助手 Agent——它能跑，但有几个明显的限制：  工具是硬编码的：只有 search 和 fetch_url 两个工具，想加新工具就得改代码 不能操作本地文件：Agent 查到了信息却没法保存下来 单打独斗：只有一个 Agent 在干活，没有分工协作 代码量随复杂度增长：工具越多、逻辑越复杂，手写代码越难维护  今天我们要解决这些问题：  用 MCP 让 Agent 动态...</div></div></div></a><a class="pagination-related" href="/2026/06/24/Context-Engineering-%E4%BB%8E%E5%86%99%E5%A5%BD%E6%8F%90%E7%A4%BA%E8%AF%8D%E5%88%B0%E7%AE%A1%E5%A5%BD%E4%B8%8A%E4%B8%8B%E6%96%87/" title="Context Engineering：从&quot;写好提示词&quot;到&quot;管好上下文&quot;"><img class="cover" src="/images/cover/ai/context-engineering.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">Context Engineering：从&quot;写好提示词&quot;到&quot;管好上下文&quot;</div></div><div class="info-2"><div class="info-item-1">你学会了一道菜的做法，照着菜谱一步步操作，味道确实不错。但如果有一天你要同时做一桌子菜呢？光靠菜谱远远不够——你得管理整个厨房：哪些食材要提前解冻、调料瓶怎么摆才顺手、砧板上现在该放什么、冰箱里还剩什么……这就是从”会做一道菜”到”管好一个厨房”的跨越。AI 领域也有同样的进化：从”写好一条提示词”（Prompt Engineering）到”管好整个上下文”（Context Engineering）。今天我们就来聊聊这个正在重新定义 AI 应用开发方式的关键概念。    这是「小白讲 AI」系列的第 13 篇。第 5 篇我们聊了 Prompt Engineering——怎么写好一条指令让 AI 听懂你的意思。这一篇我们往上走一层：不再只关注”怎么说”，而是关注”AI 看到什么”。  一、开场类比：从”写菜谱”到”管厨房”先来回忆一下第 5 篇的核心观点。Prompt Engineering 要解决的问题是：怎么跟 AI 好好说话。你学会了写清晰的指令、给出示例、分配角色、控制输出格式。这些技巧确实很有用，就像一份写得漂亮的菜谱，能让一道菜做得有模有样。 但问题来了——真实世界的 ...</div></div></div></a><a class="pagination-related" href="/2026/06/20/%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8EDiffusion-Model/" title="图像生成与 Diffusion Model"><img class="cover" src="/images/cover/ai/diffusion.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">图像生成与 Diffusion Model</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 10 篇。今天我们来聊一个让无数人直呼”魔法”的技术——Diffusion Model（扩散模型）。它是 Stable Diffusion、DALL·E、Midjourney 等 AI 画图工具背后的核心引擎。你只需要输入一句话，几秒钟后就能得到一张精美的图片。这到底是怎么做到的？别担心，本文零公式，全程用生活类比来解释，保证小白也能看懂。   1. 开场类比：反向洗衣机想象你有一张漂亮的照片，然后你把它扔进了一台疯狂的洗衣机。洗衣机每转一圈，照片就变得更模糊、更混乱。转了上千圈之后，照片彻底变成了一团看不出任何内容的”雪花噪点”——就像老式电视没信号时的那种沙沙画面。 现在问题来了：有没有可能训练一个 AI，让它学会”反向开洗衣机”？也就是说，给它一张全是噪点的图，它能一步一步把噪点去掉，最终还原出一张清晰的照片？ 答案是：可以！这就是 Diffusion Model 的核心思路。 整个过程分成两个阶段：  前向过程（加噪）：把好好的图片一步步加噪声，搅成一团糊。 反向过程（去噪）：训练 AI 学会一步步去掉噪声，从纯噪点变回图片——也就是”反向洗...</div></div></div></a><a class="pagination-related" href="/2026/06/20/Embedding-%E6%8A%8A%E4%B8%87%E7%89%A9%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97/" title="Embedding：把万物变成数字"><img class="cover" src="/images/cover/ai/embedding.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">Embedding：把万物变成数字</div></div><div class="info-2"><div class="info-item-1">如果你曾经好奇过，AI 是怎么”理解”一段文字、一张图片、甚至一首歌的，那今天这篇文章就是为你准备的。答案藏在一个叫 Embedding（嵌入） 的概念里——简单来说，它就是把世间万物翻译成一串数字，然后放到一张巨大的地图上。在这张地图上，意思相近的东西会自然地靠在一起，而意思不同的东西则会远远分开。   这是”小白讲 AI”系列的第 06 篇。前几篇我们聊了大语言模型、Transformer、Token 等概念，今天我们来聊聊 AI 世界里一个无处不在、却常被忽视的基础设施——Embedding。 一、开场类比：一张概念地图想象你手里有一张巨大无比的地图。这张地图上不画山川河流，而是标注着各种各样的”概念”。比如”猫”被标在了某个位置，”狗”就在它旁边不远处，因为它们都是宠物、都是动物。而”汽车”则被标在了很远的地方，因为它和猫狗没什么关系。再看”卡车”，它就紧挨着”汽车”，因为它们都是交通工具。 这就是 Embedding 做的事情：给每一个概念分配一个坐标，让相近的概念在地图上靠得近，不相关的概念离得远。 不过，这张”地图”可不是二维的。现实中的 Embedding 通常是...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">92</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">56</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%BC%80%E5%9C%BA%E7%B1%BB%E6%AF%94%EF%BC%9A%E7%BB%99%E5%AE%9E%E4%B9%A0%E7%94%9F%E5%86%99%E5%B7%A5%E4%BD%9C%E4%BA%A4%E6%8E%A5%E6%96%87%E6%A1%A3"><span class="toc-number">1.</span> <span class="toc-text">1. 开场类比：给实习生写工作交接文档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%9F%BA%E7%A1%80%E6%8A%80%E5%B7%A7%EF%BC%9A%E5%9B%9B%E4%B8%AA%E5%85%B3%E9%94%AE%E8%A6%81%E7%B4%A0"><span class="toc-number">2.</span> <span class="toc-text">2. 基础技巧：四个关键要素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%80%9D%E7%BB%B4%E9%93%BE%EF%BC%88Chain-of-Thought%EF%BC%89%EF%BC%9A%E8%AE%A9-AI-%E2%80%9C%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E6%83%B3%E2%80%9D"><span class="toc-number">3.</span> <span class="toc-text">3. 思维链（Chain of Thought）：让 AI “一步一步想”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%B8%B8%E8%A7%81%E5%8F%8D%E6%A8%A1%E5%BC%8F%EF%BC%9A%E8%BF%99%E4%BA%9B%E5%9D%91%E4%BD%A0%E4%B8%80%E5%AE%9A%E8%B8%A9%E8%BF%87"><span class="toc-number">4.</span> <span class="toc-text">4. 常见反模式：这些坑你一定踩过</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-System-Prompt-vs-User-Prompt%EF%BC%9A%E4%B8%8D%E5%90%8C%E8%A7%92%E8%89%B2%E5%90%84%E5%8F%B8%E5%85%B6%E8%81%8C"><span class="toc-number">5.</span> <span class="toc-text">5. System Prompt vs User Prompt：不同角色各司其职</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%AE%9E%E9%99%85%E6%A1%88%E4%BE%8B%E5%AF%B9%E6%AF%94%EF%BC%9A%E5%B7%AE-Prompt-vs-%E5%A5%BD-Prompt"><span class="toc-number">6.</span> <span class="toc-text">6. 实际案例对比：差 Prompt vs 好 Prompt</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Prompt-%E4%B8%8D%E6%98%AF%E4%B8%87%E8%83%BD%E7%9A%84%EF%BC%9A%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E8%AF%A5%E7%94%A8%E5%88%AB%E7%9A%84%E6%96%B9%E6%A1%88"><span class="toc-number">7.</span> <span class="toc-text">7. Prompt 不是万能的：什么时候该用别的方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E4%BC%B8%E9%98%85%E8%AF%BB"><span class="toc-number">8.</span> <span class="toc-text">延伸阅读</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-22-%E5%9B%BE%E7%AE%97%E6%B3%95/" title="现代 C++ 实战（22）：图算法"><img src="/images/cover/cpp/graph.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（22）：图算法"/></a><div class="content"><a class="title" href="/2026/07/23/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-22-%E5%9B%BE%E7%AE%97%E6%B3%95/" title="现代 C++ 实战（22）：图算法">现代 C++ 实战（22）：图算法</a><time datetime="2026-07-23T02:00:00.000Z" title="发表于 2026-07-23 10:00:00">2026-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/22/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-21-%E6%A0%91%E7%BB%93%E6%9E%84%E5%85%A8%E5%AE%B6%E6%A1%B6/" title="现代 C++ 实战（21）：树结构全家桶"><img src="/images/cover/cpp/trees.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（21）：树结构全家桶"/></a><div class="content"><a class="title" href="/2026/07/22/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-21-%E6%A0%91%E7%BB%93%E6%9E%84%E5%85%A8%E5%AE%B6%E6%A1%B6/" title="现代 C++ 实战（21）：树结构全家桶">现代 C++ 实战（21）：树结构全家桶</a><time datetime="2026-07-22T02:00:00.000Z" title="发表于 2026-07-22 10:00:00">2026-07-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-20-%E6%A0%88%E9%98%9F%E5%88%97%E4%B8%8E%E9%93%BE%E8%A1%A8/" title="现代 C++ 实战（20）：栈、队列与链表"><img src="/images/cover/cpp/stack-queue-list.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（20）：栈、队列与链表"/></a><div class="content"><a class="title" href="/2026/07/21/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-20-%E6%A0%88%E9%98%9F%E5%88%97%E4%B8%8E%E9%93%BE%E8%A1%A8/" title="现代 C++ 实战（20）：栈、队列与链表">现代 C++ 实战（20）：栈、队列与链表</a><time datetime="2026-07-21T02:00:00.000Z" title="发表于 2026-07-21 10:00:00">2026-07-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-19-%E5%93%88%E5%B8%8C%E8%A1%A8%E5%AE%9E%E7%8E%B0/" title="现代 C++ 实战（19）：哈希表实现"><img src="/images/cover/cpp/hash-table.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（19）：哈希表实现"/></a><div class="content"><a class="title" href="/2026/07/20/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-19-%E5%93%88%E5%B8%8C%E8%A1%A8%E5%AE%9E%E7%8E%B0/" title="现代 C++ 实战（19）：哈希表实现">现代 C++ 实战（19）：哈希表实现</a><time datetime="2026-07-20T02:00:00.000Z" title="发表于 2026-07-20 10:00:00">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/19/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-18-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8Estd-sort/" title="现代 C++ 实战（18）：排序算法与 std::sort"><img src="/images/cover/cpp/sorting.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（18）：排序算法与 std::sort"/></a><div class="content"><a class="title" href="/2026/07/19/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-18-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8Estd-sort/" title="现代 C++ 实战（18）：排序算法与 std::sort">现代 C++ 实战（18）：排序算法与 std::sort</a><time datetime="2026-07-19T02:00:00.000Z" title="发表于 2026-07-19 10:00:00">2026-07-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
