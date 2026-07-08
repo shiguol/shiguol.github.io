@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://shiguol.github.io/2026/07/28/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-27-%E5%8D%8F%E7%A8%8B%E4%B8%8EActor%E6%A8%A1%E5%9E%8B/</loc>
+    
+    <lastmod>2026-07-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2026/07/27/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-26-LRU%E7%BC%93%E5%AD%98%E4%B8%8EJSON%E8%A7%A3%E6%9E%90%E5%99%A8/</loc>
+    
+    <lastmod>2026-07-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2026/07/26/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-25-SQLite%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E6%88%98/</loc>
     
     <lastmod>2026-07-08</lastmod>
@@ -398,7 +416,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2026/07/02/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-01-Hello-World%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</loc>
+    <loc>http://shiguol.github.io/2026/07/01/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/</loc>
     
     <lastmod>2026-06-30</lastmod>
     
@@ -407,7 +425,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2026/07/01/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/</loc>
+    <loc>http://shiguol.github.io/2026/07/02/x86%E6%B1%87%E7%BC%96%E5%85%A5%E9%97%A8-01-Hello-World%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/</loc>
     
     <lastmod>2026-06-30</lastmod>
     
@@ -434,7 +452,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2017/07/20/crontab/</loc>
+    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -443,7 +461,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2025/05/19/Upgrade-Hexo-to-7-0-0/</loc>
+    <loc>http://shiguol.github.io/2017/07/20/crontab/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -524,15 +542,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
-    
-    <lastmod>2026-06-25</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/2025/05/19/A-good-start-for-Dockerfile/</loc>
     
     <lastmod>2026-06-25</lastmod>
@@ -542,7 +551,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/2025/05/19/CMake-CPP/</loc>
+    <loc>http://shiguol.github.io/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -552,6 +561,15 @@
   
   <url>
     <loc>http://shiguol.github.io/2016/01/10/Command-Tab-and-option-to-retore-window/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/2025/05/19/CMake-CPP/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -668,6 +686,15 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/</loc>
+    
+    <lastmod>2026-06-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/2026/06/20/Embedding-%E6%8A%8A%E4%B8%87%E7%89%A9%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97/</loc>
     
     <lastmod>2026-06-25</lastmod>
@@ -678,15 +705,6 @@
   
   <url>
     <loc>http://shiguol.github.io/2026/06/20/Fine-tuning-vs-RAG-%E8%AE%A9AI%E5%AD%A6%E4%BC%9A%E4%BD%A0%E7%9A%84%E7%9F%A5%E8%AF%86/</loc>
-    
-    <lastmod>2026-06-25</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/2026/06/20/AI-Agent-%E8%AE%A9AI%E8%87%AA%E5%B7%B1%E5%B9%B2%E6%B4%BB/</loc>
     
     <lastmod>2026-06-25</lastmod>
     
@@ -900,20 +918,6 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Programming/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/movie/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>http://shiguol.github.io/tags/2025/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -942,14 +946,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/CMake/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/C/</loc>
+    <loc>http://shiguol.github.io/tags/movie/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -963,7 +960,21 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Git/</loc>
+    <loc>http://shiguol.github.io/tags/Programming/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/CMake/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/C/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -984,7 +995,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Gmail/</loc>
+    <loc>http://shiguol.github.io/tags/Git/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1005,7 +1016,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/2016/</loc>
+    <loc>http://shiguol.github.io/tags/Emoji/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1033,14 +1044,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Emoji/</loc>
+    <loc>http://shiguol.github.io/tags/2016/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/linux/</loc>
+    <loc>http://shiguol.github.io/tags/Gmail/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1055,6 +1066,13 @@
   
   <url>
     <loc>http://shiguol.github.io/tags/git/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/linux/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1110,14 +1128,14 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/GIT/</loc>
+    <loc>http://shiguol.github.io/tags/github/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/github/</loc>
+    <loc>http://shiguol.github.io/tags/GIT/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1173,7 +1191,42 @@
   </url>
   
   <url>
+    <loc>http://shiguol.github.io/tags/C-20/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/C-23/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/C-26/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://shiguol.github.io/tags/Lambda/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1194,42 +1247,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/C-20/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/C-23/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/Concepts/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/C-26/</loc>
+    <loc>http://shiguol.github.io/tags/Ranges/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1243,14 +1261,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/Ranges/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/tags/GoogleTest/</loc>
+    <loc>http://shiguol.github.io/tags/Concepts/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1271,14 +1282,21 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/iOS/</loc>
+    <loc>http://shiguol.github.io/tags/GoogleTest/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/iPhoto/</loc>
+    <loc>http://shiguol.github.io/tags/HTTP/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/JSON/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1299,14 +1317,21 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/HTTP/</loc>
+    <loc>http://shiguol.github.io/tags/iOS/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/tags/JSON/</loc>
+    <loc>http://shiguol.github.io/tags/iPhoto/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/tags/%E5%8D%8F%E7%A8%8B/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1316,13 +1341,6 @@
   
   <url>
     <loc>http://shiguol.github.io/categories/Life/</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://shiguol.github.io/categories/Programming/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1350,7 +1368,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/Life/</loc>
+    <loc>http://shiguol.github.io/categories/Programming/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1358,6 +1376,13 @@
   
   <url>
     <loc>http://shiguol.github.io/categories/Linux/</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://shiguol.github.io/categories/Life/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1378,7 +1403,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/VIM/</loc>
+    <loc>http://shiguol.github.io/categories/Assembly/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1392,7 +1417,7 @@
   </url>
   
   <url>
-    <loc>http://shiguol.github.io/categories/Assembly/</loc>
+    <loc>http://shiguol.github.io/categories/VIM/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
