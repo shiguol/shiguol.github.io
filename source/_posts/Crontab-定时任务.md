@@ -4,6 +4,10 @@ title: Crontab 定时任务
 date: 2025-05-19 00:10:25
 categories: Linux
 tags:
+- Linux
+- crontab
+- 定时任务
+- 运维
 ---
 
 crontab -e

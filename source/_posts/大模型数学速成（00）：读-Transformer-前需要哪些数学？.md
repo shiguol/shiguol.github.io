@@ -5,11 +5,15 @@ date: 2026-06-28 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 线性代数
+- 概率
+- 微积分
+- 数学基础
 mathjax: true
 ---
 

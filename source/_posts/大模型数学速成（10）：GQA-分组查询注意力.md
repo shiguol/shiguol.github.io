@@ -5,11 +5,14 @@ date: 2026-07-08 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- GQA
+- 注意力机制
+- 推理优化
 mathjax: true
 ---
 

@@ -7,6 +7,10 @@ categories:
 tags:
 - 2016
 - Mac
+- macOS
+- Homebrew
+- 开发环境
+- 工具链
 
 cover: https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png
 ---

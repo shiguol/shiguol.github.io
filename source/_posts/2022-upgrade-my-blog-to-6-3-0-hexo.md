@@ -4,10 +4,14 @@ categories:
 - Programming
 
 tags:
-- Programming
+- 编程
+- Hexo
+- Blog
+- 升级
+- GitHub Pages
+- 2022
 
 cover: images/cover/hexo.png
-
 ---
 
 Recently I update my blog from 4.0.0 to 6.3.0 hexo.

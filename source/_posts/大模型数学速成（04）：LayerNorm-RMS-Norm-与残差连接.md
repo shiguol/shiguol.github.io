@@ -5,11 +5,14 @@ date: 2026-07-02 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- LayerNorm
+- 残差连接
+- 归一化
 mathjax: true
 ---
 

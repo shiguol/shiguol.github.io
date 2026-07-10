@@ -5,12 +5,16 @@ date: 2026-07-10 22:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
-  - 训练
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 训练
+- DPO
+- RLHF
+- 对齐
+- 强化学习
 mathjax: true
 ---
 

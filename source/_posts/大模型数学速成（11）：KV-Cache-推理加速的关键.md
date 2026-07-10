@@ -5,12 +5,15 @@ date: 2026-07-09 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
-  - 推理
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 推理
+- KV-Cache
+- 推理优化
+- 缓存
 mathjax: true
 ---
 

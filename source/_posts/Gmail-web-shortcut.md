@@ -6,6 +6,9 @@ categories:
 
 tags:
 - Gmail
+- 快捷键
+- 效率
+- Web
 
 cover: images/cover/gmail.png
 ---

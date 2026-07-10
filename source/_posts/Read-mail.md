@@ -4,6 +4,9 @@ title: Read mail
 date: 2025-05-19 00:11:25
 categories: macOS
 tags:
+- macOS
+- 邮件
+- Mail
 ---
 
 当收到邮件时，终端会在登录后显示：”You have mail.”。

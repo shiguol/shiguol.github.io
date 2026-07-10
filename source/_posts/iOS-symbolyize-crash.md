@@ -9,6 +9,10 @@ categories:
 tags:
 - 2017
 - Mac
+- iOS
+- 崩溃符号化
+- 调试
+- Xcode
 ---
 
 ```

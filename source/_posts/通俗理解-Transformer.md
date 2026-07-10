@@ -5,9 +5,13 @@ date: 2026-06-20 20:59:21
 categories:
   - AI
 tags:
-  - AI
-  - 编程
-  - 2026
+- AI
+- 编程
+- 2026
+- Transformer
+- 注意力机制
+- LLM
+- 深度学习
 ---
 
 ChatGPT、Claude、Gemini……这些 AI 产品背后都有一个共同的核心架构——**Transformer**。这篇文章用最通俗的方式，帮你搞懂它到底是什么。

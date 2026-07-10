@@ -6,7 +6,11 @@ categories:
 
 tags:
 - zsh
-- vim
+- Vim
+- 开发环境
+- Linux
+- Shell
+- dotfiles
 
 cover: /images/cover/setup-devenv-zsh-vim.png
 ---

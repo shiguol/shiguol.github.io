@@ -5,9 +5,11 @@ categories:
 - Life
 
 tags:
+- 学习
+- 学习方法
+- Life
 
 cover: images/learning.jpg
-
 
 ---
 

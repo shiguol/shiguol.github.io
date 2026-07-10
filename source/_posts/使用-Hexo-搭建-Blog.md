@@ -5,8 +5,11 @@ categories:
 - Programming
 
 tags:
-- hexo 
-- github
+- Hexo
+- GitHub
+- Blog
+- GitHub Pages
+- 静态站点
 
 cover: images/cover/hexo.png
 ---

@@ -8,7 +8,10 @@ categories:
 - Programming
 
 tags:
-- linux
+- Linux
+- crontab
+- 定时任务
+- 运维
 ---
 
 定时任务命令使用：

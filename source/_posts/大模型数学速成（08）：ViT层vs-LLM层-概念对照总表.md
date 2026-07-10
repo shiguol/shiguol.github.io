@@ -5,11 +5,15 @@ date: 2026-07-06 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- ViT
+- Vision
+- 多模态
+- 架构
 mathjax: true
 ---
 

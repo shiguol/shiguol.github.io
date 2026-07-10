@@ -5,12 +5,16 @@ date: 2026-07-10 19:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
-  - 训练
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 训练
+- LoRA
+- Fine-tuning
+- 低秩
+- PEFT
 mathjax: true
 ---
 

@@ -9,6 +9,8 @@ tags:
 - Emoji
 - Mac
 - 编程
+- macOS
+- 快捷键
 
 cover: https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png
 ---

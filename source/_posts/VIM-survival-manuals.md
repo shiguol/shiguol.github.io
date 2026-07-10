@@ -6,9 +6,12 @@ categories:
 
 tags:
 - 编程
+- Vim
+- 编辑器
+- 快捷键
+- 开发工具
 
 cover: https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg
-
 ---
 |  Cmd   | Meaning  |
 |  ----  | ----  |

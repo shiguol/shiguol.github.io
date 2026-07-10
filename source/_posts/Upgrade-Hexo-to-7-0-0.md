@@ -4,7 +4,11 @@ title: Upgrade Hexo to 7.0.0
 date: 2025-05-19 00:09:41
 categories: Blog
 tags:
-- hexo
+- Hexo
+- Blog
+- 升级
+- npm
+- 2025
 ---
 
 vim package.json

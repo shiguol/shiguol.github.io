@@ -1,9 +1,13 @@
 title: tar command
 date: 2023-06-11 14:12:17
 categories: Programming
-tags: VIM
+tags:
+- Linux
+- tar
+- 压缩
+- 命令行
+- macOS
 cover: images/cover/terminal_2.png
-
 ---
 
 # macOS 压缩

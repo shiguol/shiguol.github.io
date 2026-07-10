@@ -7,6 +7,9 @@ categories:
 - Life
 tags:
 - 2015
+- Life
+- 年度回顾
+- 团队建设
 ---
 
 ![team-building](/images/teambuilding.gif)

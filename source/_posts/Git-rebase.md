@@ -3,7 +3,10 @@ cover: /images/cover/git-rebase.png
 title: Git rebase
 date: 2025-05-19 00:08:34
 categories: Programming
-tags: Git
+tags:
+- Git
+- rebase
+- 版本控制
 ---
 
 如果你正在 feature 分支上合作开发，并且你追踪的是上游的 feature 分支，当你要提 pr 时，发现落后 master 分支若干次提交，

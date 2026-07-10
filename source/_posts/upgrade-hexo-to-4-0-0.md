@@ -5,10 +5,11 @@ categories:
 - Blog
 
 tags:
-- hexo
+- Hexo
+- Blog
+- 升级
 
 cover: images/cover/hexo.png
-
 ---
 
 Recently I update my blog from 1.0.0 to 4.0.0 hexo.

@@ -3,9 +3,12 @@ cover: /images/cover/lldb-debug.png
 title: Debug with LLDB
 date: 2025-05-19 00:01:29
 categories: Programming
-tags: 
+tags:
 - Unix
 - LLDB
+- 调试
+- C++
+- 开发工具
 ---
 
 First, compile codes with DSYM:

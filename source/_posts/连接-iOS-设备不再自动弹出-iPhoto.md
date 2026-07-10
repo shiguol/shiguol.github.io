@@ -9,6 +9,8 @@ categories:
 tags:
 - iOS
 - iPhoto
+- macOS
+- Life
 ---
 
 在 Terminal 中执行：

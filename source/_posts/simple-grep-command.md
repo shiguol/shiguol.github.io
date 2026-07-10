@@ -7,6 +7,11 @@ categories:
 - Programming
 
 tags:
+- Linux
+- grep
+- 命令行
+- 正则
+- Unix
 ---
 
 ```

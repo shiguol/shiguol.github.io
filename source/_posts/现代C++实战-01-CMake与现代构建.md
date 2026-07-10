@@ -5,12 +5,14 @@ date: 2026-06-14 14:00:00
 categories:
   - CppInPractice
 tags:
-  - C++
-  - 现代C++
-  - 编程
-  - 2026
-  - CMake
-  - FetchContent
+- C++
+- 现代C++
+- 编程
+- 2026
+- CMake
+- FetchContent
+- 构建系统
+- 现代构建
 ---
 
 上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：**CMake**。本系列 39 个 demo 全部用 CMake 构建，其中 `projects/fetch_content/` 是一个「集大成」示例——它用 **FetchContent** 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。

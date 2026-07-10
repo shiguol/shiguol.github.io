@@ -5,13 +5,16 @@ date: 2026-07-07 14:00:00
 categories:
   - CppInPractice
 tags:
-  - C++
-  - 现代C++
-  - 编程
-  - 2026
-  - HTTP
-  - JSON
-  - FetchContent
+- C++
+- 现代C++
+- 编程
+- 2026
+- HTTP
+- JSON
+- FetchContent
+- 网络编程
+- cpp-httplib
+- REST
 ---
 
 [第 23 篇](/2026/07/06/现代C++实战-23-字符串搜索与动态规划/) 收官第三季算法篇；**第四季**进入工程实战。第一篇从最常见的后端能力入手：用 **cpp-httplib** 搭 HTTP 服务，用 **nlohmann/json** 处理 JSON——几十行代码就能跑起一个 REST 接口。

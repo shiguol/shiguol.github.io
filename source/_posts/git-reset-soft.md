@@ -6,7 +6,9 @@ categories:
 - Programming
 
 tags:
-- git
+- Git
+- reset
+- 版本控制
 
 cover: https://git-scm.com/images/logos/downloads/Git-Logo-2Color.png
 ---

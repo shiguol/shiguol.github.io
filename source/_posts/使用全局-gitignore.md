@@ -7,7 +7,9 @@ categories:
 - Programming
 
 tags:
-- GIT
+- Git
+- gitignore
+- 版本控制
 ---
 
 !!Deprecated!!

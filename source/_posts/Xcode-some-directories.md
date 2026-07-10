@@ -5,7 +5,11 @@ categories:
 - Programming
 
 tags:
-- xcode
+- Xcode
+- Xcode
+- iOS
+- macOS
+- 开发工具
 
 cover: images/cover/xcode.png
 ---

@@ -5,12 +5,15 @@ date: 2026-06-23 14:00:00
 categories:
   - CppInPractice
 tags:
-  - C++
-  - 现代C++
-  - 编程
-  - 2026
-  - C++20
-  - Ranges
+- C++
+- 现代C++
+- 编程
+- 2026
+- C++20
+- Ranges
+- 函数式
+- 迭代器
+- 管道
 ---
 
 传统 STL 算法要传 `begin/end`，中间步骤常要**临时容器**；C++20 **Ranges** 用「范围 + 视图管道」把数据处理写成 Unix 管道风格——`filter | transform | take`，且**惰性求值**，少分配、可读性高。

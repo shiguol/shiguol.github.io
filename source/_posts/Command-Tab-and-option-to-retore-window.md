@@ -8,6 +8,8 @@ categories:
 
 tags:
 - macOS
+- 快捷键
+- 窗口管理
 ---
 
 恢复最小化到 Dock 中的 App：

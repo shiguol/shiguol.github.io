@@ -5,12 +5,16 @@ date: 2026-07-10 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
-  - 训练
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 训练
+- 交叉熵
+- Logits
+- 损失函数
+- Softmax
 mathjax: true
 ---
 

@@ -8,6 +8,9 @@ categories:
 
 tags:
 - Chrome
+- 浏览器
+- macOS
+- Life
 ---
 
 沉浸模式是指全屏后，不显示 Tabs；如果你发现 `Control + Cmd + F` （全屏切换）不生效的话，可以在全屏后再次点击 `Shift + Cmd + F` 即可。

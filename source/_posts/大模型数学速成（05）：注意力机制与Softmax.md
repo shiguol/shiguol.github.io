@@ -5,11 +5,14 @@ date: 2026-07-03 10:00:00
 categories:
   - LLMMathPrimer
 tags:
-  - AI
-  - 数学
-  - Transformer
-  - 大模型
-  - 2026
+- AI
+- 数学
+- Transformer
+- 大模型
+- 2026
+- 注意力机制
+- Softmax
+- 概率
 mathjax: true
 ---
 

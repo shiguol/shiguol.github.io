@@ -7,6 +7,10 @@ categories:
 
 tags:
 - 2025
+- Docker
+- Dockerfile
+- 容器
+- DevOps
 ---
 
 构建 Docker 镜像，这样开发调试都是与真实线上环境一致。
