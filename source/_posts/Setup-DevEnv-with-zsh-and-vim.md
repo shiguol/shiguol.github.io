@@ -8,7 +8,7 @@ tags:
 - zsh
 - vim
 
-cover: https://commons.wikimedia.org/wiki/Category:Terminal_icons#/media/File:GNOME_Terminal_icon_2019.svg
+cover: /images/cover/setup-devenv-zsh-vim.png
 ---
 
 今天拿到了新电脑，本来想做迁移，回头又一想，不如重新配置一个开发环境，因为有了此文。

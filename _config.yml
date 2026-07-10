@@ -45,7 +45,11 @@ category_map:
   汇编: Assembly
   C++实战: CppInPractice
   大模型数学速成: LLMMathPrimer
-tag_map: null
+  # macOS 大小写不敏感：Git 历史里路径是 categories/vim，强制 slug 小写以匹配线上
+  VIM: vim
+tag_map:
+  # 同上，避免 tags/VIM 与 tags/vim 分裂
+  VIM: vim
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
 per_page: 10
