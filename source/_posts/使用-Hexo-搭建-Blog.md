@@ -2,14 +2,13 @@ title: 使用 Hexo 搭建 Blog
 uuid: 9719114b-e718-be4e-9cfe-4418b408b83d
 date: 2015-12-13 14:47:57
 categories:
-- 编程
+- Programming
 
 tags:
 - hexo 
 - github
 
 cover: images/cover/hexo.png
-
 ---
 
 ![HEXO-logo](https://avatars0.githubusercontent.com/u/6375567?v=3&s=200)

@@ -2,14 +2,13 @@ title: Mac_develop_tool_chain
 uuid: 7ac5d1dd-dc12-9d8e-e884-ca571ec474f0
 date: 2016-01-07 17:03:03
 categories:
-- 编程
+- Programming
 
 tags:
 - 2016
 - Mac
 
 cover: https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png
-
 ---
 
 ![brew-logo](https://avatars2.githubusercontent.com/u/1503512?v=3&s=200)

@@ -2,14 +2,13 @@ title: Setup DevEnv with zsh and vim
 uuid: cd6170d7-fb25-61f6-f6a4-48c32d6a0a67
 date: 2016-04-18 10:41:56
 categories:
-- 编程
+- Programming
 
 tags:
 - zsh
 - vim
 
 cover: https://commons.wikimedia.org/wiki/Category:Terminal_icons#/media/File:GNOME_Terminal_icon_2019.svg
-
 ---
 
 今天拿到了新电脑，本来想做迁移，回头又一想，不如重新配置一个开发环境，因为有了此文。
