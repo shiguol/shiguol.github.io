@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 [上一篇](/2026/07/03/大模型数学速成（05）：注意力机制与Softmax/)里，每个 token 通过注意力「看过」其他 token。但注意力只做**加权混合**——线性组合 V，表达能力有限。Transformer 块的另一半是 **FFN（Feed-Forward Network，前馈网络）**：对每个 token **独立**做「升维 → 非线性 → 降维」，注入更强的逐 token 变换能力。

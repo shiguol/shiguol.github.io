@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 前 7 篇我们分别讲了张量约定、矩阵乘、Q/K/V、Norm 与残差、Attention、FFN、RoPE—— pieces 齐了，但读 ViT 或 LLM 代码时仍容易混：**patch 和 token 是一回事吗？为什么 ViT 双向、LLM 因果？RMS Norm 和 LayerNorm 谁在哪？**

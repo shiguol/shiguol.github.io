@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 [第 06 篇](/2026/07/04/大模型数学速成（06）：前馈网络FFN-GELU与SwiGLU/) 的 FFN 对**每个 token** 做同一套「升维 → 非线性 → 降维」。模型想更大时，若继续把 FFN 做厚，**参数量和每 token 算力一起涨**。**MoE（Mixture of Experts，混合专家）** 换思路：总参数可以很多，但每个 token **只激活少数专家**。

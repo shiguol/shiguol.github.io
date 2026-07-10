@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 你可能已经读过「Attention Is All You Need」的科普版，知道 Transformer 靠「注意力」连接 token；也可能看过 LLM 是「预测下一个词」的接龙游戏。但一旦打开技术文章或论文，公式里突然出现 $QK^\top$、LayerNorm、RoPE、KV Cache——矩阵维度对不上、符号各说各话，读几段就想关掉页面。

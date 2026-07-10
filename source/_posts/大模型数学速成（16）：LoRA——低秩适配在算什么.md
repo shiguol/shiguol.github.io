@@ -11,6 +11,7 @@ tags:
   - 大模型
   - 2026
   - 训练
+mathjax: true
 ---
 
 全参数微调要更新整网权重，贵且易伤通用能力。[AI 系列的 Fine-tuning vs RAG](/2026/06/20/Fine-tuning-vs-RAG-让AI学会你的知识/) 从产品视角对比过两条路；本篇补 **LoRA（Low-Rank Adaptation）在算什么**——冻住巨大的 $W$，只训练两个瘦矩阵 $A,B$。

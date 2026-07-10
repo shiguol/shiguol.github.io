@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 Self-Attention 本身**不包含位置信息**——打乱 token 顺序，只要 Q/K/V 一起打乱，注意力分数不变。但语言有语序：「狗咬人」≠「人咬狗」。**位置编码**告诉模型每个 token 在序列中的位置；现代 LLM 广泛使用的 **RoPE（Rotary Position Embedding，旋转位置编码）** 通过「旋转」Q/K 向量来注入相对位置。

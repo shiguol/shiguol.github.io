@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 [第 09 篇](/2026/07/07/大模型数学速成（09）：多头注意力-多个专家各看各的/)的 **MHA** 里，Q、K、V 各有 $h$ 个头——推理时要为**每个 token 缓存全部 K/V 头**，显存随上下文长度线性暴涨。**GQA（Grouped Query Attention，分组查询注意力）** 让多路 Q 共享更少的 K/V 头，在效果接近 MHA 的前提下大幅压缩 **KV Cache**。

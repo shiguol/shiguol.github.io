@@ -10,6 +10,7 @@ tags:
   - Transformer
   - 大模型
   - 2026
+mathjax: true
 ---
 
 你在文档里看到 `[768, 1024]`，第一反应可能是：768 是行还是列？1024 是 token 数还是特征维？PyTorch 教程写 `[batch, seq, hidden]`，推理引擎源码写 `[n_embd, n_tokens]`——**同一套数据，括号顺序不同，读错维度后面所有公式都会对不上。**
