@@ -1,7 +1,7 @@
 ---
 cover: /images/cover/cpp/sqlite.png
 title: 现代 C++ 实战（25）：SQLite 数据库实战
-date: 2026-07-26 10:00:00
+date: 2026-07-08 14:00:00
 categories:
   - CppInPractice
 tags:
@@ -13,13 +13,13 @@ tags:
   - 数据库
 ---
 
-[第 24 篇](/2026/07/25/现代C++实战-24-HTTP服务与JSON/) 的 HTTP 服务把数据存在内存里，重启即失；**SQLite** 把数据库装进一个文件——零配置、嵌入式、全球部署量最大的数据库引擎。本篇用 C++ RAII 封装 `DatabaseManager`，实现学校管理系统的完整 CRUD。
+[第 24 篇](/2026/07/07/现代C++实战-24-HTTP服务与JSON/) 的 HTTP 服务把数据存在内存里，重启即失；**SQLite** 把数据库装进一个文件——零配置、嵌入式、全球部署量最大的数据库引擎。本篇用 C++ RAII 封装 `DatabaseManager`，实现学校管理系统的完整 CRUD。
 
 demo：`ref/cpp_demo/database/sqlite3/`。
 
 <!-- more -->
 
-> 这是「现代 C++ 实战」系列的第 25 篇。建议先读 [第 24 篇：HTTP 服务与 JSON](/2026/07/25/现代C++实战-24-HTTP服务与JSON/)。
+> 这是「现代 C++ 实战」系列的第 25 篇。建议先读 [第 24 篇：HTTP 服务与 JSON](/2026/07/07/现代C++实战-24-HTTP服务与JSON/)。
 
 ## 一、为什么选 SQLite？
 
@@ -224,7 +224,7 @@ if (rc != SQLITE_OK) {
 }
 ```
 
-工程建议：封装为 `Result<T>` 或抛出自定义异常（结合 [第 08 篇](/2026/07/09/现代C++实战-08-错误处理策略/) 错误处理策略）。
+工程建议：封装为 `Result<T>` 或抛出自定义异常（结合 [第 08 篇](/2026/06/21/现代C++实战-08-错误处理策略/) 错误处理策略）。
 
 ## 八、CMake 配置
 
@@ -268,7 +268,7 @@ demo 依次演示 10 步：
 
 ## 十、与 HTTP 服务组合
 
-[第 24 篇](/2026/07/25/现代C++实战-24-HTTP服务与JSON/) 的 REST API + 本篇的 `DatabaseManager` = 完整后端：
+[第 24 篇](/2026/07/07/现代C++实战-24-HTTP服务与JSON/) 的 REST API + 本篇的 `DatabaseManager` = 完整后端：
 
 ```
 GET  /students  → dbManager.getAllStudents()  → json.dump()
@@ -288,4 +288,4 @@ POST /students  → json.parse(req.body)        → dbManager.addStudent()
 | 事务 | BEGIN / COMMIT / ROLLBACK |
 | 错误 | 检查返回码 + `sqlite3_errmsg` |
 
-下一篇是两个经典练手项目：LRU 缓存 + JSON 解析器——见 [第 26 篇：LRU 缓存与 JSON 解析器](/2026/07/27/现代C++实战-26-LRU缓存与JSON解析器/)（计划）。
+下一篇是两个经典练手项目：LRU 缓存 + JSON 解析器——见 [第 26 篇：LRU 缓存与 JSON 解析器](/2026/07/09/现代C++实战-26-LRU缓存与JSON解析器/)（计划）。

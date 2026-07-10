@@ -1,7 +1,7 @@
 ---
 cover: /images/cover/cpp/concepts.png
 title: 现代 C++ 实战（11）：Concepts 与模板进阶
-date: 2026-07-12 10:00:00
+date: 2026-06-24 14:00:00
 categories:
   - CppInPractice
 tags:
@@ -19,7 +19,7 @@ tags:
 
 <!-- more -->
 
-> 这是「现代 C++ 实战」系列的第 11 篇。建议先读 [第 10 篇：Ranges](/2026/07/11/现代C++实战-10-Ranges与函数式风格/)。
+> 这是「现代 C++ 实战」系列的第 11 篇。建议先读 [第 10 篇：Ranges](/2026/06/23/现代C++实战-10-Ranges与函数式风格/)。
 
 ## 一、模板的问题：约束写在哪？
 
@@ -119,7 +119,7 @@ void print_value(const std::string& value) {
 | `std::movable<T>` | 可移动 |
 | `std::convertible_to<F, T>` | F 可隐式转为 T |
 | `std::invocable<F, Args...>` | 可调用 |
-| `std::ranges::range` | 是 range（与 [第 10 篇](/2026/07/11/现代C++实战-10-Ranges与函数式风格/) 衔接） |
+| `std::ranges::range` | 是 range（与 [第 10 篇](/2026/06/23/现代C++实战-10-Ranges与函数式风格/) 衔接） |
 
 组合示例：
 
@@ -205,7 +205,7 @@ cd ref/cpp_demo/basics/type_traits_demo
 
 | 篇号 | 标题 | 状态 |
 |------|------|------|
-| 10 | [Ranges 与函数式风格](/2026/07/11/现代C++实战-10-Ranges与函数式风格/) | ✅ |
+| 10 | [Ranges 与函数式风格](/2026/06/23/现代C++实战-10-Ranges与函数式风格/) | ✅ |
 | **11** | **Concepts 与模板进阶（本篇）** | ✅ |
 | 12 | 多线程基础 | 下一篇 |
 
