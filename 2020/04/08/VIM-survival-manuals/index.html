@@ -1,0 +1,274 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>VIM survival manuals | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VIM survival manuals">
+<meta property="og:url" content="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="Cmd Meaning    I insert mode；   Esc command mode；   o append mode；   :shell temp enter shell；   Ctrl+z temp enter shell(v2);   fg return back to vim;   shift + &gt; insert tab；   &#x2F;word search">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg">
+<meta property="article:published_time" content="2020-04-08T00:27:31.000Z">
+<meta property="article:modified_time" content="2025-05-20T13:17:09.475Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "VIM survival manuals",
+  "url": "http://shiguol.github.io/2020/04/08/VIM-survival-manuals/",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg",
+  "datePublished": "2020-04-08T00:27:31.000Z",
+  "dateModified": "2025-05-20T13:17:09.475Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'VIM survival manuals',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">VIM survival manuals</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">VIM survival manuals</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-04-08T00:27:31.000Z" title="发表于 2020-04-08 08:27:31">2020-04-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-05-20T13:17:09.475Z" title="更新于 2025-05-20 21:17:09">2025-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/VIM/">VIM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><table>
+<thead>
+<tr>
+<th>Cmd</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>I</td>
+<td>insert mode；</td>
+</tr>
+<tr>
+<td>Esc</td>
+<td>command mode；</td>
+</tr>
+<tr>
+<td>o</td>
+<td>append mode；</td>
+</tr>
+<tr>
+<td>:shell</td>
+<td>temp enter shell；</td>
+</tr>
+<tr>
+<td>Ctrl+z</td>
+<td>temp enter shell(v2);</td>
+</tr>
+<tr>
+<td>fg</td>
+<td>return back to vim;</td>
+</tr>
+<tr>
+<td>shift + &gt;</td>
+<td>insert tab；</td>
+</tr>
+<tr>
+<td>&#x2F;word</td>
+<td>search word；</td>
+</tr>
+<tr>
+<td>n</td>
+<td>search next；</td>
+</tr>
+<tr>
+<td>b，w</td>
+<td>jump word；</td>
+</tr>
+<tr>
+<td>gg，</td>
+<td>G jump start, end；</td>
+</tr>
+<tr>
+<td>10g</td>
+<td>go to 10 line;</td>
+</tr>
+<tr>
+<td>Ctrl + d,u</td>
+<td>page down, up；</td>
+</tr>
+<tr>
+<td>v</td>
+<td>visual mode；</td>
+</tr>
+<tr>
+<td>y</td>
+<td>yank(copy);</td>
+</tr>
+<tr>
+<td>dd</td>
+<td>cut;</td>
+</tr>
+<tr>
+<td>p</td>
+<td>paste;</td>
+</tr>
+<tr>
+<td>:vsp</td>
+<td>vertical split tab；</td>
+</tr>
+<tr>
+<td>:sp</td>
+<td>horizontal slpit tab;</td>
+</tr>
+<tr>
+<td>Ctrl + w</td>
+<td>change focus window；</td>
+</tr>
+<tr>
+<td>Ctrl + n</td>
+<td>nerd tree</td>
+</tr>
+<tr>
+<td>:q!</td>
+<td>quick not save;</td>
+</tr>
+<tr>
+<td>:qw</td>
+<td>quick + save;</td>
+</tr>
+<tr>
+<td>:u</td>
+<td>undo</td>
+</tr>
+<tr>
+<td>:s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace current line “one” from “two”</td>
+</tr>
+<tr>
+<td>%s&#x2F;one&#x2F;two&#x2F;g</td>
+<td>replace all</td>
+</tr>
+</tbody></table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2020/04/08/VIM-survival-manuals/">http://shiguol.github.io/2020/04/08/VIM-survival-manuals/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a></div><div class="post-share"><div class="social-share" data-image="https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/11/12/How-to-read-the-book-and-write-down-note/" title="How to read the book and write down note"><img class="cover" src="/images/cover/reading-notes.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">How to read the book and write down note</div></div><div class="info-2"><div class="info-item-1">俗话说，好记性，不如烂笔头。 当开始阅读时，第一次不定能理解所有内容，这时，笔记的作用就来了，笔记可以帮助你整理思路，日后再看书时，可以更进一步地理解之前没有理解了的内容。 笔记的另一个好处是，可以帮助学习者建立起费曼学习法的过程。 一个新知识，只有用浅显地语言再讲出来时，才能说明学习者真正地理解了。 </div></div></div></a><a class="pagination-related" href="/2019/11/15/Xcode-some-directories/" title="Xcode_some_directories"><img class="cover" src="/images/cover/xcode.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Xcode_some_directories</div></div><div class="info-2"><div class="info-item-1">1/Library/Developer/CoreSimulator/Profiles/Runtimes  1~/Library/Developer/CoreSimulator/Devices  1~/Library/Caches/com.apple.dt.Xcode/Downloads  </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/01/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-18-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E4%B8%8Estd-sort/" title="现代 C++ 实战（18）：排序算法与 std::sort"><img class="cover" src="/images/cover/cpp/sorting.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-01</div><div class="info-item-2">现代 C++ 实战（18）：排序算法与 std::sort</div></div><div class="info-2"><div class="info-item-1">第二季讲完语言与工程，第三季进入算法与数据结构。排序是第一课：手写七种经典算法理解原理，再和 std::sort 做性能对比——感受工业级实现为何快一个数量级。 demo：ref/cpp_demo/algorithms/sorting/（含 7 种手写排序 + benchmark）。    这是「现代 C++ 实战」系列的第 18 篇，第三季开篇。建议先读 第 17 篇：C++23 新特性。  一、排序算法全景   算法 平均时间 最坏 空间 稳定 比较？    冒泡 O(n²) O(n²) O(1) ✅ 是   选择 O(n²) O(n²) O(1) ❌ 是   插入 O(n²) O(n²) O(1) ✅ 是   归并 O(n log n) O(n log n) O(n) ✅ 是   快速 O(n log n) O(n²) O(log n) ❌ 是   堆 O(n log n) O(n log n) O(1) ❌ 是   计数 O(n + k) O(n + k) O(n + k) ✅ 否   std::sort O(n log n) — O(log n) ❌ 是（IntroSo...</div></div></div></a><a class="pagination-related" href="/2026/06/20/Embedding-%E6%8A%8A%E4%B8%87%E7%89%A9%E5%8F%98%E6%88%90%E6%95%B0%E5%AD%97/" title="Embedding：把万物变成数字"><img class="cover" src="/images/cover/ai/embedding.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">Embedding：把万物变成数字</div></div><div class="info-2"><div class="info-item-1">如果你曾经好奇过，AI 是怎么”理解”一段文字、一张图片、甚至一首歌的，那今天这篇文章就是为你准备的。答案藏在一个叫 Embedding（嵌入） 的概念里——简单来说，它就是把世间万物翻译成一串数字，然后放到一张巨大的地图上。在这张地图上，意思相近的东西会自然地靠在一起，而意思不同的东西则会远远分开。   这是”小白讲 AI”系列的第 06 篇。前几篇我们聊了大语言模型、Transformer、Token 等概念，今天我们来聊聊 AI 世界里一个无处不在、却常被忽视的基础设施——Embedding。 一、开场类比：一张概念地图想象你手里有一张巨大无比的地图。这张地图上不画山川河流，而是标注着各种各样的”概念”。比如”猫”被标在了某个位置，”狗”就在它旁边不远处，因为它们都是宠物、都是动物。而”汽车”则被标在了很远的地方，因为它和猫狗没什么关系。再看”卡车”，它就紧挨着”汽车”，因为它们都是交通工具。 这就是 Embedding 做的事情：给每一个概念分配一个坐标，让相近的概念在地图上靠得近，不相关的概念离得远。 不过，这张”地图”可不是二维的。现实中的 Embedding 通常是...</div></div></div></a><a class="pagination-related" href="/2026/06/29/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-16-GoogleTest%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/" title="现代 C++ 实战（16）：GoogleTest 单元测试"><img class="cover" src="/images/cover/cpp/gtest.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-29</div><div class="info-item-2">现代 C++ 实战（16）：GoogleTest 单元测试</div></div><div class="info-2"><div class="info-item-1">C++ 编译器能抓住类型错误，却抓不住「divide(10, 0) 该不该抛异常」「阶乘边界算对没有」——这些只能靠跑起来验证。第 15 篇 的工厂、策略可以测；本篇用 GoogleTest 把测试写进工程：TEST、Fixture、参数化、Mock、CMake 集成。 demo：ref/cpp_demo/basics/testing_demo/。    这是「现代 C++ 实战」系列的第 16 篇。建议先读 第 15 篇：现代设计模式。  一、为什么 C++ 更需要测试？   编译期能抓住 编译期抓不住    类型不匹配、未声明标识符 除零、越界、错误算法   部分 constexpr 逻辑 多线程竞态、资源泄漏   Concepts 约束 API 契约（返回值、异常）   重构 第 14 篇 线程池、第 08 篇 错误处理时，回归测试是安全网。GoogleTest（gtest）+ GoogleMock（gmock）是 C++ 生态事实标准。 二、GoogleTest 基础：TEST 与断言123456#include &lt;gtest/gtest.h&gt;TEST(Cal...</div></div></div></a><a class="pagination-related" href="/2026/06/24/%E5%AE%9E%E6%88%98%E8%BF%9B%E9%98%B6-%E7%94%A8MCP%E6%89%93%E9%80%A0%E5%A4%9A%E5%B7%A5%E5%85%B7Agent/" title="实战进阶：用 MCP 打造多工具 Agent"><img class="cover" src="/images/cover/ai/mcp-multi-tool.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-24</div><div class="info-item-2">实战进阶：用 MCP 打造多工具 Agent</div></div><div class="info-2"><div class="info-item-1">上一篇我们手写了一个”单机游戏”式的 Agent——工具是自己定义的、能力是固定的，就像一个只能在自家小区逛的孩子。今天我们要让它”联网”——通过 MCP 协议接入外部工具生态，瞬间获得读写文件、查询数据库、操作 GitHub 等成千上万种能力。就像游戏角色走出新手村，接入了整个世界地图，可以接任务、买装备、组队打副本。    这是「小白讲 AI」系列的第 20 篇，也是 Agent 系列的最终章。从第 5 篇的一条 Prompt，到今天用 MCP 打造多工具 Agent——我们走了一段不短的路。这一篇既是实战教程，也是对整个系列的总结和回顾。  一、上一篇的 Agent 缺什么？回顾一下第 19 篇手写的研究助手 Agent——它能跑，但有几个明显的限制：  工具是硬编码的：只有 search 和 fetch_url 两个工具，想加新工具就得改代码 不能操作本地文件：Agent 查到了信息却没法保存下来 单打独斗：只有一个 Agent 在干活，没有分工协作 代码量随复杂度增长：工具越多、逻辑越复杂，手写代码越难维护  今天我们要解决这些问题：  用 MCP 让 Agent 动态...</div></div></div></a><a class="pagination-related" href="/2026/06/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/" title="现代 C++ 实战（01）：CMake 与现代构建"><img class="cover" src="/images/cover/cpp/cmake-build.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-14</div><div class="info-item-2">现代 C++ 实战（01）：CMake 与现代构建</div></div><div class="info-2"><div class="info-item-1">上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects/fetch_content/ 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 demo 你都不会慌。    这是「现代 C++ 实战」系列的第 1 篇。对应 demo：ref/cpp_demo/projects/fetch_content/。建议先读 第 00 篇：环境搭建与项目导览。  一、为什么需要 CMake？手写 Makefile 在小项目里够用，但现代 C++ 项目很快会遇到天花板：    痛点 Makefile 的局限 CMake 的做法    跨平台 Windows &#x2F; macOS &#x2F; Linux 语法不同 一套 CMakeLists.txt，生成对应平台的构建文件   依赖管理 手动下载、编译、写 -I &#x2F; -L Fet...</div></div></div></a><a class="pagination-related" href="/2026/06/20/%E5%9B%BE%E5%83%8F%E7%94%9F%E6%88%90%E4%B8%8EDiffusion-Model/" title="图像生成与 Diffusion Model"><img class="cover" src="/images/cover/ai/diffusion.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-20</div><div class="info-item-2">图像生成与 Diffusion Model</div></div><div class="info-2"><div class="info-item-1">这是”小白讲 AI”系列的第 10 篇。今天我们来聊一个让无数人直呼”魔法”的技术——Diffusion Model（扩散模型）。它是 Stable Diffusion、DALL·E、Midjourney 等 AI 画图工具背后的核心引擎。你只需要输入一句话，几秒钟后就能得到一张精美的图片。这到底是怎么做到的？别担心，本文零公式，全程用生活类比来解释，保证小白也能看懂。   1. 开场类比：反向洗衣机想象你有一张漂亮的照片，然后你把它扔进了一台疯狂的洗衣机。洗衣机每转一圈，照片就变得更模糊、更混乱。转了上千圈之后，照片彻底变成了一团看不出任何内容的”雪花噪点”——就像老式电视没信号时的那种沙沙画面。 现在问题来了：有没有可能训练一个 AI，让它学会”反向开洗衣机”？也就是说，给它一张全是噪点的图，它能一步一步把噪点去掉，最终还原出一张清晰的照片？ 答案是：可以！这就是 Diffusion Model 的核心思路。 整个过程分成两个阶段：  前向过程（加噪）：把好好的图片一步步加噪声，搅成一团糊。 反向过程（去噪）：训练 AI 学会一步步去掉噪声，从纯噪点变回图片——也就是”反向洗...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8817%EF%BC%89%EF%BC%9AFlash-Attention%E2%80%94%E2%80%94%E4%B8%8D%E7%89%A9%E5%8C%96%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%9F%A9%E9%98%B5/" title="大模型数学速成（17）：Flash Attention——不物化注意力矩阵"><img src="/images/cover/ai/flash-attention.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（17）：Flash Attention——不物化注意力矩阵"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8817%EF%BC%89%EF%BC%9AFlash-Attention%E2%80%94%E2%80%94%E4%B8%8D%E7%89%A9%E5%8C%96%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%9F%A9%E9%98%B5/" title="大模型数学速成（17）：Flash Attention——不物化注意力矩阵">大模型数学速成（17）：Flash Attention——不物化注意力矩阵</a><time datetime="2026-07-10T12:00:00.000Z" title="发表于 2026-07-10 20:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8816%EF%BC%89%EF%BC%9ALoRA%E2%80%94%E2%80%94%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8D%E5%9C%A8%E7%AE%97%E4%BB%80%E4%B9%88/" title="大模型数学速成（16）：LoRA——低秩适配在算什么"><img src="/images/cover/ai/lora-low-rank.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（16）：LoRA——低秩适配在算什么"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8816%EF%BC%89%EF%BC%9ALoRA%E2%80%94%E2%80%94%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8D%E5%9C%A8%E7%AE%97%E4%BB%80%E4%B9%88/" title="大模型数学速成（16）：LoRA——低秩适配在算什么">大模型数学速成（16）：LoRA——低秩适配在算什么</a><time datetime="2026-07-10T11:00:00.000Z" title="发表于 2026-07-10 19:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8815%EF%BC%89%EF%BC%9A%E9%87%8F%E5%8C%96%E2%80%94%E2%80%94%E4%BB%8E-FP16-%E5%88%B0-INT4-%E7%9A%84%E5%B0%BA%E5%BA%A6/" title="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度"><img src="/images/cover/ai/quantization-int4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8815%EF%BC%89%EF%BC%9A%E9%87%8F%E5%8C%96%E2%80%94%E2%80%94%E4%BB%8E-FP16-%E5%88%B0-INT4-%E7%9A%84%E5%B0%BA%E5%BA%A6/" title="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度">大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度</a><time datetime="2026-07-10T10:00:00.000Z" title="发表于 2026-07-10 18:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8814%EF%BC%89%EF%BC%9A%E9%87%87%E6%A0%B7%E2%80%94%E2%80%94Temperature%E3%80%81top-k-%E4%B8%8E-top-p/" title="大模型数学速成（14）：采样——Temperature、top-k 与 top-p"><img src="/images/cover/ai/sampling-topk-topp.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（14）：采样——Temperature、top-k 与 top-p"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8814%EF%BC%89%EF%BC%9A%E9%87%87%E6%A0%B7%E2%80%94%E2%80%94Temperature%E3%80%81top-k-%E4%B8%8E-top-p/" title="大模型数学速成（14）：采样——Temperature、top-k 与 top-p">大模型数学速成（14）：采样——Temperature、top-k 与 top-p</a><time datetime="2026-07-10T09:00:00.000Z" title="发表于 2026-07-10 17:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8813%EF%BC%89%EF%BC%9A%E5%9B%A0%E6%9E%9C%E6%8E%A9%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81%E5%BE%AA%E7%8E%AF/" title="大模型数学速成（13）：因果掩码与解码循环"><img src="/images/cover/ai/causal-mask-decode.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（13）：因果掩码与解码循环"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8813%EF%BC%89%EF%BC%9A%E5%9B%A0%E6%9E%9C%E6%8E%A9%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81%E5%BE%AA%E7%8E%AF/" title="大模型数学速成（13）：因果掩码与解码循环">大模型数学速成（13）：因果掩码与解码循环</a><time datetime="2026-07-10T08:00:00.000Z" title="发表于 2026-07-10 16:00:00">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>现代 C++ 实战（02）：C++ 版本演进一览 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="上一篇我们搞定了 CMake 构建。但在写代码之前，还有一个「地图」问题：C++ 到底演进了哪些版本？每个版本加了什么？ 如果你还在用 C++98 的思维读 C++20 的代码，很容易觉得「语法怎么又变了」。 这一篇不深入任何单一特性，而是把 C++03 → C++26 的演进脉络梳理清楚，并带你跑一遍 version_features demo——后面 25 篇特性文章，都可以在这张地图上找到位">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代 C++ 实战（02）：C++ 版本演进一览">
+<meta property="og:url" content="http://shiguol.github.io/2026/06/15/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="上一篇我们搞定了 CMake 构建。但在写代码之前，还有一个「地图」问题：C++ 到底演进了哪些版本？每个版本加了什么？ 如果你还在用 C++98 的思维读 C++20 的代码，很容易觉得「语法怎么又变了」。 这一篇不深入任何单一特性，而是把 C++03 → C++26 的演进脉络梳理清楚，并带你跑一遍 version_features demo——后面 25 篇特性文章，都可以在这张地图上找到位">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cpp/version-evolution.png">
+<meta property="article:published_time" content="2026-06-15T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:51:06.436Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="C++11">
+<meta property="article:tag" content="C++20">
+<meta property="article:tag" content="C++23">
+<meta property="article:tag" content="C++26">
+<meta property="article:tag" content="现代C++">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cpp/version-evolution.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "现代 C++ 实战（02）：C++ 版本演进一览",
+  "url": "http://shiguol.github.io/2026/06/15/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/",
+  "image": "http://shiguol.github.io/images/cover/cpp/version-evolution.png",
+  "datePublished": "2026-06-15T06:00:00.000Z",
+  "dateModified": "2026-07-10T07:51:06.436Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/06/15/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '现代 C++ 实战（02）：C++ 版本演进一览',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cpp/version-evolution.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">现代 C++ 实战（02）：C++ 版本演进一览</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">现代 C++ 实战（02）：C++ 版本演进一览</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-15T06:00:00.000Z" title="发表于 2026-06-15 14:00:00">2026-06-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:51:06.436Z" title="更新于 2026-07-10 15:51:06">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppInPractice/">CppInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>上一篇我们搞定了 CMake 构建。但在写代码之前，还有一个「地图」问题：<strong>C++ 到底演进了哪些版本？每个版本加了什么？</strong> 如果你还在用 C++98 的思维读 C++20 的代码，很容易觉得「语法怎么又变了」。</p>
+<p>这一篇不深入任何单一特性，而是把 <strong>C++03 → C++26</strong> 的演进脉络梳理清楚，并带你跑一遍 <code>version_features</code> demo——后面 25 篇特性文章，都可以在这张地图上找到位置。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「现代 C++ 实战」系列的第 2 篇。对应 demo：<code>ref/cpp_demo/basics/version_features/</code>。建议先读 <a href="/2026/06/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/">第 01 篇：CMake 与现代构建</a>。</p>
+</blockquote>
+<h2 id="一、C-标准时间线"><a href="#一、C-标准时间线" class="headerlink" title="一、C++ 标准时间线"></a>一、C++ 标准时间线</h2><p>C++ 不像 Python 那样每年一个大版本，而是 <strong>3～5 年发布一次国际标准</strong>（由 ISO 委员会制定）。对开发者来说，真正重要的是：<strong>编译器支持到了哪个 <code>-std=</code></strong>。</p>
+<table>
+<thead>
+<tr>
+<th>标准</th>
+<th>发布年份</th>
+<th><code>__cplusplus</code> 宏</th>
+<th>常用编译 flag</th>
+<th>定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C++98 &#x2F; C++03</td>
+<td>1998 &#x2F; 2003</td>
+<td>199711L</td>
+<td><code>-std=c++03</code></td>
+<td>经典 C++，STL 定型</td>
+</tr>
+<tr>
+<td><strong>C++11</strong></td>
+<td>2011</td>
+<td>201103L</td>
+<td><code>-std=c++11</code></td>
+<td><strong>现代 C++ 起点</strong></td>
+</tr>
+<tr>
+<td>C++14</td>
+<td>2014</td>
+<td>201402L</td>
+<td><code>-std=c++14</code></td>
+<td>C++11 的小修小补</td>
+</tr>
+<tr>
+<td>C++17</td>
+<td>2017</td>
+<td>201703L</td>
+<td><code>-std=c++17</code></td>
+<td>实用工具大爆发</td>
+</tr>
+<tr>
+<td>C++20</td>
+<td>2020</td>
+<td>202002L</td>
+<td><code>-std=c++20</code></td>
+<td>语言级现代化</td>
+</tr>
+<tr>
+<td>C++23</td>
+<td>2023</td>
+<td>202302L</td>
+<td><code>-std=c++23</code></td>
+<td>实用特性补齐</td>
+</tr>
+<tr>
+<td><strong>C++26</strong></td>
+<td><strong>2026</strong></td>
+<td><strong>202603L</strong></td>
+<td><code>-std=c++26</code></td>
+<td><strong>反射、契约、执行框架</strong></td>
+</tr>
+</tbody></table>
+<p>几个直觉：</p>
+<ul>
+<li><strong>C++03 到 C++11 隔了 13 年</strong>，变动最大——很多人说的「现代 C++」就是从 C++11 算起。</li>
+<li><strong>C++14 &#x2F; C++17 是「好用」版本</strong>：不颠覆思维，但日常编码效率明显提升。</li>
+<li><strong>C++20 是「换引擎」版本</strong>：Concepts、Ranges、协程、Modules 等进入标准。</li>
+<li><strong>C++23 是「补账」版本</strong>：expected、print、deducing this 等前几版欠的实用特性陆续落地。</li>
+<li><strong>C++26 是「2026 新定稿」版本</strong>（ISO 2026 年 3 月完成技术定稿）：编译期反射、契约（Contracts）、<code>std::execution</code> 异步框架、pack indexing 等进入标准。</li>
+<li>本系列 demo 标注了所需标准（C++11～C++26），CMake 里用 <code>CMAKE_CXX_STANDARD</code> 或 <code>set_target_properties</code> 指定即可（见第 01 篇）。</li>
+</ul>
+<h2 id="二、C-11：现代-C-的起点"><a href="#二、C-11：现代-C-的起点" class="headerlink" title="二、C++11：现代 C++ 的起点"></a>二、C++11：现代 C++ 的起点</h2><p>C++11 之前，写 C++ 像在开手动挡：内存自己管、线程自己封装、泛型报错看不懂。C++11 一次性补上了现代语言的核心拼图：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>代表特性</th>
+<th>本系列对应篇</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>类型系统</strong></td>
+<td><code>auto</code>、<code>decltype</code>、<code>enum class</code></td>
+<td>第 06 篇 Lambda</td>
+</tr>
+<tr>
+<td><strong>内存管理</strong></td>
+<td><code>unique_ptr</code> &#x2F; <code>shared_ptr</code>、右值引用、移动语义</td>
+<td>第 03–05 篇</td>
+</tr>
+<tr>
+<td><strong>泛型与函数式</strong></td>
+<td>Lambda、可变参数模板、<code>std::function</code></td>
+<td>第 06 篇</td>
+</tr>
+<tr>
+<td><strong>并发</strong></td>
+<td><code>std::thread</code>、<code>mutex</code>、<code>future</code></td>
+<td>第 12 篇</td>
+</tr>
+<tr>
+<td><strong>容器与工具</strong></td>
+<td><code>unordered_map</code>、<code>array</code>、<code>tuple</code>、<code>chrono</code></td>
+<td>各 demo 中广泛使用</td>
+</tr>
+</tbody></table>
+<p><code>version_features/11.cpp</code> 里几乎是一份 C++11 特性清单：<code>decltype</code>、智能指针、右值引用、<code>std::thread</code>、完美转发雏形等。运行它：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/basics/version_features</span><br><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_11&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>文件开头有一句：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">static_assert</span>(__cplusplus == <span class="number">201103</span>, <span class="string">&quot;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这行代码的含义是：<strong>这个翻译单元必须按 C++11 标准编译</strong>，否则直接报错——比运行时才发现问题更早、更干净。</p>
+<h2 id="三、C-14-C-17：实用增强"><a href="#三、C-14-C-17：实用增强" class="headerlink" title="三、C++14 &#x2F; C++17：实用增强"></a>三、C++14 &#x2F; C++17：实用增强</h2><h3 id="C-14：让-C-11-更好用"><a href="#C-14：让-C-11-更好用" class="headerlink" title="C++14：让 C++11 更好用"></a>C++14：让 C++11 更好用</h3><p>C++14 改动不大，但几个特性非常「省心」：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>作用</th>
+<th>demo 中的例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>返回值类型推导</strong></td>
+<td><code>auto func()</code> 自动推导返回类型</td>
+<td><code>deduced_return_type()</code></td>
+</tr>
+<tr>
+<td><strong>泛型 Lambda</strong></td>
+<td><code>[](auto x){}</code> 参数类型自动推导</td>
+<td><code>14.cpp</code> 中的 lambda 示例</td>
+</tr>
+<tr>
+<td><strong><code>make_unique</code></strong></td>
+<td>与 <code>make_shared</code> 对称，异常更安全</td>
+<td>智能指针 demo</td>
+</tr>
+<tr>
+<td><strong>二进制字面量</strong></td>
+<td><code>0b1010</code></td>
+<td>位操作更清晰</td>
+</tr>
+<tr>
+<td><strong><code>std::exchange</code></strong></td>
+<td>原子地交换并赋值</td>
+<td>移动语义辅助</td>
+</tr>
+</tbody></table>
+<p>运行 C++14 demo：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_14&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="C-17：日常开发的工具箱"><a href="#C-17：日常开发的工具箱" class="headerlink" title="C++17：日常开发的工具箱"></a>C++17：日常开发的工具箱</h3><p>C++17 是很多人日常项目的「甜点版本」——编译器支持广泛，特性又足够新：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>一句话</th>
+<th>本系列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>结构化绑定</strong></td>
+<td><code>auto [k, v] = pair</code></td>
+<td>第 07 篇</td>
+</tr>
+<tr>
+<td><strong><code>if constexpr</code></strong></td>
+<td>编译期分支，替代 SFINAE 技巧</td>
+<td>第 07 &#x2F; 11 篇</td>
+</tr>
+<tr>
+<td><strong><code>std::optional</code> &#x2F; <code>variant</code> &#x2F; <code>any</code></strong></td>
+<td>类型安全的「可能有值」</td>
+<td>第 07–08 篇</td>
+</tr>
+<tr>
+<td><strong><code>std::filesystem</code></strong></td>
+<td>跨平台文件路径操作</td>
+<td>第 07 篇</td>
+</tr>
+<tr>
+<td><strong>类模板参数推导 (CTAD)</strong></td>
+<td><code>pair p(1, 2.3)</code> 不用写模板参数</td>
+<td><code>17.cpp</code></td>
+</tr>
+<tr>
+<td><strong>折叠表达式</strong></td>
+<td><code>(args + ...)</code> 可变参数求和</td>
+<td>第 07 篇</td>
+</tr>
+<tr>
+<td><strong>并行算法</strong></td>
+<td><code>std::execution::par</code></td>
+<td>第 07 篇</td>
+</tr>
+</tbody></table>
+<p><code>17.cpp</code> 里 CTAD 的写法很直观：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">constexpr</span> pair <span class="title">deducted_pair</span><span class="params">(<span class="number">1</span>, <span class="number">2.3</span>)</span></span>;   <span class="comment">// 推导为 pair&lt;int, double&gt;</span></span><br><span class="line"><span class="function">vector <span class="title">deduction_guide1_vector</span><span class="params">(int_vector.begin(), int_vector.end())</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_17&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="四、C-20：语言级现代化"><a href="#四、C-20：语言级现代化" class="headerlink" title="四、C++20：语言级现代化"></a>四、C++20：语言级现代化</h2><p>C++20 不是「多加几个函数」，而是<strong>改写了写 C++ 的方式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>解决什么问题</th>
+<th>本系列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Concepts</strong></td>
+<td>模板报错像天书 → 约束模板参数</td>
+<td>第 11 篇</td>
+</tr>
+<tr>
+<td><strong>Ranges</strong></td>
+<td>算法 + 迭代器组合冗长 → 管道式链式调用</td>
+<td>第 10 篇</td>
+</tr>
+<tr>
+<td><strong>Coroutines</strong></td>
+<td>异步回调地狱 → <code>co_await</code> 协作式多任务</td>
+<td>第 27 篇</td>
+</tr>
+<tr>
+<td><strong>Modules</strong></td>
+<td>头文件编译慢 → 模块导入（仍在普及中）</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong><code>std::format</code></strong></td>
+<td><code>printf</code> &#x2F; <code>iostream</code> 不安全 → 类型安全格式化</td>
+<td>第 09 篇</td>
+</tr>
+<tr>
+<td><strong>三路比较 <code>&lt;=&gt;</code></strong></td>
+<td>手写 6 个比较运算符 → 自动生成</td>
+<td><code>20.cpp</code></td>
+</tr>
+<tr>
+<td><strong>指定初始化器</strong></td>
+<td>指定 <code>.x = 1</code> 初始化 struct 成员</td>
+<td><code>20.cpp</code></td>
+</tr>
+</tbody></table>
+<p><code>20.cpp</code> 中的三路比较：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">static_assert</span>(<span class="number">1</span> &lt;=&gt; <span class="number">2</span> &lt; <span class="number">0</span>);   <span class="comment">// less</span></span><br><span class="line"><span class="built_in">static_assert</span>(<span class="number">2</span> &lt;=&gt; <span class="number">1</span> &gt; <span class="number">0</span>);   <span class="comment">// greater</span></span><br><span class="line"><span class="built_in">static_assert</span>(<span class="number">1</span> &lt;=&gt; <span class="number">1</span> == <span class="number">0</span>);  <span class="comment">// equal</span></span><br></pre></td></tr></table></figure>
+
+<p>C++20 对编译器版本要求更高。macOS 上建议 <strong>Apple Clang 14+</strong> 或 <strong>GCC 10+</strong>；若 <code>demo_20</code> 编译失败，先查编译器版本，再对照 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/compiler_support">cppreference 编译器支持表</a>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_20&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="五、C-23：实用特性补齐"><a href="#五、C-23：实用特性补齐" class="headerlink" title="五、C++23：实用特性补齐"></a>五、C++23：实用特性补齐</h2><p>C++23 于 2023 年发布，GCC 14+ &#x2F; Clang 18+ 已能完整支持大部分特性。几个最值得日常使用的：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+<th>本系列</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>std::expected</code></strong></td>
+<td>类似 Rust 的 <code>Result&lt;T, E&gt;</code>，错误处理更明确</td>
+<td>第 08 &#x2F; 17 篇</td>
+</tr>
+<tr>
+<td><strong><code>std::print</code> &#x2F; <code>println</code></strong></td>
+<td>比 <code>format + cout</code> 更简洁的输出</td>
+<td>第 17 篇</td>
+</tr>
+<tr>
+<td><strong><code>deducing this</code></strong></td>
+<td>成员函数自动推导 <code>this</code> 类型，简化 CRTP</td>
+<td>进阶</td>
+</tr>
+<tr>
+<td><strong><code>std::generator</code></strong></td>
+<td>协程生成器，简化迭代器实现</td>
+<td>第 27 篇</td>
+</tr>
+<tr>
+<td><strong><code>std::mdspan</code></strong></td>
+<td>多维数组视图，科学计算友好</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong><code>if consteval</code></strong></td>
+<td>区分编译期与运行时分支</td>
+<td>第 09 篇</td>
+</tr>
+<tr>
+<td><strong><code>0uz</code> 字面量</strong></td>
+<td><code>size_t</code> 后缀，消除与 <code>int</code> 比较的符号警告</td>
+<td><code>23.cpp</code></td>
+</tr>
+</tbody></table>
+<p><code>23.cpp</code> 中的 <code>std::expected</code> 用法：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::expected&lt;<span class="type">int</span>, ParseError&gt; <span class="title">parse_int</span><span class="params">(<span class="type">const</span> std::string&amp; s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (s.<span class="built_in">empty</span>())</span><br><span class="line">        <span class="keyword">return</span> std::<span class="built_in">unexpected</span>(ParseError::EmptyInput);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">return</span> value;  <span class="comment">// 成功时直接返回值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行 C++23 demo：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_23&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>本系列第 17 篇会专门跑 <code>cpp23_features</code> demo，那里有更完整的 expected &#x2F; deducing this 演示。</p>
+<h2 id="六、C-26：2026-定稿的新标准"><a href="#六、C-26：2026-定稿的新标准" class="headerlink" title="六、C++26：2026 定稿的新标准"></a>六、C++26：2026 定稿的新标准</h2><p>2026 年 3 月，ISO C++ 委员会完成了 C++26 的技术定稿（ISO&#x2F;IEC 14882:2026）。这是继 C++23 之后最新一版国际标准，几个标志性变化：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+<th>编译器支持</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>编译期反射（Reflection）</strong></td>
+<td><code>^^</code> 运算符在编译期获取类型元信息</td>
+<td>GCC 16+ 实验性</td>
+</tr>
+<tr>
+<td><strong>契约（Contracts）</strong></td>
+<td><code>pre</code> &#x2F; <code>post</code> &#x2F; <code>contract_assert</code> 替代 C 风格 assert</td>
+<td>GCC 16+ 部分</td>
+</tr>
+<tr>
+<td><strong><code>std::execution</code></strong></td>
+<td>Sender&#x2F;Receiver 异步执行框架</td>
+<td>逐步落地</td>
+</tr>
+<tr>
+<td><strong>Pack indexing</strong></td>
+<td><code>args...[0]</code> 直接索引参数包</td>
+<td>Clang 19+ &#x2F; GCC 15+</td>
+</tr>
+<tr>
+<td><strong>内存安全改进</strong></td>
+<td>读取未初始化局部变量不再 UB；标准库加固</td>
+<td>重编译即生效</td>
+</tr>
+<tr>
+<td><strong><code>&lt;inplace_vector&gt;</code></strong></td>
+<td>固定容量、栈上可扩容向量</td>
+<td>逐步落地</td>
+</tr>
+</tbody></table>
+<p><code>26.cpp</code> 中的 pack indexing（C++26 核心语言特性之一）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Ts&gt;</span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">auto</span> <span class="title">pack_first</span><span class="params">(Ts... args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> args...[<span class="number">0</span>];  <span class="comment">// 直接索引参数包，不再需要递归 / std::get</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行 C++26 demo：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build.sh --run-args <span class="string">&#x27;./build/demo_26&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>注意：C++26 刚定稿，各编译器支持仍在快速推进中。Apple Clang 21 已支持 pack indexing 和 <code>std::println</code>，但反射和契约可能还需等待后续版本。<strong>新项目不必立刻切 C++26，但应了解方向</strong>——本系列第 17 篇及后续会逐步覆盖。</p>
+<h2 id="七、编译器怎么选？"><a href="#七、编译器怎么选？" class="headerlink" title="七、编译器怎么选？"></a>七、编译器怎么选？</h2><p>不同编译器、不同版本，对标准的支持进度不同。日常开发可以记这张简表：</p>
+<table>
+<thead>
+<tr>
+<th>编译器</th>
+<th>推荐最低版本</th>
+<th>C++17</th>
+<th>C++20</th>
+<th>C++23</th>
+<th>C++26</th>
+<th>常见场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GCC</strong></td>
+<td>14+</td>
+<td>✅ 完整</td>
+<td>✅ 完整</td>
+<td>✅ 大部分</td>
+<td>部分</td>
+<td>Linux 服务器、Docker</td>
+</tr>
+<tr>
+<td><strong>Clang</strong></td>
+<td>18+</td>
+<td>✅ 完整</td>
+<td>✅ 完整</td>
+<td>✅ 大部分</td>
+<td>部分</td>
+<td>macOS、clangd</td>
+</tr>
+<tr>
+<td><strong>Apple Clang</strong></td>
+<td>16+ (Xcode 16)</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ 大部分</td>
+<td>少量</td>
+<td>macOS 本地开发</td>
+</tr>
+<tr>
+<td><strong>MSVC</strong></td>
+<td>VS 2022 17.8+</td>
+<td>✅</td>
+<td>✅</td>
+<td>大部分</td>
+<td>少量</td>
+<td>Windows</td>
+</tr>
+</tbody></table>
+<p>实用建议：</p>
+<ol>
+<li><strong>新项目默认 C++17</strong>，除非明确需要 C++20 特性（Concepts、Ranges、协程等）。</li>
+<li><strong>CMake 里写死标准并开启 REQUIRED</strong>（第 01 篇），避免静默降级。</li>
+<li><strong>CI 与本地编译器尽量一致</strong>——Docker 环境就是为了这个（第 00 篇）。</li>
+<li>查某个特性是否可用：cppreference 的 Compiler Support 表，或代码里 <code>#if __cpp_xxx</code> 宏（demo 中大量使用）。</li>
+</ol>
+<h2 id="八、demo-导览：version-features"><a href="#八、demo-导览：version-features" class="headerlink" title="八、demo 导览：version_features"></a>八、demo 导览：version_features</h2><p><code>ref/cpp_demo/basics/version_features/</code> 把各版本特性拆成独立可执行文件：</p>
+<table>
+<thead>
+<tr>
+<th>可执行文件</th>
+<th>标准</th>
+<th>源文件</th>
+<th>主要内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>demo_03</code></td>
+<td>C++11*</td>
+<td><code>03.cpp</code></td>
+<td>关联容器、RAII 雏形、经典 STL</td>
+</tr>
+<tr>
+<td><code>demo_11</code></td>
+<td>C++11</td>
+<td><code>11.cpp</code></td>
+<td>auto、智能指针、线程、Lambda</td>
+</tr>
+<tr>
+<td><code>demo_14</code></td>
+<td>C++14</td>
+<td><code>14.cpp</code></td>
+<td>返回值推导、泛型 Lambda</td>
+</tr>
+<tr>
+<td><code>demo_17</code></td>
+<td>C++17</td>
+<td><code>17.cpp</code></td>
+<td>CTAD、optional、variant、结构化绑定</td>
+</tr>
+<tr>
+<td><code>demo_20</code></td>
+<td>C++20</td>
+<td><code>20.cpp</code></td>
+<td><code>&lt;=&gt;</code>、指定初始化、协程、bit_cast</td>
+</tr>
+<tr>
+<td><code>demo_23</code></td>
+<td>C++23</td>
+<td><code>23.cpp</code></td>
+<td>expected、println、deducing this、if consteval</td>
+</tr>
+<tr>
+<td><code>demo_26</code></td>
+<td>C++26</td>
+<td><code>26.cpp</code></td>
+<td>pack indexing、mdspan 多维下标</td>
+</tr>
+<tr>
+<td><code>test_20</code></td>
+<td>C++20</td>
+<td><code>test_20.cpp</code></td>
+<td>C++20 特性补充测试</td>
+</tr>
+</tbody></table>
+<p>* 注：<code>demo_03</code> 的 CMake 目标实际设为 C++11 编译，但内容展示的是 C++03 时代的惯用法与容器。</p>
+<p>CMake 为每个 target 单独指定标准——这正是多版本 demo 共存的关键：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_executable</span>(demo_11 <span class="number">11</span>.cpp)</span><br><span class="line"><span class="keyword">set_target_properties</span>(demo_11 PROPERTIES CXX_STANDARD <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(demo_20 <span class="number">20</span>.cpp)</span><br><span class="line"><span class="keyword">set_target_properties</span>(demo_20 PROPERTIES CXX_STANDARD <span class="number">20</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(demo_23 <span class="number">23</span>.cpp)</span><br><span class="line"><span class="keyword">set_target_properties</span>(demo_23 PROPERTIES CXX_STANDARD <span class="number">23</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(demo_26 <span class="number">26</span>.cpp)</span><br><span class="line"><span class="keyword">set_target_properties</span>(demo_26 PROPERTIES CXX_STANDARD <span class="number">26</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="一键运行全部"><a href="#一键运行全部" class="headerlink" title="一键运行全部"></a>一键运行全部</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ref/cpp_demo/basics/version_features</span><br><span class="line">./build.sh --run</span><br></pre></td></tr></table></figure>
+
+<p><code>build.sh --run</code> 会依次编译并执行 <code>build/</code> 下所有可执行文件。首次编译若 C++20 target 报错，优先检查编译器版本。</p>
+<h3 id="建议阅读顺序"><a href="#建议阅读顺序" class="headerlink" title="建议阅读顺序"></a>建议阅读顺序</h3><ol>
+<li><code>demo_03</code> — 感受「没有智能指针、没有 auto」时代怎么写</li>
+<li><code>demo_11</code> — 现代 C++ 的「大爆炸」</li>
+<li><code>demo_14</code> → <code>demo_17</code> — 逐步变好用</li>
+<li><code>demo_20</code> — 语言级现代化</li>
+<li><code>demo_23</code> → <code>demo_26</code> — 最新标准实用特性与前沿方向</li>
+</ol>
+<h2 id="九、如何用到本系列后续文章？"><a href="#九、如何用到本系列后续文章？" class="headerlink" title="九、如何用到本系列后续文章？"></a>九、如何用到本系列后续文章？</h2><p>把本篇当作<strong>目录页</strong>，后面每一篇深入一个特性：</p>
+<table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>主题</th>
+<th>版本</th>
+<th>demo</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>03</td>
+<td>移动语义</td>
+<td>C++11</td>
+<td><code>right_ref_demo/</code></td>
+</tr>
+<tr>
+<td>04–05</td>
+<td>智能指针</td>
+<td>C++11</td>
+<td><code>smart_pointers/</code></td>
+</tr>
+<tr>
+<td>06</td>
+<td>Lambda</td>
+<td>C++11&#x2F;14&#x2F;20</td>
+<td><code>lambda_demo/</code></td>
+</tr>
+<tr>
+<td>07</td>
+<td>C++17 工具箱</td>
+<td>C++17</td>
+<td><code>any_demo</code> 等</td>
+</tr>
+<tr>
+<td>09–11</td>
+<td>format &#x2F; Ranges &#x2F; Concepts</td>
+<td>C++20</td>
+<td>各 demo</td>
+</tr>
+<tr>
+<td>12–14</td>
+<td>并发</td>
+<td>C++11&#x2F;20</td>
+<td><code>concurrency/</code></td>
+</tr>
+<tr>
+<td>17</td>
+<td>C++23</td>
+<td>C++23</td>
+<td><code>cpp23_features/</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td>C++26 预览</td>
+<td>C++26</td>
+<td><code>version_features/26.cpp</code></td>
+</tr>
+</tbody></table>
+<p>遇到编译错误时，先问自己两个问题：</p>
+<ol>
+<li>这个 demo 需要哪个 <code>-std=c++XX</code>？</li>
+<li>我的编译器版本够不够？</li>
+</ol>
+<h2 id="十、小结"><a href="#十、小结" class="headerlink" title="十、小结"></a>十、小结</h2><p>本篇梳理了 C++ 标准从 03 到 26 的演进路线：</p>
+<ul>
+<li><strong>C++11</strong> 是现代 C++ 的分水岭——智能指针、移动语义、Lambda、线程</li>
+<li><strong>C++14&#x2F;17</strong> 让日常编码更高效——CTAD、optional、filesystem、并行算法</li>
+<li><strong>C++20</strong> 带来 Concepts、Ranges、协程、format 等语言级变革</li>
+<li><strong>C++23</strong> 补齐 expected、print、deducing this 等实用特性</li>
+<li><strong>C++26</strong>（2026 定稿）引入反射、契约、pack indexing、<code>std::execution</code> 等</li>
+<li><strong><code>version_features</code> demo</strong> 按版本拆分（03 → 26），可逐个编译运行</li>
+</ul>
+<blockquote>
+<p>现代 C++ 实战系列第 2 篇完。下一篇我们深入 <strong>移动语义与右值引用</strong>——<code>std::move</code> 到底在干什么，为什么它能大幅提升性能。</p>
+</blockquote>
+<h3 id="系列导航"><a href="#系列导航" class="headerlink" title="系列导航"></a>系列导航</h3><table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>标题</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00</td>
+<td><a href="/2026/06/13/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-00-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E4%B8%8E%E9%A1%B9%E7%9B%AE%E5%AF%BC%E8%A7%88/">环境搭建与项目导览</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>01</td>
+<td><a href="/2026/06/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/">CMake 与现代构建</a></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>02</strong></td>
+<td><strong>C++ 版本演进一览（本篇）</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>03</td>
+<td>移动语义与右值引用</td>
+<td>下一篇</td>
+</tr>
+</tbody></table>
+<p>完整大纲见工作区 <code>docs/CPP_SERIES_OUTLINE.md</code>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/06/15/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/">http://shiguol.github.io/2026/06/15/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-02-C++%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B%E4%B8%80%E8%A7%88/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E7%8E%B0%E4%BB%A3C/">现代C++</a><a class="post-meta__tags" href="/tags/C-11/">C++11</a><a class="post-meta__tags" href="/tags/C-20/">C++20</a><a class="post-meta__tags" href="/tags/C-23/">C++23</a><a class="post-meta__tags" href="/tags/C-26/">C++26</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cpp/version-evolution.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/06/16/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-03-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（03）：移动语义与右值引用"><img class="cover" src="/images/cover/cpp/move-semantics.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">现代 C++ 实战（03）：移动语义与右值引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们把 C++ 版本地图铺好了。C++11 里有一项改动，几乎改变了整个语言写高性能代码的方式：移动语义（Move Semantics）。很多人第一次遇到 std::move 和 T&amp;&amp; 时会困惑：「这到底是在拷贝还是在移动？」 这一篇我们拆开来看：左值 &#x2F; 右值是什么、std::move 做了什么、移动构造如何省掉深拷贝，并带你跑 right_ref_demo demo。    这是「现代 C++ 实战」系列的第 3 篇。对应 demo：ref/cpp_demo/basics/right_ref_demo/。建议先读 第 02 篇：C++ 版本演进一览。  一、为什么需要移动语义？想象你在搬家：把书从旧书架搬到新书架，有两种做法：    做法 类比 C++ 中的对应    复印 把每本书复印一份放到新家，旧家原件还在 拷贝构造——两份独立数据   直接搬 把书整箱抬走，旧书架空了 移动构造——资源所有权转移   对 std::string、std::vector 这类在堆上持有大块内存的类型，深拷贝意味着：  分配同等大小的新内存 逐字节复制内容...</div></div></div></a><a class="pagination-related" href="/2026/06/14/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-01-CMake%E4%B8%8E%E7%8E%B0%E4%BB%A3%E6%9E%84%E5%BB%BA/" title="现代 C++ 实战（01）：CMake 与现代构建"><img class="cover" src="/images/cover/cpp/cmake-build.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">现代 C++ 实战（01）：CMake 与现代构建</div></div><div class="info-2"><div class="info-item-1">上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：CMake。本系列 39 个 demo 全部用 CMake 构建，其中 projects/fetch_content/ 是一个「集大成」示例——它用 FetchContent 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。 搞懂这篇，后面所有带外部库的 demo 你都不会慌。    这是「现代 C++ 实战」系列的第 1 篇。对应 demo：ref/cpp_demo/projects/fetch_content/。建议先读 第 00 篇：环境搭建与项目导览。  一、为什么需要 CMake？手写 Makefile 在小项目里够用，但现代 C++ 项目很快会遇到天花板：    痛点 Makefile 的局限 CMake 的做法    跨平台 Windows &#x2F; macOS &#x2F; Linux 语法不同 一套 CMakeLists.txt，生成对应平台的构建文件   依赖管理 手动下载、编译、写 -I &#x2F; -L Fet...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/22/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-09-C++20%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="现代 C++ 实战（09）：C++20 格式化与编译期计算"><img class="cover" src="/images/cover/cpp/cpp20-format.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-22</div><div class="info-item-2">现代 C++ 实战（09）：C++20 格式化与编译期计算</div></div><div class="info-2"><div class="info-item-1">printf 类型不安全，iostream 又冗又慢；C++20 的 std::format 把 {fmt} 收进标准库，Python 风格占位符 + 编译期类型检查。同一时代还有 constexpr 进阶、consteval、std::span——把格式化与计算都推向「更安全、更编译期」。 这一篇对应三个 demo：format_demo、constexpr_demo、span_demo。    这是「现代 C++ 实战」系列的第 9 篇。建议先读 第 08 篇：错误处理策略。  一、格式化三时代   方式 类型安全 语法 性能    printf ❌ 格式与参数不匹配 → UB C 风格 %d 快   iostream ✅ cout &lt;&lt; x &lt;&lt; y 冗长 较慢   std::format ✅ &quot;{} + {} = {}&quot; 简洁 接近 printf   C++23 再加 std::print &#x2F; std::println——直接输出，不必先拼 string 再 cout。 编译器要求：GCC 13+ &#x2F; Cla...</div></div></div></a><a class="pagination-related" href="/2026/06/30/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-17-C++23%E6%96%B0%E7%89%B9%E6%80%A7/" title="现代 C++ 实战（17）：C++23 新特性"><img class="cover" src="/images/cover/cpp/cpp23.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-30</div><div class="info-item-2">现代 C++ 实战（17）：C++23 新特性</div></div><div class="info-2"><div class="info-item-1">C++20 上了 Concepts、协程、Ranges；C++23 继续「还债」：std::expected 补错误处理、std::print 补输出、deducing this 补成员函数模板、std::generator 补协程生成器——不必等 C++26 也能用上不少干货。 这一篇对应 demo：ref/cpp_demo/basics/cpp23_features/（含条件编译，按编译器能力启用特性）。    这是「现代 C++ 实战」系列的第 17 篇。建议先读 第 16 篇：GoogleTest 与 第 08 篇：错误处理。  一、C++23 概览   特性 解决什么    std::expected&lt;T, E&gt; 成功值 + 错误原因，替代部分异常&#x2F;错误码   deducing this 一份成员函数覆盖 const&#x2F;非 const   std::print &#x2F; println 类型安全格式化输出   std::generator 标准协程生成器（惰性序列）   if consteval constexpr 函数里区分编译期&#...</div></div></div></a><a class="pagination-related" href="/2026/06/21/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-08-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E7%AD%96%E7%95%A5/" title="现代 C++ 实战（08）：错误处理策略"><img class="cover" src="/images/cover/cpp/error-handling.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-21</div><div class="info-item-2">现代 C++ 实战（08）：错误处理策略</div></div><div class="info-2"><div class="info-item-1">C++ 没有统一的「错误处理方式」——return -1、throw、std::optional、std::expected 各有战场。选错方式要么性能吃亏，要么错误被静默忽略，要么 API 语义含糊。 这一篇用同一个「解析配置文件」场景，对比 四种主流错误处理策略，并给出选型指南。对应 demo：ref/cpp_demo/basics/error_handling_demo/。    这是「现代 C++ 实战」系列的第 8 篇。建议先读 第 07 篇：C++17 工具箱。  一、为什么错误处理值得单独讲？现代 C++ 项目里，错误处理往往比算法更影响可维护性：  调用方会不会忘记检查返回值？ 失败时资源会不会泄漏（文件句柄、锁、内存）？ API 语义是否清晰：「找不到」和「出错了」是一回事吗？  demo 用解析 host=...、port=... 的配置文件贯穿全文——同一功能，四种写法。 二、C 风格错误码：return -1 + 输出参数12345678enum class CErrorCode &#123; SUCCESS = 0, FILE_NOT_FOUND = -...</div></div></div></a><a class="pagination-related" href="/2026/06/23/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-10-Ranges%E4%B8%8E%E5%87%BD%E6%95%B0%E5%BC%8F%E9%A3%8E%E6%A0%BC/" title="现代 C++ 实战（10）：Ranges 与函数式风格"><img class="cover" src="/images/cover/cpp/ranges.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">现代 C++ 实战（10）：Ranges 与函数式风格</div></div><div class="info-2"><div class="info-item-1">传统 STL 算法要传 begin/end，中间步骤常要临时容器；C++20 Ranges 用「范围 + 视图管道」把数据处理写成 Unix 管道风格——filter | transform | take，且惰性求值，少分配、可读性高。 这一篇对应 demo：ref/cpp_demo/basics/ranges_demo/。    这是「现代 C++ 实战」系列的第 10 篇。建议先读 第 09 篇：C++20 格式化与编译期计算。  一、传统算法的局限12345678910std::vector&lt;int&gt; nums = &#123;1, 2, 3, 4, 5, 6, 7, 8, 9, 10&#125;;// 传统写法：多步 + 中间容器std::vector&lt;int&gt; evens;std::copy_if(nums.begin(), nums.end(), std::back_inserter(evens),             [](int n) &#123; return n % 2 == 0; &#125;);std::vector&lt;in...</div></div></div></a><a class="pagination-related" href="/2026/06/25/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-12-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80/" title="现代 C++ 实战（12）：多线程基础"><img class="cover" src="/images/cover/cpp/threading.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-25</div><div class="info-item-2">现代 C++ 实战（12）：多线程基础</div></div><div class="info-2"><div class="info-item-1">第一季讲完语言特性，第二季进入并发与工程。第一课是 C++11 起就有的四件套：std::thread、mutex、condition_variable、atomic——创建并行任务、保护共享数据、线程间等待通知、无锁计数。 这一篇对应 demo：ref/cpp_demo/concurrency/thread_demos/（含 thread 基础、mutex、条件变量、atomic、线程安全队列）。    这是「现代 C++ 实战」系列的第 12 篇，第二季开篇。建议先读 第 11 篇：Concepts。  一、为什么需要多线程？ 利用多核：CPU 密集型任务拆到多个核并行 重叠 I&#x2F;O 与计算：一个线程等磁盘&#x2F;网络，另一个继续算 响应性：UI 线程不阻塞于后台任务  C++ 标准库从 C++11 起提供跨平台线程抽象，不必直接写 pthread（Linux）或 Win32 API。 二、std::thread：创建、join、detach1234567891011121314151617#include &lt;thread&gt;#include &lt;...</div></div></div></a><a class="pagination-related" href="/2026/06/16/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-03-%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" title="现代 C++ 实战（03）：移动语义与右值引用"><img class="cover" src="/images/cover/cpp/move-semantics.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-16</div><div class="info-item-2">现代 C++ 实战（03）：移动语义与右值引用</div></div><div class="info-2"><div class="info-item-1">上一篇我们把 C++ 版本地图铺好了。C++11 里有一项改动，几乎改变了整个语言写高性能代码的方式：移动语义（Move Semantics）。很多人第一次遇到 std::move 和 T&amp;&amp; 时会困惑：「这到底是在拷贝还是在移动？」 这一篇我们拆开来看：左值 &#x2F; 右值是什么、std::move 做了什么、移动构造如何省掉深拷贝，并带你跑 right_ref_demo demo。    这是「现代 C++ 实战」系列的第 3 篇。对应 demo：ref/cpp_demo/basics/right_ref_demo/。建议先读 第 02 篇：C++ 版本演进一览。  一、为什么需要移动语义？想象你在搬家：把书从旧书架搬到新书架，有两种做法：    做法 类比 C++ 中的对应    复印 把每本书复印一份放到新家，旧家原件还在 拷贝构造——两份独立数据   直接搬 把书整箱抬走，旧书架空了 移动构造——资源所有权转移   对 std::string、std::vector 这类在堆上持有大块内存的类型，深拷贝意味着：  分配同等大小的新内存 逐字节复制内容...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">103</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81C-%E6%A0%87%E5%87%86%E6%97%B6%E9%97%B4%E7%BA%BF"><span class="toc-number">1.</span> <span class="toc-text">一、C++ 标准时间线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81C-11%EF%BC%9A%E7%8E%B0%E4%BB%A3-C-%E7%9A%84%E8%B5%B7%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">二、C++11：现代 C++ 的起点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81C-14-C-17%EF%BC%9A%E5%AE%9E%E7%94%A8%E5%A2%9E%E5%BC%BA"><span class="toc-number">3.</span> <span class="toc-text">三、C++14 &#x2F; C++17：实用增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#C-14%EF%BC%9A%E8%AE%A9-C-11-%E6%9B%B4%E5%A5%BD%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">C++14：让 C++11 更好用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#C-17%EF%BC%9A%E6%97%A5%E5%B8%B8%E5%BC%80%E5%8F%91%E7%9A%84%E5%B7%A5%E5%85%B7%E7%AE%B1"><span class="toc-number">3.2.</span> <span class="toc-text">C++17：日常开发的工具箱</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81C-20%EF%BC%9A%E8%AF%AD%E8%A8%80%E7%BA%A7%E7%8E%B0%E4%BB%A3%E5%8C%96"><span class="toc-number">4.</span> <span class="toc-text">四、C++20：语言级现代化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81C-23%EF%BC%9A%E5%AE%9E%E7%94%A8%E7%89%B9%E6%80%A7%E8%A1%A5%E9%BD%90"><span class="toc-number">5.</span> <span class="toc-text">五、C++23：实用特性补齐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81C-26%EF%BC%9A2026-%E5%AE%9A%E7%A8%BF%E7%9A%84%E6%96%B0%E6%A0%87%E5%87%86"><span class="toc-number">6.</span> <span class="toc-text">六、C++26：2026 定稿的新标准</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%BC%96%E8%AF%91%E5%99%A8%E6%80%8E%E4%B9%88%E9%80%89%EF%BC%9F"><span class="toc-number">7.</span> <span class="toc-text">七、编译器怎么选？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81demo-%E5%AF%BC%E8%A7%88%EF%BC%9Aversion-features"><span class="toc-number">8.</span> <span class="toc-text">八、demo 导览：version_features</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E9%94%AE%E8%BF%90%E8%A1%8C%E5%85%A8%E9%83%A8"><span class="toc-number">8.1.</span> <span class="toc-text">一键运行全部</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BB%BA%E8%AE%AE%E9%98%85%E8%AF%BB%E9%A1%BA%E5%BA%8F"><span class="toc-number">8.2.</span> <span class="toc-text">建议阅读顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%A6%82%E4%BD%95%E7%94%A8%E5%88%B0%E6%9C%AC%E7%B3%BB%E5%88%97%E5%90%8E%E7%BB%AD%E6%96%87%E7%AB%A0%EF%BC%9F"><span class="toc-number">9.</span> <span class="toc-text">九、如何用到本系列后续文章？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">10.</span> <span class="toc-text">十、小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="toc-number">10.1.</span> <span class="toc-text">系列导航</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8817%EF%BC%89%EF%BC%9AFlash-Attention%E2%80%94%E2%80%94%E4%B8%8D%E7%89%A9%E5%8C%96%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%9F%A9%E9%98%B5/" title="大模型数学速成（17）：Flash Attention——不物化注意力矩阵"><img src="/images/cover/ai/flash-attention.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（17）：Flash Attention——不物化注意力矩阵"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8817%EF%BC%89%EF%BC%9AFlash-Attention%E2%80%94%E2%80%94%E4%B8%8D%E7%89%A9%E5%8C%96%E6%B3%A8%E6%84%8F%E5%8A%9B%E7%9F%A9%E9%98%B5/" title="大模型数学速成（17）：Flash Attention——不物化注意力矩阵">大模型数学速成（17）：Flash Attention——不物化注意力矩阵</a><time datetime="2026-07-10T12:00:00.000Z" title="发表于 2026-07-10 20:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8816%EF%BC%89%EF%BC%9ALoRA%E2%80%94%E2%80%94%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8D%E5%9C%A8%E7%AE%97%E4%BB%80%E4%B9%88/" title="大模型数学速成（16）：LoRA——低秩适配在算什么"><img src="/images/cover/ai/lora-low-rank.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（16）：LoRA——低秩适配在算什么"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8816%EF%BC%89%EF%BC%9ALoRA%E2%80%94%E2%80%94%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8D%E5%9C%A8%E7%AE%97%E4%BB%80%E4%B9%88/" title="大模型数学速成（16）：LoRA——低秩适配在算什么">大模型数学速成（16）：LoRA——低秩适配在算什么</a><time datetime="2026-07-10T11:00:00.000Z" title="发表于 2026-07-10 19:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8815%EF%BC%89%EF%BC%9A%E9%87%8F%E5%8C%96%E2%80%94%E2%80%94%E4%BB%8E-FP16-%E5%88%B0-INT4-%E7%9A%84%E5%B0%BA%E5%BA%A6/" title="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度"><img src="/images/cover/ai/quantization-int4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8815%EF%BC%89%EF%BC%9A%E9%87%8F%E5%8C%96%E2%80%94%E2%80%94%E4%BB%8E-FP16-%E5%88%B0-INT4-%E7%9A%84%E5%B0%BA%E5%BA%A6/" title="大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度">大模型数学速成（15）：量化——从 FP16 到 INT4 的尺度</a><time datetime="2026-07-10T10:00:00.000Z" title="发表于 2026-07-10 18:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8814%EF%BC%89%EF%BC%9A%E9%87%87%E6%A0%B7%E2%80%94%E2%80%94Temperature%E3%80%81top-k-%E4%B8%8E-top-p/" title="大模型数学速成（14）：采样——Temperature、top-k 与 top-p"><img src="/images/cover/ai/sampling-topk-topp.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（14）：采样——Temperature、top-k 与 top-p"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8814%EF%BC%89%EF%BC%9A%E9%87%87%E6%A0%B7%E2%80%94%E2%80%94Temperature%E3%80%81top-k-%E4%B8%8E-top-p/" title="大模型数学速成（14）：采样——Temperature、top-k 与 top-p">大模型数学速成（14）：采样——Temperature、top-k 与 top-p</a><time datetime="2026-07-10T09:00:00.000Z" title="发表于 2026-07-10 17:00:00">2026-07-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8813%EF%BC%89%EF%BC%9A%E5%9B%A0%E6%9E%9C%E6%8E%A9%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81%E5%BE%AA%E7%8E%AF/" title="大模型数学速成（13）：因果掩码与解码循环"><img src="/images/cover/ai/causal-mask-decode.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="大模型数学速成（13）：因果掩码与解码循环"/></a><div class="content"><a class="title" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8813%EF%BC%89%EF%BC%9A%E5%9B%A0%E6%9E%9C%E6%8E%A9%E7%A0%81%E4%B8%8E%E8%A7%A3%E7%A0%81%E5%BE%AA%E7%8E%AF/" title="大模型数学速成（13）：因果掩码与解码循环">大模型数学速成（13）：因果掩码与解码循环</a><time datetime="2026-07-10T08:00:00.000Z" title="发表于 2026-07-10 16:00:00">2026-07-10</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
