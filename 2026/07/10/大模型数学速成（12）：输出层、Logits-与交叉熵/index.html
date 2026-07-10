@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>大模型数学速成（12）：输出层、Logits 与交叉熵 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="第 11 篇 把 Prefill &#x2F; Decode 与 KV Cache 讲完，第一季在「一层 Transformer 怎么前向」处收官。但生成下一个 token 之前，模型还要做最后一步：把最后一个（或每一个）位置的 hidden 变成词表上的分数，再变成概率。 训练时，我们用 交叉熵（Cross-Entropy） 衡量「猜对下一个 token」有多准——这正是 next-token">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大模型数学速成（12）：输出层、Logits 与交叉熵">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8812%EF%BC%89%EF%BC%9A%E8%BE%93%E5%87%BA%E5%B1%82%E3%80%81Logits-%E4%B8%8E%E4%BA%A4%E5%8F%89%E7%86%B5/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="第 11 篇 把 Prefill &#x2F; Decode 与 KV Cache 讲完，第一季在「一层 Transformer 怎么前向」处收官。但生成下一个 token 之前，模型还要做最后一步：把最后一个（或每一个）位置的 hidden 变成词表上的分数，再变成概率。 训练时，我们用 交叉熵（Cross-Entropy） 衡量「猜对下一个 token」有多准——这正是 next-token">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/ai/lm-head-cross-entropy.png">
+<meta property="article:published_time" content="2026-07-10T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T07:31:06.287Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="数学">
+<meta property="article:tag" content="训练">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/ai/lm-head-cross-entropy.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "大模型数学速成（12）：输出层、Logits 与交叉熵",
+  "url": "http://shiguol.github.io/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8812%EF%BC%89%EF%BC%9A%E8%BE%93%E5%87%BA%E5%B1%82%E3%80%81Logits-%E4%B8%8E%E4%BA%A4%E5%8F%89%E7%86%B5/",
+  "image": "http://shiguol.github.io/images/cover/ai/lm-head-cross-entropy.png",
+  "datePublished": "2026-07-10T07:00:00.000Z",
+  "dateModified": "2026-07-10T07:31:06.287Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8812%EF%BC%89%EF%BC%9A%E8%BE%93%E5%87%BA%E5%B1%82%E3%80%81Logits-%E4%B8%8E%E4%BA%A4%E5%8F%89%E7%86%B5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '大模型数学速成（12）：输出层、Logits 与交叉熵',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/ai/lm-head-cross-entropy.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">大模型数学速成（12）：输出层、Logits 与交叉熵</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">大模型数学速成（12）：输出层、Logits 与交叉熵</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-10T07:00:00.000Z" title="发表于 2026-07-10 15:00:00">2026-07-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-10T07:31:06.287Z" title="更新于 2026-07-10 15:31:06">2026-07-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/LLMMathPrimer/">LLMMathPrimer</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p><a href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/">第 11 篇</a> 把 <strong>Prefill &#x2F; Decode 与 KV Cache</strong> 讲完，第一季在「一层 Transformer 怎么前向」处收官。但生成下一个 token 之前，模型还要做最后一步：<strong>把最后一个（或每一个）位置的 hidden 变成词表上的分数，再变成概率</strong>。</p>
+<p>训练时，我们用 <strong>交叉熵（Cross-Entropy）</strong> 衡量「猜对下一个 token」有多准——这正是 next-token prediction 的数学核心。本篇是续篇首篇：从 <strong>lm_head → logits → Softmax → 损失</strong> 一次算明白。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「大模型数学速成」<strong>续篇第 12 篇</strong>（第一季 00–11 已完结）。建议先熟悉 <a href="/2026/07/09/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8805%EF%BC%89%EF%BC%9A%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E4%B8%8ESoftmax/">第 05 篇 Softmax</a> 与 <a href="/2026/06/20/Token-AI%E7%9C%BC%E4%B8%AD%E7%9A%84%E6%96%87%E5%AD%97/">Token 科普</a>。下一篇讲 <strong>因果掩码与解码循环</strong>。</p>
+</blockquote>
+<h2 id="一、最后一层-hidden-还不是「词」"><a href="#一、最后一层-hidden-还不是「词」" class="headerlink" title="一、最后一层 hidden 还不是「词」"></a>一、最后一层 hidden 还不是「词」</h2><p>经过 $L$ 层 Transformer 后，每个位置有一个特征向量（本系列约定：<strong>列 &#x3D; token</strong>，形状大致 <code>[d, S]</code>）。<br>对「预测下一个 token」来说，我们通常取<strong>当前要预测的那个位置</strong>的 hidden 向量 $\mathbf{h} \in \mathbb{R}^{d}$（例如 Decode 时最新位置）。</p>
+<p>$\mathbf{h}$ 仍在「语义空间」里，<strong>还不是词表里的某一个 id</strong>。需要一层线性变换，把它投影到 <strong>词表大小 $V$</strong> 的分数上：</p>
+<p>$$<br>\mathbf{z} &#x3D; W_{\mathrm{lm}} \mathbf{h} + \mathbf{b}<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+<th>典型量级（公开常见配置，仅示意）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$\mathbf{h}$</td>
+<td>隐藏状态</td>
+<td>$d$ 如 4096</td>
+</tr>
+<tr>
+<td>$W_{\mathrm{lm}}$</td>
+<td>输出投影，常称 <strong>lm_head</strong></td>
+<td>形状约 $[V, d]$</td>
+</tr>
+<tr>
+<td>$\mathbf{z}$</td>
+<td><strong>logits</strong>（未归一化分数）</td>
+<td>长度 $V$（如数万）</td>
+</tr>
+<tr>
+<td>$\mathbf{b}$</td>
+<td>偏置（很多实现省略）</td>
+<td>长度 $V$ 或无</td>
+</tr>
+</tbody></table>
+<p>有的模型做 <strong>weight tying</strong>：把输入 embedding 矩阵与 $W_{\mathrm{lm}}$ 绑成同一套参数，省参数、也常更稳——概念上仍是「hidden → 词表分数」。</p>
+<h2 id="二、Logits-不是概率"><a href="#二、Logits-不是概率" class="headerlink" title="二、Logits 不是概率"></a>二、Logits 不是概率</h2><p>$\mathbf{z}$ 的分量可正可负、可大可小，<strong>不必和为 1</strong>。把它变成「下一个 token 是词 $i$ 的概率」仍用 <a href="/2026/07/09/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8805%EF%BC%89%EF%BC%9A%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E4%B8%8ESoftmax/">第 05 篇</a> 的 Softmax：</p>
+<p>$$<br>p_i &#x3D; \frac{e^{z_i}}{\sum_{j&#x3D;1}^{V} e^{z_j}}, \quad i &#x3D; 1,\ldots,V<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>是什么</th>
+<th>常见用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>logits $\mathbf{z}$</strong></td>
+<td>未归一化分数</td>
+<td>采样、温度缩放、损失计算的入口</td>
+</tr>
+<tr>
+<td><strong>概率 $\mathbf{p}$</strong></td>
+<td>Softmax 后，和为 1</td>
+<td>解释「模型有多确信」</td>
+</tr>
+<tr>
+<td><strong>预测 id</strong></td>
+<td>$\arg\max_i p_i$ 或采样</td>
+<td>真正吐出的下一个 token</td>
+</tr>
+</tbody></table>
+<p>推理时可以<strong>不显式物化</strong>完整 $\mathbf{p}$（有的实现用数值稳定的 log-softmax 直接采样）；数学上等价于在 $\mathbf{z}$ 上做 Softmax。</p>
+<h2 id="三、交叉熵：猜错要挨打的分数"><a href="#三、交叉熵：猜错要挨打的分数" class="headerlink" title="三、交叉熵：猜错要挨打的分数"></a>三、交叉熵：猜错要挨打的分数</h2><p>训练样本在某个位置上有<strong>正确答案</strong> token id，记为 $y^\star$（教师强制：看前文，预测下一个真实词）。</p>
+<p>模型给出概率 $p_{y^\star}$。<strong>交叉熵损失</strong>（单位置、单样本）就是负对数似然：</p>
+<p>$$<br>\mathcal{L} &#x3D; -\log p_{y^\star}<br>$$</p>
+<table>
+<thead>
+<tr>
+<th>$p_{y^\star}$</th>
+<th>$\mathcal{L} &#x3D; -\log p$</th>
+<th>直觉</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>接近 1</td>
+<td>接近 0</td>
+<td>猜得很准，几乎不罚</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>$\approx 0.69$</td>
+<td>半信半疑</td>
+</tr>
+<tr>
+<td>0.1</td>
+<td>$\approx 2.30$</td>
+<td>罚得重</td>
+</tr>
+<tr>
+<td>接近 0</td>
+<td>$\to +\infty$</td>
+<td>几乎没分给正确答案，损失爆炸</td>
+</tr>
+</tbody></table>
+<p>对 batch、序列多个位置，通常对有效位置（非 padding）<strong>取平均</strong>：</p>
+<p>$$<br>\mathcal{L}<em>{\mathrm{batch}} &#x3D; \frac{1}{N}\sum</em>{n&#x3D;1}^{N} -\log p^{(n)}_{y^{\star(n)}}<br>$$</p>
+<p><strong>一句话</strong>：预训练 &#x2F; SFT 的主目标，大多是「在因果掩码下，对每个位置做 next-token 交叉熵」——数据分布不同，<strong>损失形式常是同一套</strong>。</p>
+<h3 id="和-Softmax-写在一起"><a href="#和-Softmax-写在一起" class="headerlink" title="和 Softmax 写在一起"></a>和 Softmax 写在一起</h3><p>若正确答案是 one-hot 向量 $\mathbf{y}$（仅 $y^\star$ 处为 1），则：</p>
+<p>$$<br>\mathcal{L} &#x3D; -\sum_{i&#x3D;1}^{V} y_i \log p_i &#x3D; -\log p_{y^\star}<br>$$</p>
+<p>实现里几乎从不用显式 one-hot，而是用「目标 id + log-softmax」的融合算子（如 <code>cross_entropy</code>），数值更稳、更快。</p>
+<h2 id="四、手算小例子（词表只有-3-个词）"><a href="#四、手算小例子（词表只有-3-个词）" class="headerlink" title="四、手算小例子（词表只有 3 个词）"></a>四、手算小例子（词表只有 3 个词）</h2><p>假设词表：<code>{猫, 狗, 鱼}</code>，某位置 logits：</p>
+<p>$$<br>\mathbf{z} &#x3D; [2.0,\ 1.0,\ 0.1]<br>$$</p>
+<h3 id="Step-1：Softmax"><a href="#Step-1：Softmax" class="headerlink" title="Step 1：Softmax"></a>Step 1：Softmax</h3><p>$$<br>e^{2.0}\approx 7.389,\quad e^{1.0}\approx 2.718,\quad e^{0.1}\approx 1.105<br>$$</p>
+<p>$$<br>\sum e^{z_j} \approx 11.212<br>$$</p>
+<p>$$<br>\mathbf{p} \approx [0.659,\ 0.242,\ 0.099]<br>$$</p>
+<h3 id="Step-2：若正确答案是「猫」（下标-0）"><a href="#Step-2：若正确答案是「猫」（下标-0）" class="headerlink" title="Step 2：若正确答案是「猫」（下标 0）"></a>Step 2：若正确答案是「猫」（下标 0）</h3><p>$$<br>\mathcal{L} &#x3D; -\log 0.659 \approx 0.417<br>$$</p>
+<h3 id="Step-3：若正确答案是「鱼」（下标-2）"><a href="#Step-3：若正确答案是「鱼」（下标-2）" class="headerlink" title="Step 3：若正确答案是「鱼」（下标 2）"></a>Step 3：若正确答案是「鱼」（下标 2）</h3><p>$$<br>\mathcal{L} &#x3D; -\log 0.099 \approx 2.313<br>$$</p>
+<p>同一组 logits，<strong>标签不同，损失差很多</strong>——训练就是通过反向传播，把 $W_{\mathrm{lm}}$ 与前面所有层往「提高 $p_{y^\star}$」的方向推。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">logits z:   猫 2.0    狗 1.0    鱼 0.1</span><br><span class="line">              │         │         │</span><br><span class="line">           Softmax   Softmax   Softmax</span><br><span class="line">              ▼         ▼         ▼</span><br><span class="line">prob p:     0.66      0.24      0.10</span><br><span class="line">              │</span><br><span class="line">        若 y*=猫 → L ≈ 0.42（较轻）</span><br><span class="line">        若 y*=鱼 → L ≈ 2.31（较重）</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、训练在优化什么、推理在用什么"><a href="#五、训练在优化什么、推理在用什么" class="headerlink" title="五、训练在优化什么、推理在用什么"></a>五、训练在优化什么、推理在用什么</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>用 logits 做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>预训练</strong></td>
+<td>海量文本上 next-token CE；学语言统计与世界知识的「接龙」能力</td>
+</tr>
+<tr>
+<td><strong>SFT</strong></td>
+<td>仍是 CE，数据换成「指令 → 理想回复」等格式</td>
+</tr>
+<tr>
+<td><strong>对齐（RLHF&#x2F;DPO 等）</strong></td>
+<td>目标函数会变（续篇第 19 篇预告）；不再是单纯 CE</td>
+</tr>
+<tr>
+<td><strong>推理</strong></td>
+<td>不算 CE；对 $\mathbf{z}$ 做贪心 &#x2F; 温度 &#x2F; top-k &#x2F; top-p <strong>采样</strong>（续篇第 14 篇）</td>
+</tr>
+</tbody></table>
+<p>第一季的 Attention、FFN、RoPE 等，都是在<strong>制造更好的 $\mathbf{h}$</strong>；本篇的 lm_head + CE，是在<strong>规定 $\mathbf{h}$ 最终要服务的目标</strong>。</p>
+<h2 id="六、数值稳定小贴士（知道即可）"><a href="#六、数值稳定小贴士（知道即可）" class="headerlink" title="六、数值稳定小贴士（知道即可）"></a>六、数值稳定小贴士（知道即可）</h2><p>直接算 $e^{z_i}$ 时，若某个 $z_i$ 很大，可能溢出。常用技巧：</p>
+<p>$$<br>p_i &#x3D; \frac{e^{z_i - m}}{\sum_j e^{z_j - m}},\quad m &#x3D; \max_j z_j<br>$$</p>
+<p>先减行内最大值，再 Softmax——与 <a href="/2026/07/09/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8805%EF%BC%89%EF%BC%9A%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6%E4%B8%8ESoftmax/">第 05 篇</a> 的「缩放稳定 Softmax」同一类思想。框架里的 <code>log_softmax</code> + NLL 会帮你做稳妥实现。</p>
+<h2 id="七、小结"><a href="#七、小结" class="headerlink" title="七、小结"></a>七、小结</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>lm_head</strong></td>
+<td>$W_{\mathrm{lm}}\mathbf{h}$，hidden → 词表维 logits</td>
+</tr>
+<tr>
+<td><strong>logits</strong></td>
+<td>未归一化分数，不是概率</td>
+</tr>
+<tr>
+<td><strong>Softmax</strong></td>
+<td>$\mathbf{z}\to\mathbf{p}$，和为 1</td>
+</tr>
+<tr>
+<td><strong>交叉熵</strong></td>
+<td>$\mathcal{L}&#x3D;-\log p_{y^\star}$，next-token 主损失</td>
+</tr>
+<tr>
+<td><strong>训练 vs 推理</strong></td>
+<td>训练回传 CE；推理对 logits 采样</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>大模型数学速成续篇第 12 篇完。下一篇 <strong>因果掩码与解码循环</strong>——训练如何并行算整句 CE，以及 Prefill&#x2F;Decode 如何「不许偷看未来」。</p>
+</blockquote>
+<h3 id="系列导航"><a href="#系列导航" class="headerlink" title="系列导航"></a>系列导航</h3><table>
+<thead>
+<tr>
+<th>篇号</th>
+<th>标题</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>11</td>
+<td><a href="/2026/07/15/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8811%EF%BC%89%EF%BC%9AKV-Cache-%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E7%9A%84%E5%85%B3%E9%94%AE/">KV Cache</a></td>
+<td>✅ 第一季收官</td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td><strong>输出层、Logits 与交叉熵（本篇）</strong></td>
+<td>✅ 续篇首篇</td>
+</tr>
+<tr>
+<td>13</td>
+<td>因果掩码与解码循环</td>
+<td>下一篇</td>
+</tr>
+</tbody></table>
+<p>完整大纲见工作区 <code>docs/MATH_SERIES_OUTLINE_V2.md</code>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8812%EF%BC%89%EF%BC%9A%E8%BE%93%E5%87%BA%E5%B1%82%E3%80%81Logits-%E4%B8%8E%E4%BA%A4%E5%8F%89%E7%86%B5/">http://shiguol.github.io/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8812%EF%BC%89%EF%BC%9A%E8%BE%93%E5%87%BA%E5%B1%82%E3%80%81Logits-%E4%B8%8E%E4%BA%A4%E5%8F%89%E7%86%B5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E5%AD%A6/">数学</a><a class="post-meta__tags" href="/tags/Transformer/">Transformer</a><a class="post-meta__tags" href="/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a><a class="post-meta__tags" href="/tags/%E8%AE%AD%E7%BB%83/">训练</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/ai/lm-head-cross-entropy.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/11/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8807%EF%BC%89%EF%BC%9ARoPE-%E7%94%A8%E6%97%8B%E8%BD%AC%E7%BC%96%E7%A0%81%E4%BD%8D%E7%BD%AE/" title="大模型数学速成（07）：RoPE——用旋转编码位置"><img class="cover" src="/images/cover/ai/rope.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">大模型数学速成（07）：RoPE——用旋转编码位置</div></div><div class="info-2"><div class="info-item-1">Self-Attention 本身不包含位置信息——打乱 token 顺序，只要 Q&#x2F;K&#x2F;V 一起打乱，注意力分数不变。但语言有语序：「狗咬人」≠「人咬狗」。位置编码告诉模型每个 token 在序列中的位置；现代 LLM 广泛使用的 RoPE（Rotary Position Embedding，旋转位置编码） 通过「旋转」Q&#x2F;K 向量来注入相对位置。 这一篇搞懂：为什么需要 RoPE、旋转在算什么、为何只改 Q&#x2F;K、以及绝对位置与相对位置的关系。    这是「大模型数学速成」系列的第 7 篇。建议先读 第 06 篇：FFN。下一篇 ViT 层 vs LLM 层对照总表。  一、顺序问题：Attention 是「置换等变」的第 05 篇 的注意力只看点积相似度。若把 token 列整体重排（Q、K、V 同步重排），每个 token 关注谁不变——模型不知道谁在前谁在后。 早期做法：    方法 思路 代表    绝对位置嵌入 给每个位置 $i$ 学一个向量 $p_i$，$x + p_i$ 原始 Transformer   RoPE 按位置旋转...</div></div></div></a><a class="pagination-related" href="/2026/07/10/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-09-C++20%E6%A0%BC%E5%BC%8F%E5%8C%96%E4%B8%8E%E7%BC%96%E8%AF%91%E6%9C%9F%E8%AE%A1%E7%AE%97/" title="现代 C++ 实战（09）：C++20 格式化与编译期计算"><img class="cover" src="/images/cover/cpp/cpp20-format.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">现代 C++ 实战（09）：C++20 格式化与编译期计算</div></div><div class="info-2"><div class="info-item-1">printf 类型不安全，iostream 又冗又慢；C++20 的 std::format 把 {fmt} 收进标准库，Python 风格占位符 + 编译期类型检查。同一时代还有 constexpr 进阶、consteval、std::span——把格式化与计算都推向「更安全、更编译期」。 这一篇对应三个 demo：format_demo、constexpr_demo、span_demo。    这是「现代 C++ 实战」系列的第 9 篇。建议先读 第 08 篇：错误处理策略。  一、格式化三时代   方式 类型安全 语法 性能    printf ❌ 格式与参数不匹配 → UB C 风格 %d 快   iostream ✅ cout &lt;&lt; x &lt;&lt; y 冗长 较慢   std::format ✅ &quot;{} + {} = {}&quot; 简洁 接近 printf   C++23 再加 std::print &#x2F; std::println——直接输出，不必先拼 string 再 cout。 编译器要求：GCC 13+ &#x2F; Cla...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/05/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8801%EF%BC%89%EF%BC%9A%E5%BC%A0%E9%87%8F%E3%80%81%E7%BB%B4%E5%BA%A6%E4%B8%8E%E3%80%8C%E5%88%97-token%E3%80%8D/" title="大模型数学速成（01）：张量、维度与「列 &#x3D; token」"><img class="cover" src="/images/cover/ai/tensor-token.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">大模型数学速成（01）：张量、维度与「列 &#x3D; token」</div></div><div class="info-2"><div class="info-item-1">你在文档里看到 [768, 1024]，第一反应可能是：768 是行还是列？1024 是 token 数还是特征维？PyTorch 教程写 [batch, seq, hidden]，推理引擎源码写 [n_embd, n_tokens]——同一套数据，括号顺序不同，读错维度后面所有公式都会对不上。 这一篇只解决一件事：在本系列采用的约定下，张量形状怎么读、矩阵图怎么画、常见运算后维度怎么变。 搞懂它，后面矩阵乘法、Q&#x2F;K&#x2F;V 投影才有共同语言。    这是「大模型数学速成」系列的第 1 篇。建议先读 第 00 篇：读 Transformer 前需要哪些数学？。下一篇我们讲 矩阵乘法——神经网络的「基本变换器」。  一、什么是张量？在深度学习里，张量（tensor） 就是存放数字的多维数组。维度越高，结构越丰富，但读法有统一套路：    维度 生活类比 大模型中的例子    1D 向量 一行成绩：[语文, 数学, 英语, …] 某一个 token 的 768 维 embedding   2D 矩阵 Excel 表格 [n_embd, n_tokens] 整段序列的...</div></div></div></a><a class="pagination-related" href="/2026/07/11/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8807%EF%BC%89%EF%BC%9ARoPE-%E7%94%A8%E6%97%8B%E8%BD%AC%E7%BC%96%E7%A0%81%E4%BD%8D%E7%BD%AE/" title="大模型数学速成（07）：RoPE——用旋转编码位置"><img class="cover" src="/images/cover/ai/rope.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-11</div><div class="info-item-2">大模型数学速成（07）：RoPE——用旋转编码位置</div></div><div class="info-2"><div class="info-item-1">Self-Attention 本身不包含位置信息——打乱 token 顺序，只要 Q&#x2F;K&#x2F;V 一起打乱，注意力分数不变。但语言有语序：「狗咬人」≠「人咬狗」。位置编码告诉模型每个 token 在序列中的位置；现代 LLM 广泛使用的 RoPE（Rotary Position Embedding，旋转位置编码） 通过「旋转」Q&#x2F;K 向量来注入相对位置。 这一篇搞懂：为什么需要 RoPE、旋转在算什么、为何只改 Q&#x2F;K、以及绝对位置与相对位置的关系。    这是「大模型数学速成」系列的第 7 篇。建议先读 第 06 篇：FFN。下一篇 ViT 层 vs LLM 层对照总表。  一、顺序问题：Attention 是「置换等变」的第 05 篇 的注意力只看点积相似度。若把 token 列整体重排（Q、K、V 同步重排），每个 token 关注谁不变——模型不知道谁在前谁在后。 早期做法：    方法 思路 代表    绝对位置嵌入 给每个位置 $i$ 学一个向量 $p_i$，$x + p_i$ 原始 Transformer   RoPE 按位置旋转...</div></div></div></a><a class="pagination-related" href="/2026/07/06/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8802%EF%BC%89%EF%BC%9A%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95-%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8F%98%E6%8D%A2/" title="大模型数学速成（02）：矩阵乘法——神经网络的基本变换"><img class="cover" src="/images/cover/ai/matrix-multiply.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-06</div><div class="info-item-2">大模型数学速成（02）：矩阵乘法——神经网络的基本变换</div></div><div class="info-2"><div class="info-item-1">上一篇我们约定：列 &#x3D; token，形状 [768, 1024] 表示 768 维特征 × 1024 个 token。接下来几乎所有 Transformer 层都在做同一件事——矩阵乘法：对每个 token 的特征向量做线性变换。 这一篇搞懂 $y &#x3D; W \cdot x + b$ 在算什么、「握手规则」为什么必须成立，并用 3 维 × 2 token 的手算例子建立直觉。Q&#x2F;K&#x2F;V 三次投影留到下一篇。    这是「大模型数学速成」系列的第 2 篇。建议先读 第 01 篇：张量、维度与「列 &#x3D; token」。下一篇讲 Q&#x2F;K&#x2F;V 投影——同一输入，三种角色。  一、一句话概括矩阵乘法 &#x3D; 对每个 token 的特征向量做一次线性变换（旋转 + 拉伸 + 平移），把信息从一个「语义空间」映射到另一个「语义空间」。 神经网络里一层线性层，本质上就是一次矩阵乘法加偏置；堆叠多层非线性激活，才形成复杂的表达能力。 二、生活类比：调咖啡1234567输入向量 x = [咖啡豆量, 水量, 奶量]     ← ...</div></div></div></a><a class="pagination-related" href="/2026/07/12/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8808%EF%BC%89%EF%BC%9AViT%E5%B1%82vs-LLM%E5%B1%82-%E6%A6%82%E5%BF%B5%E5%AF%B9%E7%85%A7%E6%80%BB%E8%A1%A8/" title="大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表"><img class="cover" src="/images/cover/ai/vit-llm-compare.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-12</div><div class="info-item-2">大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表</div></div><div class="info-2"><div class="info-item-1">前 7 篇我们分别讲了张量约定、矩阵乘、Q&#x2F;K&#x2F;V、Norm 与残差、Attention、FFN、RoPE—— pieces 齐了，但读 ViT 或 LLM 代码时仍容易混：patch 和 token 是一回事吗？为什么 ViT 双向、LLM 因果？RMS Norm 和 LayerNorm 谁在哪？ 这一篇不引入新公式，用 一张骨架图 + 对照大表 把视觉 Transformer 与语言模型在同一套数学语言下对齐，并给出后续阅读路径。    这是「大模型数学速成」系列的第 8 篇。建议已读 第 00–07 篇。下一篇 多头注意力。  一、共同的 Transformer 骨架无论 ViT 还是 LLM，一层 block 的核心结构相同（Pre-LN 写法）： 12345678输入 X  [d, S]     S = 序列长度（patch 数或 token 数）    │    ├─ Norm ──► Self-Attention ──► + 残差    │    ├─ Norm ──► FFN ──► + 残差    │    ▼输出 X&#x27; [d, S...</div></div></div></a><a class="pagination-related" href="/2026/07/10/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8806%EF%BC%89%EF%BC%9A%E5%89%8D%E9%A6%88%E7%BD%91%E7%BB%9CFFN-GELU%E4%B8%8ESwiGLU/" title="大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU"><img class="cover" src="/images/cover/ai/ffn-gelu-swiglu.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-10</div><div class="info-item-2">大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU</div></div><div class="info-2"><div class="info-item-1">上一篇里，每个 token 通过注意力「看过」其他 token。但注意力只做加权混合——线性组合 V，表达能力有限。Transformer 块的另一半是 FFN（Feed-Forward Network，前馈网络）：对每个 token 独立做「升维 → 非线性 → 降维」，注入更强的逐 token 变换能力。 这一篇搞懂 FFN 在算什么、GELU &#x2F; SwiGLU 是什么、以及 ViT 与 LLM 的常见差异。    这是「大模型数学速成」系列的第 6 篇。建议先读 第 05 篇：注意力与 Softmax。下一篇讲 RoPE 位置编码。  一、注意力 vs FFN：分工不同    Self-Attention FFN    跨 token ✅ token 之间交换信息 ❌ 每个 token 独立处理   主要操作 加权求和（线性） 矩阵乘 + 非线性激活   类比 开会对齐信息 会后各自消化、深度加工   形状 [d, S] → [d, S] [d, S] → [d, S]   完整 Transformer 子层（Pre-LN）典型顺序： 1x → Norm → At...</div></div></div></a><a class="pagination-related" href="/2026/07/08/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%95%B0%E5%AD%A6%E9%80%9F%E6%88%90%EF%BC%8804%EF%BC%89%EF%BC%9ALayerNorm-RMS-Norm-%E4%B8%8E%E6%AE%8B%E5%B7%AE%E8%BF%9E%E6%8E%A5/" title="大模型数学速成（04）：LayerNorm、RMS Norm 与残差连接"><img class="cover" src="/images/cover/ai/norm-residual.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-08</div><div class="info-item-2">大模型数学速成（04）：LayerNorm、RMS Norm 与残差连接</div></div><div class="info-2"><div class="info-item-1">上一篇我们算出 Q、K、V——但在乘 $W_q$ 之前，输入通常先过 LayerNorm 或 RMS Norm。算完注意力或 FFN 之后，还要加一条 残差连接 把原输入「抄送」回来。 这一篇搞懂：为什么要归一化、两种 Norm 差在哪、Pre-LN 与 Post-LN 怎么排、残差为什么能训深网络。    这是「大模型数学速成」系列的第 4 篇。建议先读 第 03 篇：Q&#x2F;K&#x2F;V 投影。下一篇讲 注意力机制与 Softmax。  一、为什么需要归一化？深度网络堆叠几十层后，中间激活的数值尺度容易漂移：某些维爆炸、某些维趋近 0，梯度不稳定，训练变慢甚至发散。 归一化（Normalization） 对每个 token 的特征向量做「拉回标准尺度」——让均值为 0、方差为 1（或类似效果），再交给下一层矩阵乘法。 生活类比：音响均衡器——不管输入音量忽大忽小，先归一化到合适响度，再进功放。 在本系列约定下（第 01 篇）：  输入形状 [n_embd, n_tokens]，每一列是一个 token 的 $n_embd$ 维向量 Norm 按列操作：对每个 tok...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/wall-e-ai.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">98</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">14</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%9C%80%E5%90%8E%E4%B8%80%E5%B1%82-hidden-%E8%BF%98%E4%B8%8D%E6%98%AF%E3%80%8C%E8%AF%8D%E3%80%8D"><span class="toc-number">1.</span> <span class="toc-text">一、最后一层 hidden 还不是「词」</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Logits-%E4%B8%8D%E6%98%AF%E6%A6%82%E7%8E%87"><span class="toc-number">2.</span> <span class="toc-text">二、Logits 不是概率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BA%A4%E5%8F%89%E7%86%B5%EF%BC%9A%E7%8C%9C%E9%94%99%E8%A6%81%E6%8C%A8%E6%89%93%E7%9A%84%E5%88%86%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">三、交叉熵：猜错要挨打的分数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C-Softmax-%E5%86%99%E5%9C%A8%E4%B8%80%E8%B5%B7"><span class="toc-number">3.1.</span> <span class="toc-text">和 Softmax 写在一起</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%89%8B%E7%AE%97%E5%B0%8F%E4%BE%8B%E5%AD%90%EF%BC%88%E8%AF%8D%E8%A1%A8%E5%8F%AA%E6%9C%89-3-%E4%B8%AA%E8%AF%8D%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、手算小例子（词表只有 3 个词）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1%EF%BC%9ASoftmax"><span class="toc-number">4.1.</span> <span class="toc-text">Step 1：Softmax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2%EF%BC%9A%E8%8B%A5%E6%AD%A3%E7%A1%AE%E7%AD%94%E6%A1%88%E6%98%AF%E3%80%8C%E7%8C%AB%E3%80%8D%EF%BC%88%E4%B8%8B%E6%A0%87-0%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">Step 2：若正确答案是「猫」（下标 0）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-3%EF%BC%9A%E8%8B%A5%E6%AD%A3%E7%A1%AE%E7%AD%94%E6%A1%88%E6%98%AF%E3%80%8C%E9%B1%BC%E3%80%8D%EF%BC%88%E4%B8%8B%E6%A0%87-2%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">Step 3：若正确答案是「鱼」（下标 2）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%AE%AD%E7%BB%83%E5%9C%A8%E4%BC%98%E5%8C%96%E4%BB%80%E4%B9%88%E3%80%81%E6%8E%A8%E7%90%86%E5%9C%A8%E7%94%A8%E4%BB%80%E4%B9%88"><span class="toc-number">5.</span> <span class="toc-text">五、训练在优化什么、推理在用什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E5%B0%8F%E8%B4%B4%E5%A3%AB%EF%BC%88%E7%9F%A5%E9%81%93%E5%8D%B3%E5%8F%AF%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六、数值稳定小贴士（知道即可）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">七、小结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E5%AF%BC%E8%88%AA"><span class="toc-number">7.1.</span> <span class="toc-text">系列导航</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/28/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-27-%E5%8D%8F%E7%A8%8B%E4%B8%8EActor%E6%A8%A1%E5%9E%8B/" title="现代 C++ 实战（27）：协程与 Actor 模型"><img src="/images/cover/cpp/coroutine-actor.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（27）：协程与 Actor 模型"/></a><div class="content"><a class="title" href="/2026/07/28/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-27-%E5%8D%8F%E7%A8%8B%E4%B8%8EActor%E6%A8%A1%E5%9E%8B/" title="现代 C++ 实战（27）：协程与 Actor 模型">现代 C++ 实战（27）：协程与 Actor 模型</a><time datetime="2026-07-28T02:00:00.000Z" title="发表于 2026-07-28 10:00:00">2026-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/27/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-26-LRU%E7%BC%93%E5%AD%98%E4%B8%8EJSON%E8%A7%A3%E6%9E%90%E5%99%A8/" title="现代 C++ 实战（26）：LRU 缓存与 JSON 解析器"><img src="/images/cover/cpp/lru-json.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（26）：LRU 缓存与 JSON 解析器"/></a><div class="content"><a class="title" href="/2026/07/27/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-26-LRU%E7%BC%93%E5%AD%98%E4%B8%8EJSON%E8%A7%A3%E6%9E%90%E5%99%A8/" title="现代 C++ 实战（26）：LRU 缓存与 JSON 解析器">现代 C++ 实战（26）：LRU 缓存与 JSON 解析器</a><time datetime="2026-07-27T02:00:00.000Z" title="发表于 2026-07-27 10:00:00">2026-07-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/26/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-25-SQLite%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E6%88%98/" title="现代 C++ 实战（25）：SQLite 数据库实战"><img src="/images/cover/cpp/sqlite.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（25）：SQLite 数据库实战"/></a><div class="content"><a class="title" href="/2026/07/26/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-25-SQLite%E6%95%B0%E6%8D%AE%E5%BA%93%E5%AE%9E%E6%88%98/" title="现代 C++ 实战（25）：SQLite 数据库实战">现代 C++ 实战（25）：SQLite 数据库实战</a><time datetime="2026-07-26T02:00:00.000Z" title="发表于 2026-07-26 10:00:00">2026-07-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/25/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-24-HTTP%E6%9C%8D%E5%8A%A1%E4%B8%8EJSON/" title="现代 C++ 实战（24）：HTTP 服务与 JSON"><img src="/images/cover/cpp/http-json.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（24）：HTTP 服务与 JSON"/></a><div class="content"><a class="title" href="/2026/07/25/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-24-HTTP%E6%9C%8D%E5%8A%A1%E4%B8%8EJSON/" title="现代 C++ 实战（24）：HTTP 服务与 JSON">现代 C++ 实战（24）：HTTP 服务与 JSON</a><time datetime="2026-07-25T02:00:00.000Z" title="发表于 2026-07-25 10:00:00">2026-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/24/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-23-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" title="现代 C++ 实战（23）：字符串搜索与动态规划"><img src="/images/cover/cpp/string-dp.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="现代 C++ 实战（23）：字符串搜索与动态规划"/></a><div class="content"><a class="title" href="/2026/07/24/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-23-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" title="现代 C++ 实战（23）：字符串搜索与动态规划">现代 C++ 实战（23）：字符串搜索与动态规划</a><time datetime="2026-07-24T02:00:00.000Z" title="发表于 2026-07-24 10:00:00">2026-07-24</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
