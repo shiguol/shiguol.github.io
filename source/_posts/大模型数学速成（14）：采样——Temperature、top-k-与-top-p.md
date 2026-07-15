@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/sampling-topk-topp.png
+cover: /images/cover/ai/sampling-topk-topp.webp
 title: 大模型数学速成（14）：采样——Temperature、top-k 与 top-p
 date: 2026-07-10 17:00:00
 categories:

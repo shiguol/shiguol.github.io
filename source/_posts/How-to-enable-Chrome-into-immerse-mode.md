@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/chrome-immerse.png
+cover: /images/cover/chrome-immerse.webp
 title: How to enable Chrome into immerse mode
 uuid: 68e8b54e-977d-6f52-1729-2a474730960f
 date: 2016-04-02 10:26:28

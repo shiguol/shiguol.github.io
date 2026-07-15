@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/rope.png
+cover: /images/cover/ai/rope.webp
 title: 大模型数学速成（07）：RoPE——用旋转编码位置
 date: 2026-07-05 10:00:00
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/harness.png
+cover: /images/cover/ai/harness.webp
 title: Harness 工程：给 Agent 装上"操作系统"
 date: 2026-06-24 13:03:29
 categories:

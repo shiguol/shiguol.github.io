@@ -12,10 +12,10 @@ tags:
 - 开发环境
 - 工具链
 
-cover: https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png
+cover: /images/cover/external/finder-macos.webp
 ---
 
-![brew-logo](https://avatars2.githubusercontent.com/u/1503512?v=3&s=200)
+![brew-logo](/images/cover/external/brew-logo.webp)
 
 ## Mac OS X 不可或缺的套件管理器
 

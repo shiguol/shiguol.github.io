@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/http-json.png
+cover: /images/cover/cpp/http-json.webp
 title: 现代 C++ 实战（24）：HTTP 服务与 JSON
 date: 2026-07-07 14:00:00
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/smart-ptr-basic.png
+cover: /images/cover/cpp/smart-ptr-basic.webp
 title: 现代 C++ 实战（04）：智能指针（上）——所有权与 RAII
 date: 2026-06-17 14:00:00
 categories:

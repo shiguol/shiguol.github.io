@@ -8,7 +8,7 @@ tags:
 - Hexo
 - Blog
 - 测试
-cover: /images/cover/hexo.png
+cover: /images/cover/hexo.webp
 ---
 
 # 🎉 欢迎来到 2026 年！

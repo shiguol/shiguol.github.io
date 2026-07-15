@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/loop.png
+cover: /images/cover/ai/loop.webp
 title: Loop 工程：Agent 的心跳是怎么跳的
 date: 2026-06-24 13:06:02
 categories:

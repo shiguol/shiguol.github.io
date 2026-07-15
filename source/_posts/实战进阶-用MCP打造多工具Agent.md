@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/mcp-multi-tool.png
+cover: /images/cover/ai/mcp-multi-tool.webp
 title: 实战进阶：用 MCP 打造多工具 Agent
 date: 2026-06-24 13:18:01
 categories:

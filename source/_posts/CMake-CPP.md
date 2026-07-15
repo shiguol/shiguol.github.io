@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cmake-cpp.png
+cover: /images/cover/cmake-cpp.webp
 title: CMake CPP
 date: 2025-05-19 00:06:03
 categories: 

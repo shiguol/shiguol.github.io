@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/crontab-unix.png
+cover: /images/cover/crontab-unix.webp
 title: crontab
 uuid: 002b78ef-6e4c-7572-783a-aa5b4a61b42e
 date: 2017-07-20 14:19:23

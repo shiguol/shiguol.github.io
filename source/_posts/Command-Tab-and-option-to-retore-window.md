@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/mac-command-tab.png
+cover: /images/cover/mac-command-tab.webp
 title: Command + Tab (and) option to retore window
 uuid: 4d206374-1e80-7cf2-5310-b7fb85c9624c
 date: 2016-01-10 23:03:10

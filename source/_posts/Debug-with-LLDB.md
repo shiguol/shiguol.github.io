@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/lldb-debug.png
+cover: /images/cover/lldb-debug.webp
 title: Debug with LLDB
 date: 2025-05-19 00:01:29
 categories: Programming

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/lm-head-cross-entropy.png
+cover: /images/cover/ai/lm-head-cross-entropy.webp
 title: 大模型数学速成（12）：输出层、Logits 与交叉熵
 date: 2026-07-10 10:00:00
 categories:

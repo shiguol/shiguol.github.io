@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/lora-low-rank.png
+cover: /images/cover/ai/lora-low-rank.webp
 title: 大模型数学速成（16）：LoRA——低秩适配在算什么
 date: 2026-07-10 19:00:00
 categories:

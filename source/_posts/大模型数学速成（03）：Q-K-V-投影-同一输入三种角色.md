@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/qkv-projection.png
+cover: /images/cover/ai/qkv-projection.webp
 title: 大模型数学速成（03）：Q/K/V 投影——同一输入，三种角色
 date: 2026-07-01 10:00:00
 categories:

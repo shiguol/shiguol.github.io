@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/dockerfile.png
+cover: /images/cover/dockerfile.webp
 title: A good start for Dockerfile
 date: 2025-05-19 00:12:17
 categories:

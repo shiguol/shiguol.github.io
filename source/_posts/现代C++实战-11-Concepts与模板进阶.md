@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/concepts.png
+cover: /images/cover/cpp/concepts.webp
 title: 现代 C++ 实战（11）：Concepts 与模板进阶
 date: 2026-06-24 14:00:00
 categories:

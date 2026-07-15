@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/moe-routing.png
+cover: /images/cover/ai/moe-routing.webp
 title: 大模型数学速成（18）：MoE——稀疏 FFN 与路由
 date: 2026-07-10 21:00:00
 categories:

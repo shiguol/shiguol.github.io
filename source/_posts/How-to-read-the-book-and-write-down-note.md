@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/reading-notes.png
+cover: /images/cover/reading-notes.webp
 title: How to read the book and write down note
 uuid: e3d92187-447d-8fe4-3052-0dc0a0de9ddf
 date: 2022-11-12 18:29:39

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/ai-api.png
+cover: /images/cover/ai/ai-api.webp
 title: 动手调用 AI API
 date: 2026-06-20 22:50:00
 categories:

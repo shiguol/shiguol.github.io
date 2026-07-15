@@ -11,7 +11,7 @@ tags:
 - 快捷键
 - 开发工具
 
-cover: https://upload.wikimedia.org/wikipedia/commons/4/4f/Icon-Vim.svg
+cover: /images/cover/external/vim-icon.svg
 ---
 |  Cmd   | Meaning  |
 |  ----  | ----  |

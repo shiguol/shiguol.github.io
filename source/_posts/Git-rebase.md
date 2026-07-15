@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/git-rebase.png
+cover: /images/cover/git-rebase.webp
 title: Git rebase
 date: 2025-05-19 00:08:34
 categories: Programming

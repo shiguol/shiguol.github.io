@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/diffusion.png
+cover: /images/cover/ai/diffusion.webp
 title: 图像生成与 Diffusion Model
 date: 2026-06-20 22:30:00
 categories:

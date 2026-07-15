@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/norm-residual.png
+cover: /images/cover/ai/norm-residual.webp
 title: 大模型数学速成（04）：LayerNorm、RMS Norm 与残差连接
 date: 2026-07-02 10:00:00
 categories:

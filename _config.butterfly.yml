@@ -4,7 +4,7 @@
 
 # Avatar
 avatar:
-  img: /images/wall-e-ai.png
+  img: /images/wall-e-ai.webp
   effect: false
 
 # Inject custom scripts
@@ -19,8 +19,11 @@ inject:
 # Dark background for index banner (starfield canvas renders on top)
 index_img: "linear-gradient(135deg, #0b1026 0%, #1a1a3e 50%, #0d2137 100%)"
 
-# Use Vercount CDN for busuanzi (official source is unstable)
+# CDN Settings — use npmmirror (China) instead of jsdelivr (unreliable in China)
 CDN:
+  third_party_provider: custom
+  custom_format: https://registry.npmmirror.com/${name}/${version}/files/${min_file}
+  version: true
   option:
     busuanzi: https://vercount.one/js
 
@@ -32,6 +35,12 @@ canvas_nest:
   zIndex: -1
   count: 99
   mobile: false
+
+# Lazy-load images — defer off-screen images to speed up initial page load
+lazyload:
+  enable: true
+  field: site
+  blur: true
 
 # Math rendering — MathJax auto-renders $...$ / $$...$$ in posts
 math:

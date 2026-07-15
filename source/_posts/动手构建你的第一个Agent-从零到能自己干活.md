@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/first-agent.png
+cover: /images/cover/ai/first-agent.webp
 title: 动手构建你的第一个 Agent：从零到"能自己干活"
 date: 2026-06-24 13:15:37
 categories:

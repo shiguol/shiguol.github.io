@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/transformer.png
+cover: /images/cover/ai/transformer.webp
 title: 通俗理解 Transformer
 date: 2026-06-20 20:59:21
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/gqa.png
+cover: /images/cover/ai/gqa.webp
 title: 大模型数学速成（10）：GQA——分组查询注意力
 date: 2026-07-08 10:00:00
 categories:

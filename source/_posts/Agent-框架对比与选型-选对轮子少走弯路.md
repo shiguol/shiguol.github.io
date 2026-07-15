@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/agent-framework.png
+cover: /images/cover/ai/agent-framework.webp
 title: Agent 框架对比与选型：选对轮子少走弯路
 date: 2026-06-24 13:10:55
 categories:

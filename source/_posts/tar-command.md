@@ -7,7 +7,7 @@ tags:
 - 压缩
 - 命令行
 - macOS
-cover: images/cover/terminal_2.png
+cover: images/cover/terminal_2.webp
 ---
 
 # macOS 压缩

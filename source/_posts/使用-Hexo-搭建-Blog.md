@@ -11,10 +11,10 @@ tags:
 - GitHub Pages
 - 静态站点
 
-cover: images/cover/hexo.png
+cover: images/cover/hexo.webp
 ---
 
-![HEXO-logo](https://avatars0.githubusercontent.com/u/6375567?v=3&s=200)
+![HEXO-logo](/images/cover/external/hexo-logo.webp)
 
 #### 需求：
 

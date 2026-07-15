@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/lru-json.png
+cover: /images/cover/cpp/lru-json.webp
 title: 现代 C++ 实战（26）：LRU 缓存与 JSON 解析器
 date: 2026-07-09 14:00:00
 categories:

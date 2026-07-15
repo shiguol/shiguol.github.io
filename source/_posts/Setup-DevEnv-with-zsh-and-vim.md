@@ -12,7 +12,7 @@ tags:
 - Shell
 - dotfiles
 
-cover: /images/cover/setup-devenv-zsh-vim.png
+cover: /images/cover/setup-devenv-zsh-vim.webp
 ---
 
 今天拿到了新电脑，本来想做迁移，回头又一想，不如重新配置一个开发环境，因为有了此文。

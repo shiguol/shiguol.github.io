@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/kv-cache.png
+cover: /images/cover/ai/kv-cache.webp
 title: 大模型数学速成（11）：KV Cache——推理加速的关键
 date: 2026-07-09 10:00:00
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/sorting.png
+cover: /images/cover/cpp/sorting.webp
 title: 现代 C++ 实战（18）：排序算法与 std::sort
 date: 2026-07-01 14:00:00
 categories:

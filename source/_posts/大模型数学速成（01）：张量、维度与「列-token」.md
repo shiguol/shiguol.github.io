@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/tensor-token.png
+cover: /images/cover/ai/tensor-token.webp
 title: 大模型数学速成（01）：张量、维度与「列 = token」
 date: 2026-06-29 10:00:00
 categories:

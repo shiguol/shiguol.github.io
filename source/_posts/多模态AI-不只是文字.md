@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/multimodal.png
+cover: /images/cover/ai/multimodal.webp
 title: 多模态 AI：不只是文字
 date: 2026-06-20 22:20:00
 categories:

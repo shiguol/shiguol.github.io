@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/flash-attention.png
+cover: /images/cover/ai/flash-attention.webp
 title: 大模型数学速成（17）：Flash Attention——不物化注意力矩阵
 date: 2026-07-10 20:00:00
 categories:

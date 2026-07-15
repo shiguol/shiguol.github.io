@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/dpo-rlhf.png
+cover: /images/cover/ai/dpo-rlhf.webp
 title: 大模型数学速成（19）：DPO 与 RLHF 目标函数速览
 date: 2026-07-10 22:00:00
 categories:

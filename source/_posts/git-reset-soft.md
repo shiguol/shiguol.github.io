@@ -10,7 +10,7 @@ tags:
 - reset
 - 版本控制
 
-cover: https://git-scm.com/images/logos/downloads/Git-Logo-2Color.png
+cover: /images/cover/external/git-logo.webp
 ---
 例如在当前分支提交过 3 次，希望合并为 1 次提交，可以执行如下指令：
 

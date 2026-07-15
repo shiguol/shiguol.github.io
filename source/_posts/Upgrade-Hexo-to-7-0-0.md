@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/hexo-7.png
+cover: /images/cover/hexo-7.webp
 title: Upgrade Hexo to 7.0.0
 date: 2025-05-19 00:09:41
 categories: Blog

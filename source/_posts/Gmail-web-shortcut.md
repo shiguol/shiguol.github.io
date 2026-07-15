@@ -10,7 +10,7 @@ tags:
 - 效率
 - Web
 
-cover: images/cover/gmail.png
+cover: images/cover/gmail.webp
 ---
 
 Gmail web 端常用的快捷键：

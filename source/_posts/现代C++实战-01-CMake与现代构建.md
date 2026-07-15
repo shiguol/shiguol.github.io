@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/cpp/cmake-build.png
+cover: /images/cover/cpp/cmake-build.webp
 title: 现代 C++ 实战（01）：CMake 与现代构建
 date: 2026-06-14 14:00:00
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/ffn-gelu-swiglu.png
+cover: /images/cover/ai/ffn-gelu-swiglu.webp
 title: 大模型数学速成（06）：前馈网络 FFN——GELU 与 SwiGLU
 date: 2026-07-04 10:00:00
 categories:

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/agent-patterns.png
+cover: /images/cover/ai/agent-patterns.webp
 title: Agent 架构与设计模式：从"能跑"到"能用"
 date: 2026-06-24 13:13:06
 categories:

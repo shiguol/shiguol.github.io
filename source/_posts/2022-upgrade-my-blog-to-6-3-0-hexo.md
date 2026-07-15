@@ -11,7 +11,7 @@ tags:
 - GitHub Pages
 - 2022
 
-cover: images/cover/hexo.png
+cover: images/cover/hexo.webp
 ---
 
 Recently I update my blog from 4.0.0 to 6.3.0 hexo.

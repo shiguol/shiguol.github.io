@@ -11,7 +11,7 @@ tags:
 - macOS
 - 开发工具
 
-cover: images/cover/xcode.png
+cover: images/cover/xcode.webp
 ---
 
 ```

@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/mcp.png
+cover: /images/cover/ai/mcp.webp
 title: MCP 协议深度解析：Agent 世界的"USB 接口"
 date: 2026-06-24 13:08:44
 categories:

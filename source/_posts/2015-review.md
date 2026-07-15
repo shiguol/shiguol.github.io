@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/2015-review.png
+cover: /images/cover/2015-review.webp
 title: 2015 review
 uuid: b02ad6f8-177c-fc2b-7eea-743a6e2a0b52
 date: 2015-12-13 14:35:18

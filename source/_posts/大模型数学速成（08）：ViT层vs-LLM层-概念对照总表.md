@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/vit-llm-compare.png
+cover: /images/cover/ai/vit-llm-compare.webp
 title: 大模型数学速成（08）：ViT 层 vs LLM 层——概念对照总表
 date: 2026-07-06 10:00:00
 categories:

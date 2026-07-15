@@ -1,5 +1,5 @@
 ---
-cover: /images/cover/ai/context-engineering.png
+cover: /images/cover/ai/context-engineering.webp
 title: Context Engineering：从"写好提示词"到"管好上下文"
 date: 2026-06-24 13:00:43
 categories:
