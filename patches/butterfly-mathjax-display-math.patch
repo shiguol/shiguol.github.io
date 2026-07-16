@@ -1,0 +1,11 @@
+diff --git a/themes/butterfly/layout/includes/third-party/math/mathjax.pug b/themes/butterfly/layout/includes/third-party/math/mathjax.pug
+--- a/themes/butterfly/layout/includes/third-party/math/mathjax.pug
++++ b/themes/butterfly/layout/includes/third-party/math/mathjax.pug
+@@ -28,6 +28,7 @@ script.
+           },
+           tex: {
+             inlineMath: [['$', '$'], ['\\(', '\\)']],
++            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+             tags: '!{tags}',
+             packages: {
+               '[+]': [
