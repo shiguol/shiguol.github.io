@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RustInPractice（09）：借用与可变借用 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="按值传参会移动所有权，但多数函数只需要读取或修改调用者已有的数据。Rust 用引用表达这种临时访问，并用一条核心规则消除数据竞争：任意时刻，要么有多个只读引用，要么恰好有一个可变引用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RustInPractice（09）：借用与可变借用">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/21/RustInPractice-09-%E5%80%9F%E7%94%A8%E4%B8%8E%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="按值传参会移动所有权，但多数函数只需要读取或修改调用者已有的数据。Rust 用引用表达这种临时访问，并用一条核心规则消除数据竞争：任意时刻，要么有多个只读引用，要么恰好有一个可变引用。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/rust/borrowing-references.webp">
+<meta property="article:published_time" content="2026-07-21T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T07:55:21.431Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="Rust">
+<meta property="article:tag" content="借用">
+<meta property="article:tag" content="引用">
+<meta property="article:tag" content="所有权">
+<meta property="article:tag" content="编程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/rust/borrowing-references.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RustInPractice（09）：借用与可变借用",
+  "url": "http://shiguol.github.io/2026/07/21/RustInPractice-09-%E5%80%9F%E7%94%A8%E4%B8%8E%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8/",
+  "image": "http://shiguol.github.io/images/cover/rust/borrowing-references.webp",
+  "datePublished": "2026-07-21T02:00:00.000Z",
+  "dateModified": "2026-07-20T07:55:21.431Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/21/RustInPractice-09-%E5%80%9F%E7%94%A8%E4%B8%8E%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RustInPractice（09）：借用与可变借用',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/rust/borrowing-references.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">RustInPractice（09）：借用与可变借用</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">RustInPractice（09）：借用与可变借用</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-21T02:00:00.000Z" title="发表于 2026-07-21 10:00:00">2026-07-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-20T07:55:21.431Z" title="更新于 2026-07-20 15:55:21">2026-07-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/RustInPractice/">RustInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>按值传参会移动所有权，但多数函数只需要读取或修改调用者已有的数据。Rust 用引用表达这种临时访问，并用一条核心规则消除数据竞争：<strong>任意时刻，要么有多个只读引用，要么恰好有一个可变引用。</strong></p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是 RustInPractice 的第 09 篇。下一篇讲生命周期，解释编译器如何判断引用不会比它指向的数据活得更久。</p>
+</blockquote>
+<h2 id="一、不可变借用-T"><a href="#一、不可变借用-T" class="headerlink" title="一、不可变借用 &amp;T"></a>一、不可变借用 <code>&amp;T</code></h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">length</span>(text: &amp;<span class="type">str</span>) <span class="punctuation">-&gt;</span> <span class="type">usize</span> &#123;</span><br><span class="line">    text.<span class="title function_ invoke__">len</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="variable">name</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Rust&quot;</span>);</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, <span class="title function_ invoke__">length</span>(&amp;name));</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;name&#125;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>length</code> 得到的是只读视图，而不是 <code>String</code> 的所有权。函数结束后借用失效，原值仍由 <code>name</code> 拥有。对于文本参数，<code>&amp;str</code> 比 <code>&amp;String</code> 更通用：既能接收 <code>String</code>，也能接收字符串字面量。</p>
+<h2 id="二、可变借用-mut-T"><a href="#二、可变借用-mut-T" class="headerlink" title="二、可变借用 &amp;mut T"></a>二、可变借用 <code>&amp;mut T</code></h2><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">append_suffix</span>(text: &amp;<span class="keyword">mut</span> <span class="type">String</span>) &#123;</span><br><span class="line">    text.<span class="title function_ invoke__">push_str</span>(<span class="string">&quot; language&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">name</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;Rust&quot;</span>);</span><br><span class="line"><span class="title function_ invoke__">append_suffix</span>(&amp;<span class="keyword">mut</span> name);</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;name&#125;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>要创建可变引用，绑定本身必须是 <code>mut</code>。这不是重复限制：第一个 <code>mut</code> 允许变量被修改，<code>&amp;mut</code> 则把“当前函数独占修改权”交给调用者或被调用函数。</p>
+<h2 id="三、别名-XOR-可变性"><a href="#三、别名-XOR-可变性" class="headerlink" title="三、别名 XOR 可变性"></a>三、别名 XOR 可变性</h2><p>以下代码不能通过：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">text</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">read</span> = &amp;text;</span><br><span class="line"><span class="comment">// let write = &amp;mut text; // 错误：read 仍在使用</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;read&#125;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>如果读者和写者同时存在，读到的内容可能在观察期间改变。Rust 选择在编译期拒绝它，而不是让调用者自行加锁或赌运行顺序。</p>
+<p>相反，多个只读引用没有问题：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">first</span> = &amp;text;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">second</span> = &amp;text;</span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;first&#125; &#123;second&#125;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、借用范围通常比代码块更短"><a href="#四、借用范围通常比代码块更短" class="headerlink" title="四、借用范围通常比代码块更短"></a>四、借用范围通常比代码块更短</h2><p>现代 Rust 使用 non-lexical lifetimes：引用的存活期通常结束于最后一次使用，而不是所在的整个 <code>{}</code> 块。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">text</span> = <span class="type">String</span>::<span class="title function_ invoke__">from</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line"><span class="keyword">let</span> <span class="variable">count</span> = text.<span class="title function_ invoke__">len</span>();</span><br><span class="line">text.<span class="title function_ invoke__">push</span>(<span class="string">&#x27;!&#x27;</span>); <span class="comment">// count 已不再借用 text</span></span><br><span class="line"><span class="built_in">println!</span>(<span class="string">&quot;&#123;count&#125;, &#123;text&#125;&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>遇到借用错误时，先缩短引用实际使用范围，不要立刻 <code>clone()</code>。常见做法是先计算或拷贝需要的小值，再开始可变操作。</p>
+<h2 id="五、从-demo-看接口语义"><a href="#五、从-demo-看接口语义" class="headerlink" title="五、从 demo 看接口语义"></a>五、从 demo 看接口语义</h2><p><code>move_demo</code> 中 <code>borrow(&amp;a)</code> 在读取 <code>Movable</code> 后，<code>a</code> 仍可移动给 <code>b</code>。这正是借用的边界：读取不改变拥有者；需要消费资源的 <code>take_ownership(b)</code> 才按值接收。</p>
+<h2 id="六、小结"><a href="#六、小结" class="headerlink" title="六、小结"></a>六、小结</h2><ul>
+<li><code>&amp;T</code> 允许共享只读访问，<code>&amp;mut T</code> 允许独占修改。</li>
+<li>同一数据不能同时拥有可变借用和其他借用。</li>
+<li>借用会在最后一次使用后结束，尽量让引用范围小而清晰。</li>
+<li>参数优先选择最弱但足够的能力：只读用 <code>&amp;T</code>，原地修改才用 <code>&amp;mut T</code>。</li>
+</ul>
+<blockquote>
+<p>RustInPractice 第 09 篇完。下一篇：生命周期，理解引用关系如何被类型系统描述。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/21/RustInPractice-09-%E5%80%9F%E7%94%A8%E4%B8%8E%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8/">http://shiguol.github.io/2026/07/21/RustInPractice-09-%E5%80%9F%E7%94%A8%E4%B8%8E%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/Rust/">Rust</a><a class="post-meta__tags" href="/tags/%E6%89%80%E6%9C%89%E6%9D%83/">所有权</a><a class="post-meta__tags" href="/tags/%E5%80%9F%E7%94%A8/">借用</a><a class="post-meta__tags" href="/tags/%E5%BC%95%E7%94%A8/">引用</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/rust/borrowing-references.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/21/RustInPractice-10-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E5%85%B3%E7%B3%BB/" title="RustInPractice（10）：生命周期与引用关系"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/lifetimes.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">RustInPractice（10）：生命周期与引用关系</div></div><div class="info-2"><div class="info-item-1">生命周期不是对象在运行时倒计时，也不是必须到处手写的神秘标记。它描述的是：一个引用至少要和它所指向的数据一样久。 大多数函数依靠省略规则自动推断；只有返回引用或在 struct 中保存引用时，才需要把关系写出来。    这是 RustInPractice 的第 10 篇。下一篇进入 Box&lt;T&gt; 和递归数据结构。  一、悬垂引用为何被禁止？1234// fn broken() -&gt; &amp;str &#123;//     let text = String::from(&quot;temporary&quot;);//     &amp;text// &#125;  text 在函数结束时被销毁，返回的引用会指向无效内存，所以编译器拒绝它。正确方案通常是返回拥有的数据： 123fn make_text() -&gt; String &#123;    String::from(&quot;owned result&quot;)&#125;  二、标注的是关系，不是具体时长从两个切片返回较长者： 123fn longer&lt;&#x27;a&gt;(left...</div></div></div></a><a class="pagination-related" href="/2026/07/21/RustInPractice-08-%E6%89%80%E6%9C%89%E6%9D%83Move-Copy%E4%B8%8EClone/" title="RustInPractice（08）：所有权、Move、Copy 与 Clone"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/ownership-move.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">RustInPractice（08）：所有权、Move、Copy 与 Clone</div></div><div class="info-2"><div class="info-item-1">Rust 的所有权不是“手动管理内存”的另一种说法，而是一套资源责任规则：一个值在任意时刻只有一个拥有者；拥有者离开作用域时，值会被自动清理；赋值和传参默认会转移所有权。    这是 RustInPractice 第二季的第 08 篇。对应 demo：ownership/move_demo。下一篇讲借用：不转移所有权，如何安全地访问一个值。  一、Move：责任转移，不是字节复制1234let first = String::from(&quot;hello&quot;);let second = first;// println!(&quot;&#123;first&#125;&quot;); // 编译错误：first 已被移动println!(&quot;&#123;second&#125;&quot;);  String 管理一段堆内存。若赋值后两个变量都可用，它们可能在作用域结束时重复释放同一块资源。Rust 因而将赋值定义为 move：second 接管资源，first 失效。 这条规则也适用于函数： 123456fn consume(text: String) &#...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/21/RustInPractice-10-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E5%85%B3%E7%B3%BB/" title="RustInPractice（10）：生命周期与引用关系"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/lifetimes.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">RustInPractice（10）：生命周期与引用关系</div></div><div class="info-2"><div class="info-item-1">生命周期不是对象在运行时倒计时，也不是必须到处手写的神秘标记。它描述的是：一个引用至少要和它所指向的数据一样久。 大多数函数依靠省略规则自动推断；只有返回引用或在 struct 中保存引用时，才需要把关系写出来。    这是 RustInPractice 的第 10 篇。下一篇进入 Box&lt;T&gt; 和递归数据结构。  一、悬垂引用为何被禁止？1234// fn broken() -&gt; &amp;str &#123;//     let text = String::from(&quot;temporary&quot;);//     &amp;text// &#125;  text 在函数结束时被销毁，返回的引用会指向无效内存，所以编译器拒绝它。正确方案通常是返回拥有的数据： 123fn make_text() -&gt; String &#123;    String::from(&quot;owned result&quot;)&#125;  二、标注的是关系，不是具体时长从两个切片返回较长者： 123fn longer&lt;&#x27;a&gt;(left...</div></div></div></a><a class="pagination-related" href="/2026/07/21/RustInPractice-08-%E6%89%80%E6%9C%89%E6%9D%83Move-Copy%E4%B8%8EClone/" title="RustInPractice（08）：所有权、Move、Copy 与 Clone"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/ownership-move.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">RustInPractice（08）：所有权、Move、Copy 与 Clone</div></div><div class="info-2"><div class="info-item-1">Rust 的所有权不是“手动管理内存”的另一种说法，而是一套资源责任规则：一个值在任意时刻只有一个拥有者；拥有者离开作用域时，值会被自动清理；赋值和传参默认会转移所有权。    这是 RustInPractice 第二季的第 08 篇。对应 demo：ownership/move_demo。下一篇讲借用：不转移所有权，如何安全地访问一个值。  一、Move：责任转移，不是字节复制1234let first = String::from(&quot;hello&quot;);let second = first;// println!(&quot;&#123;first&#125;&quot;); // 编译错误：first 已被移动println!(&quot;&#123;second&#125;&quot;);  String 管理一段堆内存。若赋值后两个变量都可用，它们可能在作用域结束时重复释放同一块资源。Rust 因而将赋值定义为 move：second 接管资源，first 失效。 这条规则也适用于函数： 123456fn consume(text: String) &#...</div></div></div></a><a class="pagination-related" href="/2026/07/21/RustInPractice-12-Rc-Arc%E4%B8%8EWeak/" title="RustInPractice（12）：Rc、Arc 与 Weak"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/shared-ownership.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">RustInPractice（12）：Rc、Arc 与 Weak</div></div><div class="info-2"><div class="info-item-1">默认的唯一所有权最简单，但有些图结构、缓存和只读共享数据确实需要多个拥有者。Rust 不会隐式开启垃圾回收，而是要求你选择引用计数类型：单线程用 Rc&lt;T&gt;，跨线程用 Arc&lt;T&gt;，反向或可选关联用 Weak&lt;T&gt;。    这是 RustInPractice 的第 12 篇。对应 demo：rc_demo、weak_demo。下一篇：RefCell&lt;T&gt; 与内部可变性。  一、Rc&lt;T&gt;：单线程共享所有权123456use std::rc::Rc;let config = Rc::new(String::from(&quot;shared&quot;));let first = Rc::clone(&amp;config);let second = Rc::clone(&amp;config);println!(&quot;&#123;&#125; &#123;&#125;&quot;, first, second);  Rc::clone 不会深拷贝 String，只增加强引用计数。最后一个强引用离开作用域时，值被释放...</div></div></div></a><a class="pagination-related" href="/2026/07/21/RustInPractice-11-Box-Drop%E4%B8%8E%E9%80%92%E5%BD%92%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="RustInPractice（11）：Box、Drop 与递归数据结构"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/box-recursion.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">RustInPractice（11）：Box、Drop 与递归数据结构</div></div><div class="info-2"><div class="info-item-1">Box&lt;T&gt; 常被误解为“Rust 的手动堆内存”。实际上它仍然是普通拥有者：它拥有 T，离开作用域时自动释放 T。Box 的价值在于把值放到堆上，或让递归类型拥有一个编译期确定的大小。    这是 RustInPractice 的第 11 篇。对应 demo：box_demo、tree、stack_queue_list。下一篇讲共享所有权 Rc、Arc 与 Weak。  一、Box&lt;T&gt; 仍是唯一所有权12let number = Box::new(42);println!(&quot;&#123;number&#125;&quot;);  Box&lt;T&gt; 自身通常在栈上，内部指针指向堆上的 T。它不可隐式复制，移动 Box 就是移动唯一所有权。绝大多数场景不需要显式调用释放函数：作用域结束时自动执行 Drop。 二、Drop 统一管理各种资源demo 的 Resource 实现 Drop： 12345impl Drop for Resource &#123;    fn drop(&amp;mut self) &#123;        pr...</div></div></div></a><a class="pagination-related" href="/2026/07/20/RustInPractice-01-%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8E%A7%E5%88%B6%E6%B5%81/" title="RustInPractice（01）：变量、类型、函数与控制流"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/expressions-control-flow.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-20</div><div class="info-item-2">RustInPractice（01）：变量、类型、函数与控制流</div></div><div class="info-2"><div class="info-item-1">Rust 初看有不少符号：let、mut、-&gt;、末尾分号。真正值得先建立的直觉只有一句：Rust 用不可变绑定做默认值，并把很多控制结构设计成会产生值的表达式。    这是 RustInPractice 的第 01 篇。上一篇完成 Cargo 环境；本篇的示例可以直接放进任意 main.rs 运行。下一篇进入 struct、enum 和模式匹配。  一、绑定默认不可变let 创建的是一个绑定。默认不能通过该绑定修改值： 12345let retries = 3;// retries += 1; // 编译错误let mut remaining = 3;remaining -= 1;  这不是说数据永远不能变，而是要求修改意图写在 mut 上。读到函数时，读者能先判断哪些局部状态会变化。 Rust 也允许 shadowing：同名新绑定遮住旧绑定。 12let input = &quot;42&quot;;let input: u32 = input.parse().expect(&quot;literal is a valid integer&quot;);  这里前一个 ...</div></div></div></a><a class="pagination-related" href="/2026/07/21/RustInPractice-13-RefCell%E4%B8%8E%E5%86%85%E9%83%A8%E5%8F%AF%E5%8F%98%E6%80%A7/" title="RustInPractice（13）：RefCell 与内部可变性"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/interior-mutability.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-21</div><div class="info-item-2">RustInPractice（13）：RefCell 与内部可变性</div></div><div class="info-2"><div class="info-item-1">默认情况下，只有拿到 &amp;mut T 才能修改 T。RefCell&lt;T&gt; 是一个刻意的例外：它允许通过 &amp;self 修改内部值，但把借用规则从编译期挪到运行时检查。它很有用，也因此需要更克制地使用。    这是 RustInPractice 的第 13 篇。对应 demo：refcell_demo、design_patterns。下一篇用泛型与 trait 组织可组合行为。  一、内部可变性是什么？demo 的计数器方法接收 &amp;self，却能增加内部数值： 1234567891011use std::cell::RefCell;struct Counter &#123;    value: RefCell&lt;i32&gt;,&#125;impl Counter &#123;    fn increment(&amp;self) &#123;        *self.value.borrow_mut() += 1;    &#125;&#125;  borrow() 返回只读 guard，borrow_mut() 返回可写 guard。gua...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">120</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">319</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%8D%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8-T"><span class="toc-number">1.</span> <span class="toc-text">一、不可变借用 &amp;T</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8F%AF%E5%8F%98%E5%80%9F%E7%94%A8-mut-T"><span class="toc-number">2.</span> <span class="toc-text">二、可变借用 &amp;mut T</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%88%AB%E5%90%8D-XOR-%E5%8F%AF%E5%8F%98%E6%80%A7"><span class="toc-number">3.</span> <span class="toc-text">三、别名 XOR 可变性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%80%9F%E7%94%A8%E8%8C%83%E5%9B%B4%E9%80%9A%E5%B8%B8%E6%AF%94%E4%BB%A3%E7%A0%81%E5%9D%97%E6%9B%B4%E7%9F%AD"><span class="toc-number">4.</span> <span class="toc-text">四、借用范围通常比代码块更短</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%BB%8E-demo-%E7%9C%8B%E6%8E%A5%E5%8F%A3%E8%AF%AD%E4%B9%89"><span class="toc-number">5.</span> <span class="toc-text">五、从 demo 看接口语义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">六、小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/RustInPractice-14-%E6%B3%9B%E5%9E%8BTrait%E4%B8%8E%E5%88%86%E5%8F%91/" title="RustInPractice（14）：泛型、Trait 与静态/动态分发"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/traits-dispatch.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（14）：泛型、Trait 与静态/动态分发"/></a><div class="content"><a class="title" href="/2026/07/21/RustInPractice-14-%E6%B3%9B%E5%9E%8BTrait%E4%B8%8E%E5%88%86%E5%8F%91/" title="RustInPractice（14）：泛型、Trait 与静态/动态分发">RustInPractice（14）：泛型、Trait 与静态/动态分发</a><time datetime="2026-07-21T07:00:00.000Z" title="发表于 2026-07-21 15:00:00">2026-07-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/RustInPractice-13-RefCell%E4%B8%8E%E5%86%85%E9%83%A8%E5%8F%AF%E5%8F%98%E6%80%A7/" title="RustInPractice（13）：RefCell 与内部可变性"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/interior-mutability.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（13）：RefCell 与内部可变性"/></a><div class="content"><a class="title" href="/2026/07/21/RustInPractice-13-RefCell%E4%B8%8E%E5%86%85%E9%83%A8%E5%8F%AF%E5%8F%98%E6%80%A7/" title="RustInPractice（13）：RefCell 与内部可变性">RustInPractice（13）：RefCell 与内部可变性</a><time datetime="2026-07-21T06:00:00.000Z" title="发表于 2026-07-21 14:00:00">2026-07-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/RustInPractice-12-Rc-Arc%E4%B8%8EWeak/" title="RustInPractice（12）：Rc、Arc 与 Weak"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/shared-ownership.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（12）：Rc、Arc 与 Weak"/></a><div class="content"><a class="title" href="/2026/07/21/RustInPractice-12-Rc-Arc%E4%B8%8EWeak/" title="RustInPractice（12）：Rc、Arc 与 Weak">RustInPractice（12）：Rc、Arc 与 Weak</a><time datetime="2026-07-21T05:00:00.000Z" title="发表于 2026-07-21 13:00:00">2026-07-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/RustInPractice-11-Box-Drop%E4%B8%8E%E9%80%92%E5%BD%92%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="RustInPractice（11）：Box、Drop 与递归数据结构"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/box-recursion.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（11）：Box、Drop 与递归数据结构"/></a><div class="content"><a class="title" href="/2026/07/21/RustInPractice-11-Box-Drop%E4%B8%8E%E9%80%92%E5%BD%92%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="RustInPractice（11）：Box、Drop 与递归数据结构">RustInPractice（11）：Box、Drop 与递归数据结构</a><time datetime="2026-07-21T04:00:00.000Z" title="发表于 2026-07-21 12:00:00">2026-07-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/21/RustInPractice-10-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E5%85%B3%E7%B3%BB/" title="RustInPractice（10）：生命周期与引用关系"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/lifetimes.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（10）：生命周期与引用关系"/></a><div class="content"><a class="title" href="/2026/07/21/RustInPractice-10-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E4%B8%8E%E5%BC%95%E7%94%A8%E5%85%B3%E7%B3%BB/" title="RustInPractice（10）：生命周期与引用关系">RustInPractice（10）：生命周期与引用关系</a><time datetime="2026-07-21T03:00:00.000Z" title="发表于 2026-07-21 11:00:00">2026-07-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
