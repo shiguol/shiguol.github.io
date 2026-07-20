@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>WALL-E's Blog - Make the world a better place.</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="WALL-E&#39;s Blog">
+<meta property="og:url" content="http://shiguol.github.io/page/12/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/wall-e-ai.webp">
+<meta property="article:author" content="WALL-E-2000">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/wall-e-ai.webp"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/page/12/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'WALL-E\'s Blog',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background: linear-gradient(135deg, #0b1026 0%, #1a1a3e 50%, #0d2137 100%);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a></span><div id="menus"></div></nav><div id="site-info"><h1 id="site-title">WALL-E's Blog</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="post_cover left"><a href="/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/" title="2016 观影指南"><img class="post-bg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/2016-movie-guide.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2016 观影指南"></a></div><div class="recent-post-info"><a class="article-title" href="/2016/01/04/2016-%E8%A7%82%E5%BD%B1%E6%8C%87%E5%8D%97/" title="2016 观影指南">2016 观影指南</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2016-01-04T01:46:13.000Z" title="发表于 2016-01-04 09:46:13">2016-01-04</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Life/">Life</a></span></div><div class="content"> </div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2015/12/13/%E4%BD%BF%E7%94%A8-Hexo-%E6%90%AD%E5%BB%BA-Blog/" title="使用 Hexo 搭建 Blog"><img class="post-bg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/hexo.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用 Hexo 搭建 Blog"></a></div><div class="recent-post-info"><a class="article-title" href="/2015/12/13/%E4%BD%BF%E7%94%A8-Hexo-%E6%90%AD%E5%BB%BA-Blog/" title="使用 Hexo 搭建 Blog">使用 Hexo 搭建 Blog</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2015-12-13T06:47:57.000Z" title="发表于 2015-12-13 14:47:57">2015-12-13</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Programming/">Programming</a></span></div><div class="content"> 需求：有的同学平时会记录和分享一些工作、生活中遇到的问题的解决方法，有的使用各种本地笔记软件，有的使用一些公共空间进行发布；这些方法有各自各样的短板，例如查询、检索麻烦，不方便分享等，笔者通过 GiTHuB pages 及 Hexo 为例，讲解一种在线笔记搭建的方法。 准备： Github 账号； Node.js 环境； Git 命令行；  步骤：1234567891011121.创建以自己 github 账号名为仓库的一个 github 仓库；2.安装 Hexo blog；3.下载自己喜欢的 theme；4.更改 hexo 配置；5.启动、测试本地 hexo 状态；6.发布到 github 仓库；  Hexo 常用命令：1.hexo n &quot;my_article&quot; #新建文章 2.hexo clean #清除缓存 3.hexo g #生成 4.hexo s #预览 5.hexo d #发布 Hexo 升级12345678:升级 hexo：npm i hexo-cli -gnpm update:重新安装 npm package：rm -rf node_modu...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2015/12/13/2015-review/" title="2015 review"><img class="post-bg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/2015-review.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2015 review"></a></div><div class="recent-post-info"><a class="article-title" href="/2015/12/13/2015-review/" title="2015 review">2015 review</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2015-12-13T06:35:18.000Z" title="发表于 2015-12-13 14:35:18">2015-12-13</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Life/">Life</a></span></div><div class="content"> 我的 2015临近年底，又到了写总结的时候了，今年比较忙，回头一看这一年，也做了一些事情，简单记录如下。 1.单位产品上线；2.TB 时越野徒步 10 KM；3.逐渐正规化日常流程。</div></div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/11/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/#content-inner">11</a><span class="page-number current">12</span></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">113</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">304</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/RustInPractice-07-%E6%A0%BC%E5%BC%8F%E5%8C%96Clippy%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%96%87%E6%A1%A3/" title="RustInPractice（07）：格式化、Clippy、测试与文档"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/testing-quality-loop.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（07）：格式化、Clippy、测试与文档"/></a><div class="content"><a class="title" href="/2026/07/20/RustInPractice-07-%E6%A0%BC%E5%BC%8F%E5%8C%96Clippy%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%96%87%E6%A1%A3/" title="RustInPractice（07）：格式化、Clippy、测试与文档">RustInPractice（07）：格式化、Clippy、测试与文档</a><time datetime="2026-07-20T08:00:00.000Z" title="发表于 2026-07-20 16:00:00">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/RustInPractice-06-Cargo%E4%BE%9D%E8%B5%96%E6%A8%A1%E5%9D%97%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8C%BA/" title="RustInPractice（06）：Cargo 依赖、模块与工作区"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/cargo-modules-workspace.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（06）：Cargo 依赖、模块与工作区"/></a><div class="content"><a class="title" href="/2026/07/20/RustInPractice-06-Cargo%E4%BE%9D%E8%B5%96%E6%A8%A1%E5%9D%97%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8C%BA/" title="RustInPractice（06）：Cargo 依赖、模块与工作区">RustInPractice（06）：Cargo 依赖、模块与工作区</a><time datetime="2026-07-20T07:00:00.000Z" title="发表于 2026-07-20 15:00:00">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/RustInPractice-05-Option-Result%E4%B8%8E%E9%94%99%E8%AF%AF%E8%AE%BE%E8%AE%A1/" title="RustInPractice（05）：Option、Result 与错误设计"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/result-error-design.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（05）：Option、Result 与错误设计"/></a><div class="content"><a class="title" href="/2026/07/20/RustInPractice-05-Option-Result%E4%B8%8E%E9%94%99%E8%AF%AF%E8%AE%BE%E8%AE%A1/" title="RustInPractice（05）：Option、Result 与错误设计">RustInPractice（05）：Option、Result 与错误设计</a><time datetime="2026-07-20T06:00:00.000Z" title="发表于 2026-07-20 14:00:00">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/RustInPractice-04-%E6%95%B0%E7%BB%84Vec%E5%85%83%E7%BB%84%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8/" title="RustInPractice（04）：数组、Vec、元组与迭代器"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/collections-iterators.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（04）：数组、Vec、元组与迭代器"/></a><div class="content"><a class="title" href="/2026/07/20/RustInPractice-04-%E6%95%B0%E7%BB%84Vec%E5%85%83%E7%BB%84%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8/" title="RustInPractice（04）：数组、Vec、元组与迭代器">RustInPractice（04）：数组、Vec、元组与迭代器</a><time datetime="2026-07-20T05:00:00.000Z" title="发表于 2026-07-20 13:00:00">2026-07-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/20/RustInPractice-03-String%E5%88%87%E7%89%87%E4%B8%8EUTF8/" title="RustInPractice（03）：String、切片与 UTF-8"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/strings-utf8.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（03）：String、切片与 UTF-8"/></a><div class="content"><a class="title" href="/2026/07/20/RustInPractice-03-String%E5%88%87%E7%89%87%E4%B8%8EUTF8/" title="RustInPractice（03）：String、切片与 UTF-8">RustInPractice（03）：String、切片与 UTF-8</a><time datetime="2026-07-20T04:00:00.000Z" title="发表于 2026-07-20 12:00:00">2026-07-20</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+      <i class="fas fa-angle-right"></i></a>
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/AI/"><span class="card-category-list-name">AI</span><span class="card-category-list-count">20</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Assembly/"><span class="card-category-list-name">Assembly</span><span class="card-category-list-count">7</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Blog/"><span class="card-category-list-name">Blog</span><span class="card-category-list-count">3</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/CppInPractice/"><span class="card-category-list-name">CppInPractice</span><span class="card-category-list-count">28</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Docker/"><span class="card-category-list-name">Docker</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/LLMMathPrimer/"><span class="card-category-list-name">LLMMathPrimer</span><span class="card-category-list-count">20</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Life/"><span class="card-category-list-name">Life</span><span class="card-category-list-count">6</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Linux/"><span class="card-category-list-name">Linux</span><span class="card-category-list-count">1</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/Vision/" style="font-size: 1.16em; color: #999b9e">Vision</a> <a href="/tags/%E6%9E%9A%E4%B8%BE/" style="font-size: 1.1em; color: #999">枚举</a> <a href="/tags/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" style="font-size: 1.1em; color: #999">右值引用</a> <a href="/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96/" style="font-size: 1.1em; color: #999">格式化</a> <a href="/tags/Linux/" style="font-size: 1.39em; color: #99a4b4">Linux</a> <a href="/tags/%E6%8E%A8%E7%90%86/" style="font-size: 1.33em; color: #99a2af">推理</a> <a href="/tags/%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86/" style="font-size: 1.1em; color: #999">依赖管理</a> <a href="/tags/%E4%BD%8E%E7%A7%A9/" style="font-size: 1.1em; color: #999">低秩</a> <a href="/tags/%E5%BC%A0%E9%87%8F/" style="font-size: 1.1em; color: #999">张量</a> <a href="/tags/%E7%9F%A9%E9%98%B5%E4%B9%98%E6%B3%95/" style="font-size: 1.1em; color: #999">矩阵乘法</a> <a href="/tags/%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0/" style="font-size: 1.1em; color: #999">激活函数</a> <a href="/tags/RLHF/" style="font-size: 1.16em; color: #999b9e">RLHF</a> <a href="/tags/mutex/" style="font-size: 1.1em; color: #999">mutex</a> <a href="/tags/CMake/" style="font-size: 1.21em; color: #999ea4">CMake</a> <a href="/tags/%E5%AD%A6%E4%B9%A0/" style="font-size: 1.1em; color: #999">学习</a> <a href="/tags/I-O/" style="font-size: 1.1em; color: #999">I/O</a> <a href="/tags/C-11/" style="font-size: 1.39em; color: #99a4b4">C++11</a> <a href="/tags/%E5%B9%B4%E5%BA%A6%E5%9B%9E%E9%A1%BE/" style="font-size: 1.1em; color: #999">年度回顾</a> <a href="/tags/Vim/" style="font-size: 1.16em; color: #999b9e">Vim</a> <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" style="font-size: 1.1em; color: #999">强化学习</a> <a href="/tags/%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89/" style="font-size: 1.1em; color: #999">移动语义</a> <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" style="font-size: 1.16em; color: #999b9e">深度学习</a> <a href="/tags/%E8%A7%82%E5%BD%B1/" style="font-size: 1.1em; color: #999">观影</a> <a href="/tags/%E5%AE%B9%E5%99%A8/" style="font-size: 1.1em; color: #999">容器</a> <a href="/tags/2015/" style="font-size: 1.1em; color: #999">2015</a> <a href="/tags/%E6%A0%88/" style="font-size: 1.16em; color: #999b9e">栈</a> <a href="/tags/iOS/" style="font-size: 1.21em; color: #999ea4">iOS</a> <a href="/tags/%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96/" style="font-size: 1.27em; color: #99a0a9">推理优化</a> <a href="/tags/LLM/" style="font-size: 1.5em; color: #99a9bf">LLM</a> <a href="/tags/macOS/" style="font-size: 1.44em; color: #99a7ba">macOS</a> <a href="/tags/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84/" style="font-size: 1.1em; color: #999">项目结构</a> <a href="/tags/CLIP/" style="font-size: 1.1em; color: #999">CLIP</a> <a href="/tags/DPO/" style="font-size: 1.1em; color: #999">DPO</a> <a href="/tags/dotfiles/" style="font-size: 1.1em; color: #999">dotfiles</a> <a href="/tags/DFS/" style="font-size: 1.1em; color: #999">DFS</a> <a href="/tags/%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/" style="font-size: 1.1em; color: #999">数学基础</a> <a href="/tags/Life/" style="font-size: 1.39em; color: #99a4b4">Life</a> <a href="/tags/Homebrew/" style="font-size: 1.1em; color: #999">Homebrew</a> <a href="/tags/RAG/" style="font-size: 1.16em; color: #999b9e">RAG</a> <a href="/tags/%E4%BB%A3%E7%A0%81%E8%B4%A8%E9%87%8F/" style="font-size: 1.1em; color: #999">代码质量</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>归档</span>
+      <a class="card-more-btn" href="/archives/"
+            title="查看更多">
+            <i class="fas fa-angle-right"></i>
+          </a>
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/07/">
+            <span class="card-archive-list-date">
+              七月 2026
+            </span>
+            <span class="card-archive-list-count">42</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/06/">
+            <span class="card-archive-list-date">
+              六月 2026
+            </span>
+            <span class="card-archive-list-count">41</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/01/">
+            <span class="card-archive-list-date">
+              一月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/05/">
+            <span class="card-archive-list-date">
+              五月 2025
+            </span>
+            <span class="card-archive-list-count">7</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2023/06/">
+            <span class="card-archive-list-date">
+              六月 2023
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2022/11/">
+            <span class="card-archive-list-date">
+              十一月 2022
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2020/04/">
+            <span class="card-archive-list-date">
+              四月 2020
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2019/11/">
+            <span class="card-archive-list-date">
+              十一月 2019
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">113</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-07-20T07:46:17.827Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
