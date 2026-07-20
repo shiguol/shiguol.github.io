@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RustInPractice（25）：数据结构与所有权边界 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="手写数据结构的最大收获不是替代标准库，而是看清所有权如何塑造节点关系。链表和 BST 用 Option&lt;Box&lt;Node&gt;&gt; 表达唯一递归所有权；图用邻接表表达多个边关系。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RustInPractice（25）：数据结构与所有权边界">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="手写数据结构的最大收获不是替代标准库，而是看清所有权如何塑造节点关系。链表和 BST 用 Option&lt;Box&lt;Node&gt;&gt; 表达唯一递归所有权；图用邻接表表达多个边关系。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/rust/rust-data-structures.webp">
+<meta property="article:published_time" content="2026-07-23T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-20T08:16:29.766Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="Rust">
+<meta property="article:tag" content="图">
+<meta property="article:tag" content="数据结构">
+<meta property="article:tag" content="树">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="链表">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/rust/rust-data-structures.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RustInPractice（25）：数据结构与所有权边界",
+  "url": "http://shiguol.github.io/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/",
+  "image": "http://shiguol.github.io/images/cover/rust/rust-data-structures.webp",
+  "datePublished": "2026-07-23T04:00:00.000Z",
+  "dateModified": "2026-07-20T08:16:29.766Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RustInPractice（25）：数据结构与所有权边界',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/rust/rust-data-structures.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">RustInPractice（25）：数据结构与所有权边界</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">RustInPractice（25）：数据结构与所有权边界</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-23T04:00:00.000Z" title="发表于 2026-07-23 12:00:00">2026-07-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-20T08:16:29.766Z" title="更新于 2026-07-20 16:16:29">2026-07-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/RustInPractice/">RustInPractice</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>手写数据结构的最大收获不是替代标准库，而是看清所有权如何塑造节点关系。链表和 BST 用 <code>Option&lt;Box&lt;Node&gt;&gt;</code> 表达唯一递归所有权；图用邻接表表达多个边关系。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>对应 <code>stack_queue_list</code>、<code>tree</code>、<code>graph</code>、<code>hash_table</code>。</p>
+</blockquote>
+<p>BST 插入的关键是沿着唯一的可变路径递归：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">insert</span>(root: &amp;<span class="keyword">mut</span> <span class="type">Option</span>&lt;<span class="type">Box</span>&lt;TreeNode&gt;&gt;, value: <span class="type">i32</span>) &#123; <span class="comment">/* ... */</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>图的 BFS 使用 <code>VecDeque</code> 队列，DFS 用 visited set 防环。自定义 HashMap 使用链地址法展示碰撞，但没有 resize&#x2F;remove，不能替代标准库。</p>
+<p>选择原则：业务优先标准集合；自定义结构只在需求、学习或性能测量证明需要时出现。</p>
+<blockquote>
+<p>下一篇：排序与字符串搜索。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/">http://shiguol.github.io/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/Rust/">Rust</a><a class="post-meta__tags" href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a><a class="post-meta__tags" href="/tags/%E9%93%BE%E8%A1%A8/">链表</a><a class="post-meta__tags" href="/tags/%E6%A0%91/">树</a><a class="post-meta__tags" href="/tags/%E5%9B%BE/">图</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/rust/rust-data-structures.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/23/RustInPractice-26-%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" title="RustInPractice（26）：排序与字符串搜索"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/sorting-search.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">RustInPractice（26）：排序与字符串搜索</div></div><div class="info-2"><div class="info-item-1">排序 demo 用 &amp;mut [i32] 直接操作切片，搜索 demo 用字节序列实现朴素匹配与 KMP。它们适合理解复杂度，生产代码仍应优先标准库。    对应 sorting、string_search。下一篇：动态规划与系列收官。  冒泡和插入排序是 O(n²)，快速排序平均 O(n log n)，但最后元素 pivot 对已排序输入会退化并导致深递归。默认应使用 sort_unstable()，除非需要稳定排序。 KMP 的 LPS 表让失配后不必回退 haystack，因此复杂度为 O(m+n)。当前实现按 UTF-8 字节搜索，返回字节偏移；非 ASCII 文本不能把该值当字符索引或随意切片。 测试必须覆盖空 slice、单元素、重复值、空 pattern 和 Unicode 边界。  下一篇：动态规划与 RustInPractice 主线回顾。  </div></div></div></a><a class="pagination-related" href="/2026/07/23/RustInPractice-24-SQLite%E4%B8%8Erusqlite/" title="RustInPractice（24）：SQLite 与 rusqlite"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/sqlite-rusqlite.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">RustInPractice（24）：SQLite 与 rusqlite</div></div><div class="info-2"><div class="info-item-1">rusqlite 用 Rust 类型包装 SQLite 的连接、参数绑定、查询和事务。核心规则是：SQL 值永远通过参数绑定传递，不用字符串拼接。    对应 database/sqlite3。下一篇：数据结构。  1234conn.execute(    &quot;INSERT INTO students (class_id, name, score) VALUES (?1, ?2, ?3)&quot;,    params![1, name, score],)?;  query_map 将行映射为 struct，? 将数据库失败传播到调用边界。事务应使用 checked transaction，并同时演示 commit 与 rollback；当前 demo 使用内存数据库和 unchecked_transaction()，只适合作为 API 导览。 真实项目还应启用 foreign keys、维护 migration、测试约束、使用持久路径，并决定连接是否只能在同步线程中使用。  下一篇：数据结构在 Rust 中的所有权边界。  </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/05/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-22-%E5%9B%BE%E7%AE%97%E6%B3%95/" title="现代 C++ 实战（22）：图算法"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cpp/graph.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-05</div><div class="info-item-2">现代 C++ 实战（22）：图算法</div></div><div class="info-2"><div class="info-item-1">第 21 篇 的树是一对多分支；图则允许任意顶点之间连边——社交网络、路由表、任务依赖、编译单元关系，本质都是图。BFS 找最短、DFS 探路径、Dijkstra 算权重、拓扑排序排依赖——四大经典算法覆盖 90% 的工程场景。 demo：ref/cpp_demo/algorithms/graph/（graph.h、bfs、dfs、dijkstra、topological_sort）。    这是「现代 C++ 实战」系列的第 22 篇。建议先读 第 21 篇：树结构全家桶。  一、图的两种表示顶点 V、边 E。两种存储方式，时空权衡不同：    表示 空间 查边 遍历邻居 适用    邻接矩阵 O(V²) O(1) O(V) 稠密图、频繁查边   邻接表 O(V+E) O(度) O(度) 稀疏图、遍历为主   123456邻接矩阵（6 顶点）          邻接表    0 1 2 3 4 5              0 → [1, 2]0 [ 0 1 1 0 0 0 ]           1 → [3]1 [ 0 0 0 1 0 0 ]           2 → [...</div></div></div></a><a class="pagination-related" href="/2026/07/04/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-21-%E6%A0%91%E7%BB%93%E6%9E%84%E5%85%A8%E5%AE%B6%E6%A1%B6/" title="现代 C++ 实战（21）：树结构全家桶"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cpp/trees.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-04</div><div class="info-item-2">现代 C++ 实战（21）：树结构全家桶</div></div><div class="info-2"><div class="info-item-1">第 20 篇 的链表是「一对一」串联；树则是一对多的分支结构。从二叉搜索树到 AVL、红黑树、B 树、堆——五种经典树形结构，覆盖了内存索引、STL 容器、优先队列和磁盘存储的核心场景。 demo：ref/cpp_demo/algorithms/tree/（binary_tree、avl_tree、red_black_tree、b_tree、heap）。    这是「现代 C++ 实战」系列的第 21 篇。建议先读 第 20 篇：栈、队列与链表。  一、五种树，一张选型地图   结构 平衡策略 查找 插入 典型场景    BST 无保证 O(h) O(h) 教学、小规模有序数据   AVL 严格平衡 O(log n) O(log n) 查找密集、更新较少   红黑树 近似平衡 O(log n) O(log n) std::map &#x2F; std::set   B 树 多路平衡 O(log n) O(log n) 数据库索引、文件系统   堆 堆序性质 O(n) 查任意 O(log n) 优先队列、Top-K   12345678910111213BST（可能退化成链）   ...</div></div></div></a><a class="pagination-related" href="/2026/07/03/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-20-%E6%A0%88%E9%98%9F%E5%88%97%E4%B8%8E%E9%93%BE%E8%A1%A8/" title="现代 C++ 实战（20）：栈、队列与链表"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cpp/stack-queue-list.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-03</div><div class="info-item-2">现代 C++ 实战（20）：栈、队列与链表</div></div><div class="info-2"><div class="info-item-1">第 19 篇 的哈希表用数组 + 指针组织数据；再往前退一步，有三种几乎无处不在的基础结构：栈（LIFO）、队列（FIFO）、链表（动态串联节点）。实现简单，却是表达式求值、BFS、LRU 的底座。 demo：ref/cpp_demo/algorithms/stack_queue_list/（stack_demo、queue_demo、linked_list_demo）。    这是「现代 C++ 实战」系列的第 20 篇。建议先读 第 19 篇：哈希表。  一、三种结构一句话   结构 规则 典型操作    栈 Stack 后进先出 LIFO push &#x2F; pop &#x2F; top   队列 Queue 先进先出 FIFO enqueue &#x2F; dequeue &#x2F; front   链表 Linked List 节点 + 指针串联 头插、尾插、删除、遍历   12栈:  push → [30][20][10] ← top     队列: front → [10][20][30] ← back链表: head → (30) → (20) → (10)...</div></div></div></a><a class="pagination-related" href="/2026/07/02/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-19-%E5%93%88%E5%B8%8C%E8%A1%A8%E5%AE%9E%E7%8E%B0/" title="现代 C++ 实战（19）：哈希表实现"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cpp/hash-table.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-02</div><div class="info-item-2">现代 C++ 实战（19）：哈希表实现</div></div><div class="info-2"><div class="info-item-1">第 18 篇 用 std::sort 做 O(log n) 查找前的准备；哈希表把查找压到平均 O(1)——键经哈希函数映射到桶，碰撞用链地址或开放寻址解决。理解这两条路，就摸清了 std::unordered_map 的底层地图。 demo：ref/cpp_demo/algorithms/hash_table/（链地址、线性探测、双重哈希 + 与标准库性能对比）。    这是「现代 C++ 实战」系列的第 19 篇。建议先读 第 18 篇：排序算法。  一、哈希表在干什么？   操作 平均时间 思路    插入 O(1) index = hash(key) % bucket_count   查找 O(1) 同 index，再比对 key   删除 O(1) 定位后删节点或标记槽位   碰撞（collision）：不同 key 算出同一 index。解决策略分两大类： 12链地址法：  bucket[i] → (k1,v1) → (k2,v2) → …开放寻址：  table[i], table[i+1], … 在同一数组里探测下一个空位  二、哈希函数好哈希函数：确定性、均匀分...</div></div></div></a><a class="pagination-related" href="/2026/07/20/RustInPractice-02-Struct%E6%9E%9A%E4%B8%BE%E4%B8%8E%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/" title="RustInPractice（02）：Struct、枚举与模式匹配"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/types-pattern-matching.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-20</div><div class="info-item-2">RustInPractice（02）：Struct、枚举与模式匹配</div></div><div class="info-2"><div class="info-item-1">很多程序把“状态”藏在整数、空指针或几个布尔字段中。Rust 更倾向于让状态直接出现在类型里：用 struct 聚合固定字段，用 enum 表达“若干种不同形状的可能性”，再用 match 强制处理所有分支。    这是 RustInPractice 的第 02 篇。对应 demo：enum_demo 与 oop_demo。下一篇解释 String、&amp;str、切片和 UTF-8。  一、struct：数据与行为分开声明1234567891011121314struct Server &#123;    host: String,    port: u16,&#125;impl Server &#123;    fn new(host: String, port: u16) -&gt; Self &#123;        Self &#123; host, port &#125;    &#125;    fn address(&amp;self) -&gt; String &#123;        format!(&quot;&#123;&#125;:&#123;&#...</div></div></div></a><a class="pagination-related" href="/2026/07/06/%E7%8E%B0%E4%BB%A3C++%E5%AE%9E%E6%88%98-23-%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2%E4%B8%8E%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/" title="现代 C++ 实战（23）：字符串搜索与动态规划"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cpp/string-dp.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-06</div><div class="info-item-2">现代 C++ 实战（23）：字符串搜索与动态规划</div></div><div class="info-2"><div class="info-item-1">第 22 篇 的图算法处理「关系」；本篇进入算法面试的两大支柱：字符串搜索（在文本中找模式）和动态规划（把大问题拆成重叠子问题）。KMP 和 Boyer-Moore 解决搜索，背包和 LCS 解决 DP——掌握这些，LeetCode 中等题大半有思路。 demo：ref/cpp_demo/algorithms/string_search/ + ref/cpp_demo/algorithms/dynamic_programming/。    这是「现代 C++ 实战」系列的第 23 篇。建议先读 第 22 篇：图算法。  一、字符串搜索全景在文本 text（长度 n）中查找模式 pattern（长度 m）：    算法 时间 思路 适用    暴力 O(nm) 每个位置逐字符比 短模式、教学   KMP O(n+m) 前缀函数，失配不回退 text 通用、面试必考   Boyer-Moore 最好 O(n&#x2F;m) 从右向左，坏字符跳跃 长模式、实际文本搜索   Rabin-Karp 平均 O(n+m) 滚动哈希，先比哈希再验证 多模式匹配   1234text:    A ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">133</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">336</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/RustInPractice-27-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E4%B8%8E%E7%B3%BB%E5%88%97%E5%9B%9E%E9%A1%BE/" title="RustInPractice（27）：动态规划与系列回顾"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/dynamic-programming.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（27）：动态规划与系列回顾"/></a><div class="content"><a class="title" href="/2026/07/23/RustInPractice-27-%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E4%B8%8E%E7%B3%BB%E5%88%97%E5%9B%9E%E9%A1%BE/" title="RustInPractice（27）：动态规划与系列回顾">RustInPractice（27）：动态规划与系列回顾</a><time datetime="2026-07-23T06:00:00.000Z" title="发表于 2026-07-23 14:00:00">2026-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/RustInPractice-26-%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" title="RustInPractice（26）：排序与字符串搜索"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/sorting-search.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（26）：排序与字符串搜索"/></a><div class="content"><a class="title" href="/2026/07/23/RustInPractice-26-%E6%8E%92%E5%BA%8F%E4%B8%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%90%9C%E7%B4%A2/" title="RustInPractice（26）：排序与字符串搜索">RustInPractice（26）：排序与字符串搜索</a><time datetime="2026-07-23T05:00:00.000Z" title="发表于 2026-07-23 13:00:00">2026-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/" title="RustInPractice（25）：数据结构与所有权边界"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/rust-data-structures.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（25）：数据结构与所有权边界"/></a><div class="content"><a class="title" href="/2026/07/23/RustInPractice-25-Rust%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E6%89%80%E6%9C%89%E6%9D%83%E8%BE%B9%E7%95%8C/" title="RustInPractice（25）：数据结构与所有权边界">RustInPractice（25）：数据结构与所有权边界</a><time datetime="2026-07-23T04:00:00.000Z" title="发表于 2026-07-23 12:00:00">2026-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/RustInPractice-24-SQLite%E4%B8%8Erusqlite/" title="RustInPractice（24）：SQLite 与 rusqlite"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/sqlite-rusqlite.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（24）：SQLite 与 rusqlite"/></a><div class="content"><a class="title" href="/2026/07/23/RustInPractice-24-SQLite%E4%B8%8Erusqlite/" title="RustInPractice（24）：SQLite 与 rusqlite">RustInPractice（24）：SQLite 与 rusqlite</a><time datetime="2026-07-23T03:00:00.000Z" title="发表于 2026-07-23 11:00:00">2026-07-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/23/RustInPractice-23-WebSocket%E4%B8%8E%E5%BC%82%E6%AD%A5%E6%B5%81/" title="RustInPractice（23）：WebSocket 与异步流"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/rust/websocket-streams.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="RustInPractice（23）：WebSocket 与异步流"/></a><div class="content"><a class="title" href="/2026/07/23/RustInPractice-23-WebSocket%E4%B8%8E%E5%BC%82%E6%AD%A5%E6%B5%81/" title="RustInPractice（23）：WebSocket 与异步流">RustInPractice（23）：WebSocket 与异步流</a><time datetime="2026-07-23T02:00:00.000Z" title="发表于 2026-07-23 10:00:00">2026-07-23</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
