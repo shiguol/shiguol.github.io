@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>多模态微调实战（06）：全量训练的后台、断点与监控 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="演示集跑通后，才进入全量。全量意味着：时间以「天」计、必须可中断、必须可续训、必须能看懂进度。这一篇讲长时训练的运维细节。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多模态微调实战（06）：全量训练的后台、断点与监控">
+<meta property="og:url" content="http://shiguol.github.io/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="演示集跑通后，才进入全量。全量意味着：时间以「天」计、必须可中断、必须可续训、必须能看懂进度。这一篇讲长时训练的运维细节。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/vlm/full-training-ops.webp">
+<meta property="article:published_time" content="2026-07-26T01:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-21T03:14:12.126Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="VLM">
+<meta property="article:tag" content="全量训练">
+<meta property="article:tag" content="多模态">
+<meta property="article:tag" content="微调">
+<meta property="article:tag" content="断点续训">
+<meta property="article:tag" content="监控">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/vlm/full-training-ops.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "多模态微调实战（06）：全量训练的后台、断点与监控",
+  "url": "http://shiguol.github.io/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/",
+  "image": "http://shiguol.github.io/images/cover/vlm/full-training-ops.webp",
+  "datePublished": "2026-07-26T01:00:00.000Z",
+  "dateModified": "2026-07-21T03:14:12.126Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '多模态微调实战（06）：全量训练的后台、断点与监控',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/vlm/full-training-ops.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">多模态微调实战（06）：全量训练的后台、断点与监控</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">多模态微调实战（06）：全量训练的后台、断点与监控</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-26T01:00:00.000Z" title="发表于 2026-07-26 09:00:00">2026-07-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-21T03:14:12.126Z" title="更新于 2026-07-21 11:14:12">2026-07-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/VLMFinetune/">VLMFinetune</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>演示集跑通后，才进入全量。全量意味着：<strong>时间以「天」计、必须可中断、必须可续训、必须能看懂进度</strong>。这一篇讲长时训练的运维细节。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「多模态微调实战」的第 06 篇。从「几十分钟」跨到「数天」，运维方式要随之升级。</p>
+</blockquote>
+<h2 id="一、规模与时间预期"><a href="#一、规模与时间预期" class="headerlink" title="一、规模与时间预期"></a>一、规模与时间预期</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>量级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>训练样本</td>
+<td>约 37 万</td>
+</tr>
+<tr>
+<td>验证样本</td>
+<td>约 4 万</td>
+</tr>
+<tr>
+<td>epoch</td>
+<td>3（可调）</td>
+</tr>
+<tr>
+<td>单卡 16GB</td>
+<td>常见要数天；具体取决于分辨率、I&#x2F;O、实现细节</td>
+</tr>
+<tr>
+<td>显存</td>
+<td>约 9～11GB 量级（冻结 ViT + LoRA）</td>
+</tr>
+</tbody></table>
+<p>不要相信「一定 30 小时」这种绝对数字；以你机器上稳定后的 <code>s/it</code> 估算：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">剩余小时 ≈ 剩余 step × 每 step 秒数 / 3600</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、启动方式：前台-vs-后台"><a href="#二、启动方式：前台-vs-后台" class="headerlink" title="二、启动方式：前台 vs 后台"></a>二、启动方式：前台 vs 后台</h2><h3 id="前台"><a href="#前台" class="headerlink" title="前台"></a>前台</h3><p>适合调试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash script/train_lora_full.sh</span><br></pre></td></tr></table></figure>
+
+<p>关掉终端，训练一般也会停。</p>
+<h3 id="后台（推荐）"><a href="#后台（推荐）" class="headerlink" title="后台（推荐）"></a>后台（推荐）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash script/train_lora_full_bg.sh</span><br></pre></td></tr></table></figure>
+
+<p>典型实现要点：</p>
+<ul>
+<li><code>nohup ... &amp;</code> 写入日志；</li>
+<li>记录 PID；</li>
+<li>提供 <code>status</code> &#x2F; <code>stop</code> 子命令。</li>
+</ul>
+<p>查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bash script/train_status.sh</span><br><span class="line"><span class="built_in">tail</span> -f output/train/train_full.log</span><br></pre></td></tr></table></figure>
+
+<p>停止：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash script/train_lora_full_bg.sh stop</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：若训练在 <code>docker run</code> 里，只杀宿主机 bash 可能不够，需要同时停掉对应容器，否则 GPU 仍被占着。</p>
+</blockquote>
+<h2 id="三、超参：与演示集尽量一致"><a href="#三、超参：与演示集尽量一致" class="headerlink" title="三、超参：与演示集尽量一致"></a>三、超参：与演示集尽量一致</h2><p>全量阶段建议<strong>先复用演示集已验证的超参</strong>，只替换数据路径与输出目录，例如：</p>
+<ul>
+<li><code>--dataset .../train_full.jsonl</code></li>
+<li><code>--val_dataset .../val_full.jsonl</code></li>
+<li><code>--output_dir .../ocr_plate_lora_full</code></li>
+<li><code>--eval_steps 500 --save_steps 500</code>（全量可加大间隔，减少 I&#x2F;O）</li>
+</ul>
+<p>保持一致的好处：出问题时容易判断是「数据」还是「超参」导致。</p>
+<h2 id="四、断点续训"><a href="#四、断点续训" class="headerlink" title="四、断点续训"></a>四、断点续训</h2><p>ms-swift &#x2F; Transformers 风格续训：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">swift sft \</span><br><span class="line">  ...（其余参数保持不变）... \</span><br><span class="line">  --resume_from_checkpoint /workspace/output/.../checkpoint-25500</span><br></pre></td></tr></table></figure>
+
+<p>含义：</p>
+<ul>
+<li>恢复模型（LoRA）权重；</li>
+<li>恢复优化器 &#x2F; 随机状态（完整 resume）；</li>
+<li>从对应 global step 继续，而不是从头数 epoch。</li>
+</ul>
+<p>脚本层可以做成：默认自动找最新 <code>checkpoint-*</code>；<code>FRESH_START=1</code> 强制从头。</p>
+<p><strong>重要：</strong> 中途手动停掉时，如果还没到下一个 <code>save_steps</code>，内存里多跑的那几百 step <strong>不会落盘</strong>。以磁盘上的 checkpoint 为准。</p>
+<h2 id="五、监控看什么"><a href="#五、监控看什么" class="headerlink" title="五、监控看什么"></a>五、监控看什么</h2><h3 id="5-1-过程指标"><a href="#5-1-过程指标" class="headerlink" title="5.1 过程指标"></a>5.1 过程指标</h3><p><code>logging.jsonl</code> 里常见字段：</p>
+<ul>
+<li><code>loss</code>、<code>token_acc</code>、<code>learning_rate</code></li>
+<li><code>global_step/max_steps</code></li>
+<li><code>epoch</code></li>
+<li><code>train_speed(s/it)</code></li>
+<li><code>remaining_time</code>（框架估算，早期可能偏乐观&#x2F;悲观）</li>
+</ul>
+<h3 id="5-2-系统层"><a href="#5-2-系统层" class="headerlink" title="5.2 系统层"></a>5.2 系统层</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line">docker ps</span><br></pre></td></tr></table></figure>
+
+<p>确认：没有其他大模型服务占显存；利用率不是长期 0（除非在做超大数据预处理）。</p>
+<h3 id="5-3-验证指标"><a href="#5-3-验证指标" class="headerlink" title="5.3 验证指标"></a>5.3 验证指标</h3><p>周期性 <code>eval_loss</code> &#x2F; <code>eval_token_acc</code>。经验上可能出现：</p>
+<ul>
+<li><strong>验证 loss 最优不在最后一个 step</strong>；</li>
+<li>后半段 loss 略回升，但 token_acc 仍缓升或持平。</li>
+</ul>
+<p>因此「业务用哪个 checkpoint」不要只看最终 step，见下一节与合并篇。</p>
+<h2 id="六、如何选-checkpoint"><a href="#六、如何选-checkpoint" class="headerlink" title="六、如何选 checkpoint"></a>六、如何选 checkpoint</h2><p>假设训练结束后还留着 <code>checkpoint-93000</code>（验证 loss 最优）与 <code>checkpoint-140001</code>（最终 step）。对比示例（脱敏后的量级）：</p>
+<table>
+<thead>
+<tr>
+<th>Checkpoint</th>
+<th>eval_loss</th>
+<th>eval_token_acc</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>约 93k（最优 loss）</td>
+<td>更低</td>
+<td>已经很高</td>
+</tr>
+<tr>
+<td>最终 step</td>
+<td>略高一点</td>
+<td>可能略高或持平</td>
+</tr>
+</tbody></table>
+<p>建议：</p>
+<ol>
+<li>先看框架记录的 <code>best_model_checkpoint</code>；</li>
+<li>再用你的 Exact Match 脚本对候选 checkpoint 各评一次；</li>
+<li>业务上两者差距很小时，选更稳或更方便部署的那个。</li>
+</ol>
+<h2 id="七、训练完成后发生什么"><a href="#七、训练完成后发生什么" class="headerlink" title="七、训练完成后发生什么"></a>七、训练完成后发生什么</h2><p>日志走到 <code>global_step == max_steps</code> 后，往往还会：</p>
+<ol>
+<li>再跑一轮（或两轮）全量验证——数万条可能要十几～几十分钟；</li>
+<li>保存 <code>checkpoint-&lt;final&gt;</code>；</li>
+<li>打印 <code>train_runtime</code> &#x2F; <code>train_loss</code>；</li>
+<li>容器退出，显存释放。</li>
+</ol>
+<p>所以「step 到 100%」不等于「进程已退出」，别太早杀进程。</p>
+<h2 id="八、小结"><a href="#八、小结" class="headerlink" title="八、小结"></a>八、小结</h2><p>全量训练完成标志：</p>
+<ul>
+<li>最终 checkpoint 已写出；</li>
+<li>日志出现完成标记 &#x2F; <code>train_runtime</code>；</li>
+<li>GPU 空闲；</li>
+<li>你已选定（或待评测选定）业务 checkpoint。</li>
+</ul>
+<blockquote>
+<p>多模态微调实战第 06 篇完。下一篇：把 LoRA 合并回基座，得到一份独立完整的模型。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/">http://shiguol.github.io/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81/">多模态</a><a class="post-meta__tags" href="/tags/VLM/">VLM</a><a class="post-meta__tags" href="/tags/%E5%BE%AE%E8%B0%83/">微调</a><a class="post-meta__tags" href="/tags/%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83/">全量训练</a><a class="post-meta__tags" href="/tags/%E6%96%AD%E7%82%B9%E7%BB%AD%E8%AE%AD/">断点续训</a><a class="post-meta__tags" href="/tags/%E7%9B%91%E6%8E%A7/">监控</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/vlm/full-training-ops.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/07/27/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-07-%E5%90%88%E5%B9%B6LoRA%E5%BE%97%E5%88%B0%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B/" title="多模态微调实战（07）：合并 LoRA 得到完整模型"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/merge-lora.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">多模态微调实战（07）：合并 LoRA 得到完整模型</div></div><div class="info-2"><div class="info-item-1">LoRA checkpoint 很小，但推理时需要「基座 + adapter」。若要交给只接受普通 HF 目录的下游，或继续转 GGUF，通常先 merge。这一篇讲合并在做什么、怎么做、合完怎么验。    这是「多模态微调实战」的第 07 篇。合并是从「训练产物」走向「可部署模型」的关键一步。  一、合并在做什么把 LoRA 低秩更新写回基座线性层，导出一份独立完整权重： 1基座 Qwen3-VL-4B  +  adapter(checkpoint-XXXXX)  →  merged model directory  合并后：  不再依赖 --adapters； 目录结构接近普通 Transformers 模型； 体积接近基座（数 GB～十余 GB），而不是 LoRA 的几百 MB。  二、命令ms-swift： 12345swift export \  --model /workspace/model/Qwen3-VL-4B-Instruct \  --adapters /workspace/output/ocr_plate_lora_full/.../checkpoint-...</div></div></div></a><a class="pagination-related" href="/2026/07/25/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-05-%E5%BE%AE%E8%B0%83%E5%89%8D%E5%90%8E%E8%AF%84%E6%B5%8B%E5%AF%B9%E6%AF%94/" title="多模态微调实战（05）：微调前后的评测对比"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/evaluation-before-after.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">多模态微调实战（05）：微调前后的评测对比</div></div><div class="info-2"><div class="info-item-1">没有评测的微调，只是「loss 在下降」。对 OCR，建议至少同时看三个指标：完全匹配、字符级准确率、编辑距离。这一篇讲怎么把基座和 LoRA 摆到同一把尺子下对比。    这是「多模态微调实战」的第 05 篇。评测是决定「要不要投入全量训练时间」的依据。  一、评测原则 同一验证集、同一提示词、同一解码参数； 先评基座，再评 LoRA（或合并后模型）； 指标脚本与业务规则一致（是否忽略空格、大小写等要事先约定）。  二、指标定义   指标 含义    Exact Match 预测字符串与标签完全一致的比例   Character Accuracy 基于编辑距离的字符级正确率均值   Avg Edit Distance 平均 Levenshtein 距离（越小越好）   伪代码直觉： 12exact = mean(pred == label)char_acc = mean(1 - edit_distance(pred, label) / max(len(label), 1))  三、推荐流程3.1 基座推理用 swift infer（或封装脚本）对验证 JSONL 批量推理，输出...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/07/30/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-10-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="多模态微调实战（10）：命令速查表"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/cheatsheet.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-30</div><div class="info-item-2">多模态微调实战（10）：命令速查表</div></div><div class="info-2"><div class="info-item-1">系列收尾，把全流程命令收进一页，方便复制粘贴。把项目根目录记为 ~/projects/vlm-ocr-sft（请替换），以下命令默认已有 script/docker_run.sh 或等价封装。    这是「多模态微调实战」的第 10 篇，也是收官篇。前九篇讲原理与取舍，这一篇只留命令。  环境123nvidia-smibash script/docker_run.sh swift --versionbash script/docker_run.sh python -c &quot;import torch; print(torch.cuda.is_available())&quot;  数据1234567891011121314# 演示子集python3 script/convert_lmdb_to_jsonl.py \  --project-root /workspace \  --train-samples 2000 \  --val-samples 200# 全量（参数按你的脚本约定）python3 script/convert_lmdb_to_jsonl.py \  --...</div></div></div></a><a class="pagination-related" href="/2026/07/27/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-07-%E5%90%88%E5%B9%B6LoRA%E5%BE%97%E5%88%B0%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B/" title="多模态微调实战（07）：合并 LoRA 得到完整模型"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/merge-lora.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-27</div><div class="info-item-2">多模态微调实战（07）：合并 LoRA 得到完整模型</div></div><div class="info-2"><div class="info-item-1">LoRA checkpoint 很小，但推理时需要「基座 + adapter」。若要交给只接受普通 HF 目录的下游，或继续转 GGUF，通常先 merge。这一篇讲合并在做什么、怎么做、合完怎么验。    这是「多模态微调实战」的第 07 篇。合并是从「训练产物」走向「可部署模型」的关键一步。  一、合并在做什么把 LoRA 低秩更新写回基座线性层，导出一份独立完整权重： 1基座 Qwen3-VL-4B  +  adapter(checkpoint-XXXXX)  →  merged model directory  合并后：  不再依赖 --adapters； 目录结构接近普通 Transformers 模型； 体积接近基座（数 GB～十余 GB），而不是 LoRA 的几百 MB。  二、命令ms-swift： 12345swift export \  --model /workspace/model/Qwen3-VL-4B-Instruct \  --adapters /workspace/output/ocr_plate_lora_full/.../checkpoint-...</div></div></div></a><a class="pagination-related" href="/2026/07/22/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-02-Docker%E4%B8%8Ems-swift%E7%8E%AF%E5%A2%83/" title="多模态微调实战（02）：用 Docker 固化 ms-swift 训练环境"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/docker-msswift-env.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-22</div><div class="info-item-2">多模态微调实战（02）：用 Docker 固化 ms-swift 训练环境</div></div><div class="info-2"><div class="info-item-1">微调最怕两件事：依赖打架 和 驱动 &#x2F; CUDA 不匹配。这一篇把训练环境固定在镜像里，宿主机只负责三件事：显卡驱动、Docker、项目目录。目标是让训练环境一次搭好、随处复现。    这是「多模态微调实战」的第 02 篇。上一篇讲了路线图，本篇解决「环境从哪来、怎么复现」。  一、硬件与软件前提   项目 建议    GPU 单卡，显存约 16GB 或以上   驱动 能跑你选用的 CUDA 容器即可（较新的消费卡通常需要较新的 PyTorch）   系统 Linux（本文以 Ubuntu 为例）   Docker 已安装，并配置好 NVIDIA Container Toolkit   磁盘 预留 50GB+（模型 + 全量数据 + checkpoint）   自检： 12nvidia-smidocker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu22.04 nvidia-smi  第二行能打印 GPU 信息，说明容器 GPU 通路正常。 二、项目目录约定把下面当作「项目根」： 1234567~/projects...</div></div></div></a><a class="pagination-related" href="/2026/07/25/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-05-%E5%BE%AE%E8%B0%83%E5%89%8D%E5%90%8E%E8%AF%84%E6%B5%8B%E5%AF%B9%E6%AF%94/" title="多模态微调实战（05）：微调前后的评测对比"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/evaluation-before-after.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-25</div><div class="info-item-2">多模态微调实战（05）：微调前后的评测对比</div></div><div class="info-2"><div class="info-item-1">没有评测的微调，只是「loss 在下降」。对 OCR，建议至少同时看三个指标：完全匹配、字符级准确率、编辑距离。这一篇讲怎么把基座和 LoRA 摆到同一把尺子下对比。    这是「多模态微调实战」的第 05 篇。评测是决定「要不要投入全量训练时间」的依据。  一、评测原则 同一验证集、同一提示词、同一解码参数； 先评基座，再评 LoRA（或合并后模型）； 指标脚本与业务规则一致（是否忽略空格、大小写等要事先约定）。  二、指标定义   指标 含义    Exact Match 预测字符串与标签完全一致的比例   Character Accuracy 基于编辑距离的字符级正确率均值   Avg Edit Distance 平均 Levenshtein 距离（越小越好）   伪代码直觉： 12exact = mean(pred == label)char_acc = mean(1 - edit_distance(pred, label) / max(len(label), 1))  三、推荐流程3.1 基座推理用 swift infer（或封装脚本）对验证 JSONL 批量推理，输出...</div></div></div></a><a class="pagination-related" href="/2026/07/24/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-04-%E5%B0%8F%E8%A7%84%E6%A8%A1LoRA%E8%AF%95%E8%B7%91/" title="多模态微调实战（04）：小规模 LoRA 试跑，先证明流程可用"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/lora-demo-run.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-24</div><div class="info-item-2">多模态微调实战（04）：小规模 LoRA 试跑，先证明流程可用</div></div><div class="info-2"><div class="info-item-1">在上全量之前，先用 两千级样本 把 LoRA 跑通。这一步的目标不是刷榜，而是回答三个问题：命令能不能跑完？显存是否稳定？验证指标有没有「方向正确」的提升？    这是「多模态微调实战」的第 04 篇。先小后大的「小」，就在这一篇。  一、训练命令骨架核心是 swift sft。下面是一组在约 16GB 单卡上验证过的参数思路： 1234567891011121314151617181920212223242526272829303132PYTORCH_ALLOC_CONF=expandable_segments:True \IMAGE_MAX_TOKEN_NUM=512 \MAX_PIXELS=802816 \CUDA_VISIBLE_DEVICES=0 \swift sft \  --model /workspace/model/Qwen3-VL-4B-Instruct \  --dataset /workspace/dataset/ocr_plate/train.jsonl \  --val_dataset /workspace/dataset/ocr_plate/val....</div></div></div></a><a class="pagination-related" href="/2026/07/23/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-03-LMDB%E5%88%B0JSONL%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87/" title="多模态微调实战（03）：从 LMDB 到 JSONL 的数据准备"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/dataset-lmdb-jsonl.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-07-23</div><div class="info-item-2">多模态微调实战（03）：从 LMDB 到 JSONL 的数据准备</div></div><div class="info-2"><div class="info-item-1">多模态微调里，数据格式比模型名字更容易卡住人。ms-swift 期望的是「对话 JSONL + 图片路径」，而公开 OCR 数据集常常是 LMDB &#x2F; TFRecord 等离线格式，中间需要一层转换。这一篇讲怎么把数据整理成训练框架能直接吃的样子。    这是「多模态微调实战」的第 03 篇。环境就绪后，数据是下一个门槛。  一、数据从哪来本系列任务使用 ModelScope 上的车牌 OCR 数据（公开集，示例名：ocr_plate）：  完整规模大约：训练 37 万 + 验证 4 万； 原始形态多为 LMDB（图像二进制 + 标签字符串）； 建议流程：先转一个小子集验证，再转全量。  二、LMDB 里大概长什么样常见键设计（示意）： 123num-samples          -&gt; 样本总数image-000000001      -&gt; 图片二进制label-000000001      -&gt; 车牌字符串（UTF-8）  转换时要约定：  图片导出到哪里； JSONL 里写相对还是绝对路径（容器内建议统一成 /workspace/...）； 用...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">148</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">358</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A7%84%E6%A8%A1%E4%B8%8E%E6%97%B6%E9%97%B4%E9%A2%84%E6%9C%9F"><span class="toc-number">1.</span> <span class="toc-text">一、规模与时间预期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%EF%BC%9A%E5%89%8D%E5%8F%B0-vs-%E5%90%8E%E5%8F%B0"><span class="toc-number">2.</span> <span class="toc-text">二、启动方式：前台 vs 后台</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%8F%B0"><span class="toc-number">2.1.</span> <span class="toc-text">前台</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">后台（推荐）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%B6%85%E5%8F%82%EF%BC%9A%E4%B8%8E%E6%BC%94%E7%A4%BA%E9%9B%86%E5%B0%BD%E9%87%8F%E4%B8%80%E8%87%B4"><span class="toc-number">3.</span> <span class="toc-text">三、超参：与演示集尽量一致</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%96%AD%E7%82%B9%E7%BB%AD%E8%AE%AD"><span class="toc-number">4.</span> <span class="toc-text">四、断点续训</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%9B%91%E6%8E%A7%E7%9C%8B%E4%BB%80%E4%B9%88"><span class="toc-number">5.</span> <span class="toc-text">五、监控看什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%BF%87%E7%A8%8B%E6%8C%87%E6%A0%87"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 过程指标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%B3%BB%E7%BB%9F%E5%B1%82"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 系统层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%AA%8C%E8%AF%81%E6%8C%87%E6%A0%87"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 验证指标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%A6%82%E4%BD%95%E9%80%89-checkpoint"><span class="toc-number">6.</span> <span class="toc-text">六、如何选 checkpoint</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%AE%AD%E7%BB%83%E5%AE%8C%E6%88%90%E5%90%8E%E5%8F%91%E7%94%9F%E4%BB%80%E4%B9%88"><span class="toc-number">7.</span> <span class="toc-text">七、训练完成后发生什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">八、小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/30/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-10-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="多模态微调实战（10）：命令速查表"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/cheatsheet.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多模态微调实战（10）：命令速查表"/></a><div class="content"><a class="title" href="/2026/07/30/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-10-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="多模态微调实战（10）：命令速查表">多模态微调实战（10）：命令速查表</a><time datetime="2026-07-30T01:00:00.000Z" title="发表于 2026-07-30 09:00:00">2026-07-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/29/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-09-%E8%B8%A9%E5%9D%91%E4%B8%8E%E7%BB%8F%E9%AA%8C%E6%B8%85%E5%8D%95/" title="多模态微调实战（09）：踩坑与经验清单"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/lessons-pitfalls.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多模态微调实战（09）：踩坑与经验清单"/></a><div class="content"><a class="title" href="/2026/07/29/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-09-%E8%B8%A9%E5%9D%91%E4%B8%8E%E7%BB%8F%E9%AA%8C%E6%B8%85%E5%8D%95/" title="多模态微调实战（09）：踩坑与经验清单">多模态微调实战（09）：踩坑与经验清单</a><time datetime="2026-07-29T01:00:00.000Z" title="发表于 2026-07-29 09:00:00">2026-07-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/28/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-08-GGUF%E4%B8%8EINT4%E9%83%A8%E7%BD%B2%E8%90%BD%E5%9C%B0/" title="多模态微调实战（08）：GGUF 与 INT4 的部署侧落地"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/gguf-int4-deploy.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多模态微调实战（08）：GGUF 与 INT4 的部署侧落地"/></a><div class="content"><a class="title" href="/2026/07/28/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-08-GGUF%E4%B8%8EINT4%E9%83%A8%E7%BD%B2%E8%90%BD%E5%9C%B0/" title="多模态微调实战（08）：GGUF 与 INT4 的部署侧落地">多模态微调实战（08）：GGUF 与 INT4 的部署侧落地</a><time datetime="2026-07-28T01:00:00.000Z" title="发表于 2026-07-28 09:00:00">2026-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/27/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-07-%E5%90%88%E5%B9%B6LoRA%E5%BE%97%E5%88%B0%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B/" title="多模态微调实战（07）：合并 LoRA 得到完整模型"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/merge-lora.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多模态微调实战（07）：合并 LoRA 得到完整模型"/></a><div class="content"><a class="title" href="/2026/07/27/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-07-%E5%90%88%E5%B9%B6LoRA%E5%BE%97%E5%88%B0%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B/" title="多模态微调实战（07）：合并 LoRA 得到完整模型">多模态微调实战（07）：合并 LoRA 得到完整模型</a><time datetime="2026-07-27T01:00:00.000Z" title="发表于 2026-07-27 09:00:00">2026-07-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/" title="多模态微调实战（06）：全量训练的后台、断点与监控"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/vlm/full-training-ops.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="多模态微调实战（06）：全量训练的后台、断点与监控"/></a><div class="content"><a class="title" href="/2026/07/26/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-06-%E5%85%A8%E9%87%8F%E8%AE%AD%E7%BB%83%E5%90%8E%E5%8F%B0%E6%96%AD%E7%82%B9%E4%B8%8E%E7%9B%91%E6%8E%A7/" title="多模态微调实战（06）：全量训练的后台、断点与监控">多模态微调实战（06）：全量训练的后台、断点与监控</a><time datetime="2026-07-26T01:00:00.000Z" title="发表于 2026-07-26 09:00:00">2026-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
