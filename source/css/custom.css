@@ -1,0 +1,11 @@
+/* 自定义样式覆盖 —— 不修改 Butterfly 主题源码 */
+
+/* 列表卡封面图小圆角 */
+#recent-posts .recent-post-item .post_cover {
+  border-radius: 8px;
+}
+
+/* 让圆角对内部图片生效（图片有 scale hover 动画，需容器裁剪） */
+#recent-posts .recent-post-item .post_cover .post-bg {
+  border-radius: 8px;
+}
