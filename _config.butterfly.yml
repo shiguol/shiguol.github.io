@@ -44,6 +44,10 @@ lazyload:
   field: site
   blur: true
 
+# Google Analytics 4 — 主题会自动注入 gtag.js（含 pjax 切换时的 page_path 上报）
+# https://analytics.google.com/analytics/web/
+google_analytics: G-EYQTZZVQWM
+
 # Math rendering — MathJax auto-renders $...$ / $$...$$ in posts
 math:
   use: mathjax
