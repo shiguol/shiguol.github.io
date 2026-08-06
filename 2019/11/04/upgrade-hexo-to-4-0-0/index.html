@@ -28,7 +28,7 @@
       "url": "http://shiguol.github.io"
     }
   ]
-}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2019/11/04/upgrade-hexo-to-4-0-0/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2019/11/04/upgrade-hexo-to-4-0-0/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
     (() => {
       
     const saveToLocal = {
@@ -118,7 +118,14 @@
     detectApple()
   
     })()
-  </script><script>const GLOBAL_CONFIG = {
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-EYQTZZVQWM"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-EYQTZZVQWM')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-EYQTZZVQWM', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
   root: '/',
   algolia: undefined,
   localSearch: undefined,

@@ -32,7 +32,7 @@
       "url": "http://shiguol.github.io"
     }
   ]
-}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/30/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-10-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/07/30/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%BE%AE%E8%B0%83%E5%AE%9E%E6%88%98-10-%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
     (() => {
       
     const saveToLocal = {
@@ -122,7 +122,14 @@
     detectApple()
   
     })()
-  </script><script>const GLOBAL_CONFIG = {
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-EYQTZZVQWM"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-EYQTZZVQWM')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-EYQTZZVQWM', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
   root: '/',
   algolia: undefined,
   localSearch: undefined,
