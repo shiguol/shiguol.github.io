@@ -54,7 +54,11 @@ theme: butterfly
 disqus_shortname: shiguol
 sitemap:
   path: sitemap.xml
+include:
+  - .nojekyll
 deploy:
   type: git
   repository: git@github.com:shiguol/shiguol.github.io.git
   branch: master
+  ignore_hidden:
+    public: false
