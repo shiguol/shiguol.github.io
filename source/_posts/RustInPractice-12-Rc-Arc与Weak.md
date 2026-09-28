@@ -80,4 +80,4 @@ assert_eq!(link.upgrade().as_deref().map(String::as_str), Some("root"));
 - `Weak` 不拥有目标，避免父子等双向关系形成内存循环。
 - 选择共享所有权前，先考虑能否借用、转移或传消息。
 
-> RustInPractice 第 12 篇完。下一篇：`RefCell<T>`，何时将借用检查从编译期推迟到运行时。
+> RustInPractice 第 12 篇完。下一篇：[`RefCell<T>`，何时将借用检查从编译期推迟到运行时](/2026/07/21/RustInPractice-13-RefCell与内部可变性/)。

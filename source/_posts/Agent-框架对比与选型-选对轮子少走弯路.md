@@ -258,4 +258,4 @@ Anthropic 的 Agent SDK 是较新的入局者，但凭借 Claude 模型在 Agent
 
 ---
 
-> 小白讲 AI 系列第 17 篇完。下一篇我们聊聊 Agent 架构与设计模式——选完框架之后，更重要的问题是：Agent 该怎么"设计"？从单 Agent 到多 Agent，从 Router 模式到 Supervisor 模式，这些经过验证的设计模式是你从"能跑"到"能用"的关键。
+> 小白讲 AI 系列第 17 篇完。下一篇[我们聊聊 Agent 架构与设计模式——选完框架之后，更重要的问题是：Agent 该怎么"设计"？从单 Agent 到多 Agent，从 Router 模式到 Supervisor 模式，这些经过验证的设计模式是你从"能跑"到"能用"的关键](/2026/06/24/Agent-架构与设计模式-从能跑到能用/)。

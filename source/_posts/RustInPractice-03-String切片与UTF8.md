@@ -92,4 +92,4 @@ for (byte_index, ch) in text.char_indices() {
 - 不支持字符串下标，避免在变长编码上制造错误的复杂度承诺。
 - 正则适合使用原始字符串；固定模式要复用编译结果。
 
-> RustInPractice 第 03 篇完。下一篇：数组、`Vec`、元组与迭代器，开始处理一组数据。
+> RustInPractice 第 03 篇完。下一篇：[数组、`Vec`、元组与迭代器，开始处理一组数据](/2026/07/20/RustInPractice-04-数组Vec元组与迭代器/)。

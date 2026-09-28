@@ -121,4 +121,4 @@ if let Some(color) = parse_color("red") {
 - `match` 的穷尽检查是维护状态机的重要保障。
 - `Option<T>` 让“可能不存在”成为可见的类型信息。
 
-> RustInPractice 第 02 篇完。下一篇：`String`、`&str`、切片与 UTF-8，理解 Rust 为什么不允许字符串下标。
+> RustInPractice 第 02 篇完。下一篇：[`String`、`&str`、切片与 UTF-8，理解 Rust 为什么不允许字符串下标](/2026/07/20/RustInPractice-03-String切片与UTF8/)。

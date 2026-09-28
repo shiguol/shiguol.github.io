@@ -158,7 +158,7 @@ GQA 是 **MHA 与 MQA 的折中**：比 MHA 省 Cache，比 MQA 保留更多 K/V
 | **MHA** | $h_\text{kv}=h_q$，Cache 最大 |
 | **config** | 看 `num_key_value_heads` |
 
-> 大模型数学速成系列第 10 篇完。下一篇 **KV Cache**——Prefill、Decode 与显存估算，系列收官。
+> 大模型数学速成系列第 10 篇完。下一篇 [**KV Cache**——Prefill、Decode 与显存估算，系列收官](/2026/07/09/大模型数学速成（11）：KV-Cache-推理加速的关键/)。
 
 ### 系列导航
 

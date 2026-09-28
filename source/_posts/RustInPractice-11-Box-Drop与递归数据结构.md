@@ -89,4 +89,4 @@ let values: Box<[i32]> = vec![1, 2, 3].into_boxed_slice();
 - Box 用固定大小指针打破递归类型的无限布局。
 - 先选直接值或标准容器，只有递归、trait object 或明确间接层需要时才引入 Box。
 
-> RustInPractice 第 11 篇完。下一篇：`Rc`、`Arc` 与 `Weak`，什么时候一个值需要多个拥有者？
+> RustInPractice 第 11 篇完。下一篇：[`Rc`、`Arc` 与 `Weak`，什么时候一个值需要多个拥有者？](/2026/07/21/RustInPractice-12-Rc-Arc与Weak/)

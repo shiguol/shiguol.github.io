@@ -250,7 +250,7 @@ cd build && ctest --output-on-failure
 | **Mock** | 依赖注入 + GMock 隔离外部 |
 | **CMake** | FetchContent + enable_testing + add_test |
 
-> 现代 C++ 实战系列第 16 篇完。下一篇 **C++23 新特性**——`expected`、`deducing this`、`std::print`。
+> 现代 C++ 实战系列第 16 篇完。下一篇 [**C++23 新特性**——`expected`、`deducing this`、`std::print`](/2026/06/30/现代C++实战-17-C++23新特性/)。
 
 ### 系列导航
 

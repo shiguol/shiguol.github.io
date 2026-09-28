@@ -97,4 +97,4 @@ let message: &'static str = "fixed text";
 - 普通函数和方法通常由省略规则解决。
 - 保存借用会让类型带上生命周期；需要长期持有时优先拥有数据。
 
-> RustInPractice 第 10 篇完。下一篇：`Box<T>`、自动 Drop 与递归数据结构。
+> RustInPractice 第 10 篇完。下一篇：[`Box<T>`、自动 Drop 与递归数据结构](/2026/07/21/RustInPractice-11-Box-Drop与递归数据结构/)。

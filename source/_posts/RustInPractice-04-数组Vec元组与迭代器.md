@@ -111,4 +111,4 @@ assert_eq!(sum, 60);
 - 元组适合轻量组合，有业务字段时优先 struct。
 - 迭代器管道在消费者出现前不会执行，闭包的捕获方式由使用场景决定。
 
-> RustInPractice 第 04 篇完。下一篇：`Option`、`Result`、`?` 与错误设计。
+> RustInPractice 第 04 篇完。下一篇：[`Option`、`Result`、`?` 与错误设计](/2026/07/20/RustInPractice-05-Option-Result与错误设计/)。

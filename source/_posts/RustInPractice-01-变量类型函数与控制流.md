@@ -133,4 +133,4 @@ fn main() {
 - Rust 函数与 `if` 都是表达式，最后一个无分号表达式可返回值。
 - 优先使用 `for` 遍历，使用 `loop { break value }` 表达有结果的循环。
 
-> RustInPractice 第 01 篇完。下一篇：struct、方法、enum 与模式匹配，用类型把状态写清楚。
+> RustInPractice 第 01 篇完。下一篇：[struct、方法、enum 与模式匹配，用类型把状态写清楚](/2026/07/20/RustInPractice-02-Struct枚举与模式匹配/)。

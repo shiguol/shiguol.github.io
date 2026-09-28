@@ -83,4 +83,4 @@ tags:
 
 准备好了就从环境开始。
 
-> YOLO 目标检测实战第 00 篇完。下一篇：用 Docker 把 CUDA / PyTorch / Ultralytics / TensorRT 一次性固化成可复现的镜像。
+> YOLO 目标检测实战第 00 篇完。下一篇：[用 Docker 把 CUDA / PyTorch / Ultralytics / TensorRT 一次性固化成可复现的镜像](/2026/07/22/YOLO目标检测实战-01-Docker环境搭建/)。

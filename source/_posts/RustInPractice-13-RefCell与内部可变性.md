@@ -93,4 +93,4 @@ let second = Rc::clone(&state);
 - `Rc<RefCell<T>>` 适合单线程共享可变模型，不是默认状态管理方案。
 - 能用普通 `&mut T` 时，优先使用编译期检查的普通借用。
 
-> RustInPractice 第 13 篇完。下一篇：泛型、trait 与静态/动态分发。
+> RustInPractice 第 13 篇完。下一篇：[泛型、trait 与静态/动态分发](/2026/07/21/RustInPractice-14-泛型Trait与分发/)。

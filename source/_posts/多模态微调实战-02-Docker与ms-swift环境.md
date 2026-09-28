@@ -145,4 +145,4 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 3. 项目目录挂载到 `/workspace`；
 4. 一条统一的 `docker_run.sh` 入口。
 
-> 多模态微调实战第 02 篇完。下一篇：把公开 OCR 数据从 LMDB 转成 ms-swift 能吃的多模态 JSONL。
+> 多模态微调实战第 02 篇完。下一篇：[把公开 OCR 数据从 LMDB 转成 ms-swift 能吃的多模态 JSONL](/2026/07/23/多模态微调实战-03-LMDB到JSONL数据准备/)。

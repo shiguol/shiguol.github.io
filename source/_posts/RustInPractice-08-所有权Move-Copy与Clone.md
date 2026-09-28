@@ -101,4 +101,4 @@ let message = make_message();
 - `Clone` 是主动复制，可能分配和消耗时间。
 - 所有权不是限制，它让资源释放责任始终可追踪。
 
-> RustInPractice 第 08 篇完。下一篇：借用与可变借用，访问数据但不夺走它。
+> RustInPractice 第 08 篇完。下一篇：[借用与可变借用，访问数据但不夺走它](/2026/07/21/RustInPractice-09-借用与可变借用/)。

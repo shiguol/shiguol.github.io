@@ -390,4 +390,4 @@ return "任务在 25 步内未完成，请检查任务复杂度或提供更多�
 
 ---
 
-> 小白讲 AI 系列第 14 篇完。下一篇我们聊聊 Loop 工程——Harness 搭好了"骨架"，那 Agent 的"心跳"到底是怎么跳的？从 Plan 到 Execute 到 Reflect，循环该怎么设计才靠谱？
+> 小白讲 AI 系列第 14 篇完。下一篇[我们聊聊 Loop 工程——Harness 搭好了"骨架"，那 Agent 的"心跳"到底是怎么跳的？从 Plan 到 Execute 到 Reflect，循环该怎么设计才靠谱？](/2026/06/24/Loop-工程-Agent的心跳是怎么跳的/)

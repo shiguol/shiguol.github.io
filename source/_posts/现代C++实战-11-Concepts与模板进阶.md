@@ -202,7 +202,7 @@ cd ref/cpp_demo/basics/type_traits_demo
 | **type_traits** | 编译期类型查询与变换 |
 | **选型** | 新模板 API 用 Concepts |
 
-> 现代 C++ 实战系列第 11 篇完。下一篇进入 **第二季：多线程基础**——thread、mutex、condition_variable。
+> 现代 C++ 实战系列第 11 篇完。下一篇[进入 **第二季：多线程基础**——thread、mutex、condition_variable](/2026/06/25/现代C++实战-12-多线程基础/)。
 
 ### 系列导航
 

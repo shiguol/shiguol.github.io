@@ -56,4 +56,4 @@ lora_target: all
 - 问「怎么训的」→ **LoRA（或 Full / QLoRA）**
 - 问「交付什么」→ **合并后的完整模型**（可选：推理侧 schema 校验）
 
-> 语言模型微调实战第 02 篇完。下一篇进入环境：用 Docker 把 LLaMA-Factory 训练环境固化下来。
+> 语言模型微调实战第 02 篇完。下一篇[进入环境：用 Docker 把 LLaMA-Factory 训练环境固化下来](/2026/08/04/语言模型微调实战-03-Docker环境搭建/)。

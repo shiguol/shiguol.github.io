@@ -108,4 +108,4 @@ derive 让类型定义成为命令行接口说明，Clap 据此生成解析与�
 - module 是 crate 内的代码边界，`pub` 决定可见性。
 - CLI 解析应留在入口层，核心逻辑放入可测试模块。
 
-> RustInPractice 第 06 篇完。下一篇：格式化、Clippy、单元测试与 Rustdoc，建立可靠反馈环。
+> RustInPractice 第 06 篇完。下一篇：[格式化、Clippy、单元测试与 Rustdoc，建立可靠反馈环](/2026/07/20/RustInPractice-07-格式化Clippy测试与文档/)。

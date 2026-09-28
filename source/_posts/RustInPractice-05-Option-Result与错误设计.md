@@ -100,4 +100,4 @@ enum ParseError {
 - `thiserror` 适合定义可匹配、可读的领域错误。
 - 不要在输入边界随意 `unwrap()`，也不要在错误信息中泄露敏感数据。
 
-> RustInPractice 第 05 篇完。下一篇：Cargo 依赖、package、module 与 workspace，组织多 crate 项目。
+> RustInPractice 第 05 篇完。下一篇：[Cargo 依赖、package、module 与 workspace，组织多 crate 项目](/2026/07/20/RustInPractice-06-Cargo依赖模块与工作区/)。

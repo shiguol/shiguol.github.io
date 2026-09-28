@@ -227,7 +227,7 @@ cd ref/cpp_demo/basics/lambda_demo
 | **存储** | 优先 `auto`；跨模块/容器用 `std::function` |
 | **性能** | 具体闭包类型 > 函数指针 > `std::function` |
 
-> 现代 C++ 实战系列第 6 篇完。下一篇进入 **C++17 工具箱**——`any`、filesystem 与并行算法。
+> 现代 C++ 实战系列第 6 篇完。下一篇[进入 **C++17 工具箱**——`any`、filesystem 与并行算法](/2026/06/20/现代C++实战-07-C++17工具箱/)。
 
 ### 系列导航
 

@@ -348,4 +348,4 @@ MCP 正在成为 Agent 生态的基础设施层——就像 HTTP 之于 Web、US
 
 ---
 
-> 小白讲 AI 系列第 16 篇完。下一篇我们聊聊 Agent 框架对比与选型——MCP 是连接工具的协议，但你还需要一个框架来编排整个 Agent。LangGraph、OpenAI Agents SDK、CrewAI……到底该选哪个？
+> 小白讲 AI 系列第 16 篇完。下一篇[我们聊聊 Agent 框架对比与选型——MCP 是连接工具的协议，但你还需要一个框架来编排整个 Agent。LangGraph、OpenAI Agents SDK、CrewAI……到底该选哪个？](/2026/06/24/Agent-框架对比与选型-选对轮子少走弯路/)
