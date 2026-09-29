@@ -121,20 +121,37 @@ json j = u;           // 自动序列化
 User u2 = j.get<User>(); // 自动反序列化
 ```
 
+demo 的 `my_object.hpp` 走的是另一条路：为 `MyObject { id, userId, title, body }` 特化 `nlohmann::adl_serializer<MyObject>`，手写 `to_json` / `from_json`，从而能对 `null` 或缺失字段给默认值（`id` / `userId` 为 `null` 时取 0，`title` / `body` 缺失或非字符串时取 `"NULL"`）——宏绑定做不到这种容错：
+
+```cpp
+namespace nlohmann {
+template <>
+struct adl_serializer<MyObject> {
+    static void to_json(json& j, const MyObject& p) {
+        j = json{{"id", p.id}, {"userId", p.userId}, {"title", p.title}, {"body", p.body}};
+    }
+    static void from_json(const json& j, MyObject& p) {
+        if (j.at("id").is_null()) p.id = 0; else j.at("id").get_to(p.id);
+        // userId / title / body 同理……
+    }
+};
+}
+```
+
 ## 四、REST CRUD 模式
 
-把 JSON 和路由组合，就是标准 REST API。内存中用 `std::vector` 或 `std::unordered_map` 存数据：
+把 JSON 和路由组合，就是标准 REST API。下面是通用示意（demo 中没有这些路由），内存中用 `std::vector` 存数据，与 `svr` 定义在同一函数里、lambda 按引用捕获：
 
 ```cpp
 std::vector<User> users = {{1, "Alice", "alice@example.com"}};
 
 // GET /users — 列表
-svr.Get("/users", [](const httplib::Request&, httplib::Response& res) {
+svr.Get("/users", [&](const httplib::Request&, httplib::Response& res) {
   res.set_content(json(users).dump(), "application/json");
 });
 
 // GET /users/:id — 单个
-svr.Get(R"(/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+svr.Get(R"(/users/(\d+))", [&](const httplib::Request& req, httplib::Response& res) {
   int id = std::stoi(req.matches[1]);
   for (auto& u : users)
     if (u.id == id) {
@@ -146,7 +163,7 @@ svr.Get(R"(/users/(\d+))", [](const httplib::Request& req, httplib::Response& re
 });
 
 // POST /users — 创建
-svr.Post("/users", [](const httplib::Request& req, httplib::Response& res) {
+svr.Post("/users", [&](const httplib::Request& req, httplib::Response& res) {
   auto j = json::parse(req.body);
   User u = j.get<User>();
   users.push_back(u);
@@ -155,7 +172,7 @@ svr.Post("/users", [](const httplib::Request& req, httplib::Response& res) {
 });
 
 // PUT /users/:id — 更新
-svr.Put(R"(/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+svr.Put(R"(/users/(\d+))", [&](const httplib::Request& req, httplib::Response& res) {
   int id = std::stoi(req.matches[1]);
   auto j = json::parse(req.body);
   for (auto& u : users)
@@ -164,7 +181,7 @@ svr.Put(R"(/users/(\d+))", [](const httplib::Request& req, httplib::Response& re
 });
 
 // DELETE /users/:id — 删除
-svr.Delete(R"(/users/(\d+))", [](const httplib::Request& req, httplib::Response& res) {
+svr.Delete(R"(/users/(\d+))", [&](const httplib::Request& req, httplib::Response& res) {
   int id = std::stoi(req.matches[1]);
   users.erase(std::remove_if(users.begin(), users.end(),
     [id](const User& u) { return u.id == id; }), users.end());
@@ -190,10 +207,10 @@ demo 当前实现了 `/camera` 图片接口；CRUD 是同一套 httplib + json �
 include(FetchContent)
 
 FetchContent_Declare(httplib
-  URL https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.15.3.tar.gz
+  URL https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.58.0.tar.gz
 )
 FetchContent_Declare(nlohmann_json
-  URL https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz
+  URL https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz
 )
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(httplib nlohmann_json)
@@ -205,15 +222,17 @@ target_link_libraries(httplib_json_demo PRIVATE
 )
 ```
 
-HTTPS 支持需链接 OpenSSL：
+HTTPS 支持需要 OpenSSL **3.0+**（新版 cpp-httplib 已不支持 1.1.x）。新版不必再手写 `find_package` + `target_link_libraries(OpenSSL::SSL)`，只要在 `FetchContent_MakeAvailable` 之前打开 httplib 自带的开关，`httplib::httplib` 目标就会自动传递 OpenSSL 链接和 `CPPHTTPLIB_OPENSSL_SUPPORT` 宏：
 
 ```cmake
-find_package(OpenSSL REQUIRED)
-target_link_libraries(httplib_json_demo PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-target_compile_definitions(httplib_json_demo PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+set(HTTPLIB_REQUIRE_OPENSSL ON CACHE BOOL "" FORCE)   # 找不到 OpenSSL 直接报错
+# 用不到的压缩库显式关闭，保证 macOS 与 Ubuntu 行为一致
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
 ```
 
-macOS：`brew install openssl`，CMake 可能需要 `-DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl`。
+Ubuntu：`apt-get install libssl-dev`（Docker 镜像已预装）；macOS：`brew install openssl@3`，demo 的 CMake 会通过 `brew --prefix openssl@3` 自动设置 `OPENSSL_ROOT_DIR`。
 
 资源文件复制到构建目录：
 
@@ -255,13 +274,11 @@ cd ref/cpp_demo/networking/http_json
 curl -v http://localhost:8080/camera -o duck.jpg
 file duck.jpg    # JPEG image data
 
-# 若实现了 CRUD，可测试：
-curl http://localhost:8080/users
-curl -X POST http://localhost:8080/users \
-  -H "Content-Type: application/json" \
-  -d '{"id":2,"name":"Bob","email":"bob@example.com"}'
-curl -X DELETE http://localhost:8080/users/2
+# demo 只注册了 /camera，其他路径返回 404
+curl -i http://localhost:8080/users   # HTTP/1.1 404 Not Found
 ```
+
+服务端终端会看到 `set_logger` 打印的日志，例如 `[请求] GET /camera | 来源: 127.0.0.1 | 状态码: 200`。第四节的 CRUD 路由需要自己加到 `main.cpp` 里再用 curl 测试。
 
 ## 八、与其他技术栈对比
 
@@ -271,6 +288,17 @@ curl -X DELETE http://localhost:8080/users/2
 | **Boost.Beast** | 异步、与 Boost.Asio 集成，适合高性能 |
 | **Crow / Pistache** | 类似 Flask 的路由风格 |
 | **gRPC** | 二进制协议，微服务间通信 |
+
+cpp-httplib 新版本还内置了 RFC 6455 **WebSocket** 服务端 / 客户端。`networking/websocket/` demo 已从停更的 websocketpp（依赖 Boost.Asio）迁移过来，提供 `/echo` 回显和 `/chat` 聊天室广播两条路由，零系统依赖：
+
+```bash
+cd ref/cpp_demo/networking/websocket
+./build.sh --run websocket_selftest      # 同进程回环自检（别直接 --run，服务端会阻塞）
+./build/websocket_server                 # 终端 1：默认 0.0.0.0:8080
+./build/websocket_client ws://localhost:8080/chat   # 终端 2+：交互式聊天，Ctrl+D 退出
+```
+
+代价是阻塞 I/O + 每连接一个线程，适合中小规模；需要海量长连接时再考虑 Boost.Beast 这类异步方案。
 
 学习路径：httplib 入门 → 需要持久化接 SQLite（[第 25 篇](/2026/07/08/现代C++实战-25-SQLite数据库实战/)）→ 需要并发接 [第 14 篇](/2026/06/27/现代C++实战-14-线程池与背压控制/) 线程池。
 
@@ -285,4 +313,4 @@ curl -X DELETE http://localhost:8080/users/2
 | REST | CRUD 五件套，JSON 作 body |
 | 测试 | curl 验证接口 |
 
-下一篇给服务加上**持久化**：SQLite 嵌入式数据库 + DatabaseManager——见 [第 25 篇：SQLite 数据库实战](/2026/07/08/现代C++实战-25-SQLite数据库实战/)（计划）。
+下一篇给服务加上**持久化**：SQLite 嵌入式数据库 + DatabaseManager——见 [第 25 篇：SQLite 数据库实战](/2026/07/08/现代C++实战-25-SQLite数据库实战/)。

@@ -15,7 +15,7 @@ tags:
 - 现代构建
 ---
 
-上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：**CMake**。本系列 39 个 demo 全部用 CMake 构建，其中 `projects/fetch_content/` 是一个「集大成」示例——它用 **FetchContent** 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。
+上一篇我们把环境跑通了。从这一篇开始，我们真正进入 C++ 工程的地基：**CMake**。本系列 41 个 demo 全部用 CMake 构建，其中 `projects/fetch_content/` 是一个「集大成」示例——它用 **FetchContent** 自动拉取 gtest、json、fmt、spdlog 等 6 个第三方库，演示现代 C++ 项目最常见的依赖管理方式。
 
 搞懂这篇，后面所有带外部库的 demo 你都不会慌。
 
@@ -44,7 +44,7 @@ CMake 不是编译器，而是**构建系统生成器**：它读 `CMakeLists.txt
 一个能编译运行的 C++ 程序，最少需要三行 CMake：
 
 ```cmake
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20...4.2)
 project(Hello VERSION 1.0.0)
 
 add_executable(hello src/main.cpp)
@@ -52,7 +52,7 @@ add_executable(hello src/main.cpp)
 
 | 指令 | 作用 |
 |------|------|
-| `cmake_minimum_required` | 声明所需最低 CMake 版本，低于此版本直接报错 |
+| `cmake_minimum_required` | 声明所需最低 CMake 版本，低于此版本直接报错；`3.20...4.2` 这种区间写法表示「最低 3.20，按 4.2 的策略行为运行」，新版 CMake 4 下不会触发兼容性警告 |
 | `project` | 定义项目名、版本，并初始化编译器检测 |
 | `add_executable` | 从源文件生成可执行目标 |
 
@@ -73,6 +73,8 @@ cd ref/cpp_demo/projects/fetch_content
 ./build.sh -c       # 清理后重建
 ./build.sh --run    # 编译后运行
 ```
+
+所有 demo 的 `build.sh` 都由仓库根目录的 `scripts/build.sh.template` 生成，参数完全一致（`-s` 开启 Sanitizer、`--cxx` 切换编译器等见[第 00 篇](/2026/06/13/现代C++实战-00-环境搭建与项目导览/)）。
 
 ## 三、C++ 标准设置
 
@@ -96,7 +98,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 target_compile_features(my_app PRIVATE cxx_std_20)
 ```
 
-`fetch_content` demo 使用 C++17，因为它依赖的 fmt 10.x 和 nlohmann/json 3.11 在 C++17 下体验最好。后面讲 C++20 特性的 demo 会把标准调到 20 或 23。
+`fetch_content` demo 使用 C++17，后面讲 C++20 特性的 demo 会把标准调到 20 或 23。注意这三行要写在 `FetchContent_MakeAvailable` **之前**，保证第三方库与主程序用同一个标准编译。
 
 ## 四、FetchContent：自动拉取依赖
 
@@ -109,7 +111,7 @@ include(FetchContent)
 
 FetchContent_Declare(
   fmt
-  URL https://github.com/fmtlib/fmt/archive/refs/tags/10.1.1.tar.gz
+  URL https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz
 )
 
 FetchContent_MakeAvailable(fmt)
@@ -125,7 +127,7 @@ target_link_libraries(demo PRIVATE fmt::fmt)
 ```cmake
 FetchContent_Declare(
   nlohmann_json
-  URL https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz
+  URL https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz
 )
 ```
 
@@ -138,12 +140,14 @@ FetchContent_Declare(
 
 | 库 | 版本 | 用途 |
 |---|---|---|
-| Google Test | v1.14.0 | 单元测试（第 16 篇详讲） |
-| nlohmann/json | v3.11.3 | JSON 解析 |
-| fmt | 10.1.1 | 类型安全格式化 |
-| spdlog | v1.13.0 | 高性能日志 |
-| cpp-httplib | v0.15.3 | HTTP 客户端/服务端 |
-| CLI11 | v2.4.1 | 命令行参数解析 |
+| Google Test | v1.17.0 | 单元测试（第 16 篇详讲） |
+| nlohmann/json | v3.12.0 | JSON 解析 |
+| fmt | 11.2.0 | 类型安全格式化 |
+| spdlog | v1.15.3 | 高性能日志 |
+| cpp-httplib | v0.58.0 | HTTP 客户端/服务端 |
+| CLI11 | v2.5.0 | 命令行参数解析 |
+
+> **版本提示**：fmt 10.x 在新版 Clang 的 C++20 模式下会触发 `consteval` 编译错误，nlohmann/json 3.11 的 `cmake_minimum_required` 与 CMake 4 不兼容，所以 demo 统一升级到了上表版本。锁定版本号的好处就在这里——升级是一次显式、可回溯的改动。
 
 一次性拉取全部依赖：
 
@@ -165,6 +169,15 @@ set(FMT_TEST OFF CACHE BOOL "" FORCE)
 
 这是工程实践中的常见优化：**只引入你需要的 target，关掉上游的 test / example**。
 
+同理，cpp-httplib 默认会「找到就用」系统里的 OpenSSL / zlib / brotli / zstd，导致 macOS 与 Ubuntu 编出来的功能不一致。demo 显式关掉用不到的可选依赖：
+
+```cmake
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF CACHE BOOL "" FORCE)
+```
+
 ## 五、目录组织：src / include / build
 
 `fetch_content` 采用经典布局：
@@ -173,6 +186,8 @@ set(FMT_TEST OFF CACHE BOOL "" FORCE)
 projects/fetch_content/
 ├── CMakeLists.txt          # 顶层构建配置
 ├── build.sh                # 统一构建脚本
+├── README.md               # 项目说明
+├── .gitignore              # 忽略 build/、_deps/ 等
 ├── compile_commands.json   # → build/ 的符号链接
 ├── build/                  # 构建产物（不提交 Git）
 └── src/
@@ -236,24 +251,35 @@ cd ref/cpp_demo/projects/fetch_content
 ./build.sh --run
 ```
 
-首次运行会下载依赖，可能需要 1–3 分钟（视网络而定）。成功后终端大致输出：
+首次运行会下载依赖，可能需要 1–3 分钟（视网络而定）。成功后终端大致输出（时间戳因运行而异；日志用 `spdlog::info` 直接输出，没有源码位置信息，所以 `[%s:%#]` 显示为 `[:]`）：
 
 ```
+[2026-06-14 14:00:00.123] [info] [:] 日志系统已初始化，级别: info
+
 欢迎使用 MyApp, World! 🎉
 
-[INFO] JSON 库使用示例:
+[2026-06-14 14:00:00.123] [info] [:] JSON 库使用示例:
 示例 JSON 数据:
 {
-  "name": "World",
-  "features": ["FetchContent", "CMake", "Modern C++"],
-  ...
+  "dependencies": {
+    "CLI11": "v2.5.0",
+    ...
+  },
+  "features": [
+    "FetchContent",
+    "CMake",
+    "Modern C++"
+  ],
+  "name": "World"
 }
 
-[INFO] fmt 格式化示例:
+[2026-06-14 14:00:00.123] [info] [:] fmt 格式化示例:
   整数格式化:         42
   浮点格式化: 3.142
   ...
 ```
+
+注意 JSON 的键是按字母序输出的——`nlohmann::json` 默认用 `std::map` 存对象，不保留插入顺序。
 
 ### 试试命令行参数
 
@@ -270,18 +296,19 @@ demo 用 CLI11 解析参数，可以玩几个组合：
 |------|------|
 | `-n, --name` | 设置用户名 |
 | `-l, --log-level` | 日志级别：debug / info / warn / error |
+| `-p, --port` | 服务端口，默认 8080，范围 1–65535 |
 | `-c, --show-config` | 打印当前配置 JSON |
 | `--config` | 从 JSON 字符串加载配置 |
 
 ### 代码里发生了什么？
 
-`main.cpp` 把 6 个库串成一条演示链：
+`main.cpp` 把其中 5 个库串成一条演示链（Google Test 只随 FetchContent 一起拉取，本 demo 没有编写测试 target）：
 
 1. **CLI11** — 解析命令行，带类型检查和范围校验
 2. **spdlog** — 初始化彩色日志，按级别过滤输出
-3. **fmt** — 类型安全的字符串格式化（C++20 的 `std::format` 同源思路）
+3. **fmt** — 类型安全的字符串格式化（C++20 的 `std::format` 同源思路），欢迎语还用了 `fmt/color.h` 的粗体青色输出
 4. **nlohmann/json** — 构建和打印 JSON 对象
-5. **httplib** — HTTP 客户端已集成（默认注释，避免无意发起网络请求）
+5. **httplib** — `mylib::httpGet(host, path)` 已封装好 HTTP GET，`main.cpp` 里的调用默认注释掉，避免无意发起网络请求
 
 `mylib.cpp` 里的 `Config` 类展示了库与库之间的协作：JSON 解析失败时，用 fmt 格式化错误信息，再用 spdlog 输出。
 
@@ -313,7 +340,5 @@ demo 用 CLI11 解析参数，可以玩几个组合：
 |------|------|------|
 | 00 | [环境搭建与项目导览](/2026/06/13/现代C++实战-00-环境搭建与项目导览/) | ✅ |
 | **01** | **CMake 与现代构建（本篇）** | ✅ |
-| 02 | C++ 版本演进一览 | 下一篇 |
-| 03 | 移动语义与右值引用 | 待写 |
-
-完整大纲见工作区 `docs/CPP_SERIES_OUTLINE.md`。
+| 02 | [C++ 版本演进一览](/2026/06/15/现代C++实战-02-C++版本演进一览/) | ✅ |
+| 03 | [移动语义与右值引用](/2026/06/16/现代C++实战-03-移动语义与右值引用/) | ✅ |

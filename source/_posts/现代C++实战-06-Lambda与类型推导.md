@@ -72,7 +72,7 @@ auto f3 = [a, &b]() { return a + b; }; // 混合：a 值捕获，b 引用捕获
 ```cpp
 int n = 0;
 auto counter = [n]() mutable { return ++n; };
-std::cout << counter() << counter() << '\n';  // 1 2（外部 n 仍为 0）
+std::cout << counter() << ' ' << counter() << '\n';  // 1 2（外部 n 仍为 0）
 ```
 
 ### 2.3 C++14 初始化捕获（移动捕获）
@@ -85,7 +85,7 @@ auto f = [p = std::move(ptr)]() { return *p; };
 // ptr 此时为 nullptr；所有权已移入 Lambda
 ```
 
-demo 中的写法：
+demo 中 `lambda_demo.cpp` 的写法：
 
 ```cpp
 auto important = std::make_unique<int>(1);
@@ -178,8 +178,10 @@ C++14 起可简写为 `auto add(T a, U b) { return a + b; }`，编译器自动�
 | **`std::function<R(Args...)>`** | 高（类型擦除） | 有堆分配/间接调用开销 | 容器存多种可调用对象 |
 
 ```cpp
-// 函数指针：不能捕获
-void (*fp)(int) = [](int x){ /* 错误：有捕获的 Lambda 不能转函数指针 */ };
+// 函数指针：只有无捕获的 Lambda 能隐式转换
+void (*fp)(int) = [](int x) { std::cout << x << '\n'; };
+// int k = 1;
+// void (*bad)(int) = [k](int x) { std::cout << x + k; };  // 编译错误：有捕获的 Lambda 不能转函数指针
 
 // std::function：可存 Lambda，但有开销
 std::function<int(int,int)> op = [](int a, int b){ return a + b; };
@@ -207,14 +209,14 @@ C++20 Ranges 进一步把 Lambda 管道化（系列第 10 篇详讲）。
 
 ## 九、demo 导览：lambda_demo
 
-`ref/cpp_demo/basics/lambda_demo/` 演示 **C++14 初始化捕获 + 移动 `unique_ptr`**：
+`ref/cpp_demo/basics/lambda_demo/` 只有一个源文件 `lambda_demo.cpp`，CMake 中 `set(CMAKE_CXX_STANDARD 14)`，演示 **C++14 初始化捕获 + 移动 `unique_ptr`**：
 
 ```bash
 cd ref/cpp_demo/basics/lambda_demo
 ./build.sh --run
 ```
 
-输出 `9`（3 + 4 + 1 + 1）。建议对照源码理解：`v2` 从外部 `unique_ptr` 移动进闭包后，外部指针为空。
+程序调用 `add(3, 4)`，输出 `9`（3 + 4 + 1 + 1）。建议对照源码理解：`v2` 从外部 `important` 移动进闭包后，`important` 变为空指针（源码没有打印这一点，可以自己加一行 `std::cout << (important == nullptr)` 验证）。
 
 ## 十、小结
 
@@ -235,6 +237,4 @@ cd ref/cpp_demo/basics/lambda_demo
 |------|------|------|
 | 05 | [智能指针（下）](/2026/06/18/现代C++实战-05-智能指针下-模式与循环引用/) | ✅ |
 | **06** | **Lambda 与类型推导（本篇）** | ✅ |
-| 07 | C++17 工具箱 | 下一篇 |
-
-完整大纲见工作区 `docs/CPP_SERIES_OUTLINE.md`。
+| 07 | [C++17 工具箱](/2026/06/20/现代C++实战-07-C++17工具箱/) | ✅ |

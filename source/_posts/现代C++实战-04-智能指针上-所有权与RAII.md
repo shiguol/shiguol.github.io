@@ -186,14 +186,44 @@ std::shared_ptr<Widget> b(raw);  // 两个独立控制块，double-free
 
 ## 八、demo 导览：smart_pointers 01–04
 
-`ref/cpp_demo/smart_pointers/` 按主题拆分示例，前四节通常覆盖：
+`ref/cpp_demo/smart_pointers/` 按主题拆成 9 个独立可执行文件（C++17），本篇对应前四个：
 
-| 节 | 主题 |
-|----|------|
-| 01 | `unique_ptr` 基础：创建、移动、析构顺序 |
-| 02 | 自定义删除器：FILE、socket 等资源 |
-| 03 | `shared_ptr` 引用计数与拷贝 |
-| 04 | `make_unique` / `make_shared` 与异常安全对比 |
+| 节 | 源文件 / target | 主题 |
+|----|-----------------|------|
+| 01 | `01_basic_unique_ptr` | 栈对象 vs 堆对象、局部对象生命周期、`make_unique`、自定义删除器（函数指针 / Lambda / 函数对象）、`get` / `reset` / `release` 等常用操作 |
+| 02 | `02_ownership_transfer` | `std::move` 转移所有权、函数返回 `unique_ptr`、移动后原指针状态、禁止拷贝、容器中的 `unique_ptr`、`swap` |
+| 03 | `03_function_params` | 传值（sink）、传引用、传原始指针 / 引用观察、工厂返回值、`shared_ptr` 参数传递、Core Guidelines 参数规则 |
+| 04 | `04_class_member` | `unique_ptr` 成员（组合）、依赖注入、延迟初始化、`shared_ptr` 成员（聚合，`Taxi` 与 `Driver`） |
+
+`01_basic_unique_ptr.cpp` 里用函数对象管理 C 风格文件指针，正是第二节「自定义删除器」的实战版：
+
+```cpp
+struct FileDeleter {
+    void operator()(std::FILE* fp) const {
+        if (fp) {
+            std::cout << "  [FileDeleter] 关闭文件\n";
+            std::fclose(fp);
+        }
+    }
+};
+
+std::unique_ptr<std::FILE, FileDeleter> filePtr(
+    std::fopen("/tmp/test_unique_ptr.txt", "w")
+);
+```
+
+`03_function_params.cpp` 的 sink 参数则对应第三节的按值传递：
+
+```cpp
+void takeOwnership(std::unique_ptr<Widget> widget) {
+    std::cout << "  takeOwnership 获得了 '" << widget->getName() << "' 的所有权\n";
+    widget->process();
+    // widget 在函数结束时被销毁
+}
+
+auto widget = std::make_unique<Widget>("按值传递");
+takeOwnership(std::move(widget));  // 必须使用 std::move
+```
 
 ### 运行方式
 
@@ -202,10 +232,13 @@ cd ref/cpp_demo/smart_pointers
 ./build.sh --run
 ```
 
-单独运行某一节（具体 target 名见目录内 `CMakeLists.txt`）：
+`--run` 不带参数会依次运行 `build/` 下全部 9 个程序（包括下一篇用到的 05–08 和性能对比 `demo_share_unique`）。只看某一节时指定 target 名：
 
 ```bash
-./build.sh --run-args './build/<target_name>'
+./build.sh --run 01_basic_unique_ptr
+./build.sh --run 02_ownership_transfer
+./build.sh --run 03_function_params
+./build.sh --run 04_class_member
 ```
 
 观察日志里**构造 / 析构的打印顺序**，理解 RAII 何时释放资源。
@@ -228,6 +261,4 @@ cd ref/cpp_demo/smart_pointers
 |------|------|------|
 | 03 | [移动语义与右值引用](/2026/06/16/现代C++实战-03-移动语义与右值引用/) | ✅ |
 | **04** | **智能指针（上）：所有权与 RAII（本篇）** | ✅ |
-| 05 | 智能指针（下）：模式与循环引用 | 下一篇 |
-
-完整大纲见工作区 `docs/CPP_SERIES_OUTLINE.md`。
+| 05 | [智能指针（下）：模式与循环引用](/2026/06/18/现代C++实战-05-智能指针下-模式与循环引用/) | ✅ |

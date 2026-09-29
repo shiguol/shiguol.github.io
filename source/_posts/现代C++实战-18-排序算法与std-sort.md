@@ -15,7 +15,7 @@ tags:
 - 复杂度
 ---
 
-第二季讲完语言与工程，第三季进入**算法与数据结构**。排序是第一课：手写七种经典算法理解原理，再和 **`std::sort`** 做性能对比——感受工业级实现为何快一个数量级。
+第二季讲完语言与工程，第三季进入**算法与数据结构**。排序是第一课：手写七种经典算法理解原理，再和 **`std::sort`** 做性能对比——感受工业级实现为何更快。
 
 demo：`ref/cpp_demo/algorithms/sorting/`（含 7 种手写排序 + benchmark）。
 
@@ -117,13 +117,13 @@ Iterator partition(Iterator first, Iterator last) {
 
 ## 七、与 `std::sort` 的性能对比
 
-demo 对 **10000 个随机整数** 测各算法耗时（毫秒级），典型结论：
+demo 对 **10000 个 0～10000 的随机整数** 测各算法耗时（单位 ms，保留三位小数；`build.sh` 默认 Release），典型结论（具体数值随机器浮动）：
 
 | 梯队 | 算法 |
 |------|------|
-| 慢 | 冒泡、选择、插入（数百 ms 级） |
-| 中 | 手写快排、归并、堆（个位数 ms） |
-| 快 | **计数**（范围合适时）、**`std::sort`** |
+| 慢 | 冒泡、选择、插入（数 ms 到数十 ms，冒泡最慢） |
+| 中 | 手写快排、归并、堆（亚毫秒级，约 0.3 ms） |
+| 快 | **计数**（范围合适时）、**`std::sort`**（约 0.1 ms 及以下） |
 
 ```cpp
 std::sort(v.begin(), v.end());                    // 默认 <
@@ -132,7 +132,7 @@ std::sort(v.begin(), v.end(), std::greater<>());  // 降序
 // 需要稳定
 std::stable_sort(v.begin(), v.end());
 
-// C++20 起：未完成序列上排序
+// C++20 起：ranges 版本（demo 本身按 C++17 编译，未使用）
 std::ranges::sort(v);
 ```
 
@@ -143,7 +143,7 @@ struct Point { int x, y; };
 bool operator<(const Point& a, const Point& b) { return a.x < b.x; }
 ```
 
-实现细节（libc++）：IntroSort + 小数组插入排序 + 可能并行（实现定义）。
+实现细节（libstdc++ / libc++ 大体相同）：IntroSort + 小数组插入排序；`std::sort` 本身不会并行，C++17 起需显式传执行策略（如 `std::execution::par`）才可能并行。
 
 ## 八、怎么选？
 
@@ -163,7 +163,7 @@ cd ref/cpp_demo/algorithms/sorting
 ./build.sh --run
 ```
 
-先对小数组打印七种排序结果，再输出 10000 元数据的性能表（含 `std::sort`）。
+先打印原始小数组 `64 34 25 12 22 11 90 5` 及七种排序结果，再输出 10000 元数据的性能表（含 `std::sort`）。每个算法都在数据副本上排序，并校验结果有序。
 
 ## 十、小结
 
@@ -182,6 +182,5 @@ cd ref/cpp_demo/algorithms/sorting
 |------|------|------|
 | 17 | [C++23 新特性](/2026/06/30/现代C++实战-17-C++23新特性/) | ✅ |
 | **18** | **排序算法与 std::sort（本篇）** | ✅ |
-| 19 | 哈希表实现 | 下一篇 |
+| 19 | [哈希表实现](/2026/07/02/现代C++实战-19-哈希表实现/) | ✅ |
 
-完整大纲见工作区 `docs/CPP_SERIES_OUTLINE.md`。

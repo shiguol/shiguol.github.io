@@ -69,42 +69,57 @@ sqlite3_close(db);
 | 列读取 | 映射到 `struct Student` |
 
 ```cpp
+// include/DatabaseManager.h（节选）
 class DatabaseManager {
+private:
     sqlite3* db;
+    std::string db_path;
+
+    // 执行 SQL 的辅助函数：prepare → callback / step → finalize
+    bool executeSQL(const std::string& sql,
+                    std::function<void(sqlite3_stmt*)> callback = nullptr);
+
 public:
-    DatabaseManager(const std::string& path);
-    ~DatabaseManager() { disconnect(); }  // RAII 自动关闭
+    DatabaseManager(const std::string& database_path);
+    ~DatabaseManager();   // 实现里调用 disconnect()，RAII 自动关闭
     bool connect();
     void disconnect();
+    // ... 学生 / 班级 / 统计 / 事务接口
 };
 ```
 
 ## 三、数据模型：学校管理系统
 
-demo 的 `data/school.db` 包含两张表：
+demo 的 `data/school.db` 包含两张表（`sqlite3 data/school.db .schema` 可查看）：
 
 ```sql
-CREATE TABLE classes (
-    id   INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+CREATE TABLE "students" (
+    "id"       INTEGER,
+    "class_id" INTEGER,
+    "name"     TEXT,
+    "gender"   TEXT,
+    "score"    INTEGER,
+    PRIMARY KEY("id" AUTOINCREMENT)
 );
 
-CREATE TABLE students (
-    id       INTEGER PRIMARY KEY,
-    class_id INTEGER,
-    name     TEXT,
-    gender   TEXT,
-    score    INTEGER,
-    FOREIGN KEY (class_id) REFERENCES classes(id)
+CREATE TABLE "classes" (
+    "id"   INTEGER,
+    "name" TEXT,
+    PRIMARY KEY("id" AUTOINCREMENT)
 );
 ```
+
+`id` 自增，所以插入时不用给 `id`；`students.class_id` 只是约定指向 `classes.id`，表上并没有声明外键。
 
 对应 C++ 结构体：
 
 ```cpp
 struct Student {
-    int id, class_id, score;
-    std::string name, gender;
+    int id;
+    int class_id;
+    std::string name;
+    std::string gender;
+    int score;
 };
 
 struct Class {
@@ -135,8 +150,8 @@ while (sqlite3_step(stmt) == SQLITE_ROW) {
     Student s;
     s.id        = sqlite3_column_int(stmt, 0);
     s.class_id  = sqlite3_column_int(stmt, 1);
-    s.name      = (const char*)sqlite3_column_text(stmt, 2);
-    s.gender    = (const char*)sqlite3_column_text(stmt, 3);
+    s.name      = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+    s.gender    = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
     s.score     = sqlite3_column_int(stmt, 4);
     students.push_back(s);
 }
@@ -148,11 +163,14 @@ INSERT 同理：
 ```cpp
 std::string sql = "INSERT INTO students (class_id, name, gender, score) "
                   "VALUES (?, ?, ?, ?)";
+// ... sqlite3_prepare_v2 同上，rc == SQLITE_OK 后绑定 ...
 sqlite3_bind_int(stmt, 1, student.class_id);
 sqlite3_bind_text(stmt, 2, student.name.c_str(), -1, SQLITE_STATIC);
 sqlite3_bind_text(stmt, 3, student.gender.c_str(), -1, SQLITE_STATIC);
 sqlite3_bind_int(stmt, 4, student.score);
-sqlite3_step(stmt);  // 期望 SQLITE_DONE
+rc = sqlite3_step(stmt);
+sqlite3_finalize(stmt);
+return rc == SQLITE_DONE;  // 成功时 step 返回 SQLITE_DONE
 ```
 
 ## 五、CRUD 操作一览
@@ -167,20 +185,24 @@ sqlite3_step(stmt);  // 期望 SQLITE_DONE
 | 删 | `deleteStudent(id)` | `DELETE WHERE id = ?` |
 | 排行 | `getTopStudents(n)` | `ORDER BY score DESC LIMIT ?` |
 
-统计查询：
+班级表有对应的一组：`getAllClasses()`、`getClassById(id)`、`addClass(c)`、`updateClass(c)`、`deleteClass(id)`。统计接口有 `getAverageScore()`、`getAverageScoreByClass(id)`、`getStudentCount()`、`getStudentCountByClass(id)`。
+
+不带参数的查询走私有辅助函数 `executeSQL`：
 
 ```cpp
-// 平均分
-executeSQL("SELECT AVG(score) FROM students", [&](sqlite3_stmt* stmt) {
-    if (sqlite3_step(stmt) == SQLITE_ROW)
-        avg = sqlite3_column_double(stmt, 0);
-});
-
-// 计数
-executeSQL("SELECT COUNT(*) FROM students WHERE class_id = ?", ...);
+double DatabaseManager::getAverageScore() {
+    double avg = 0.0;
+    executeSQL("SELECT AVG(score) FROM students",
+               [&](sqlite3_stmt* stmt) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            avg = sqlite3_column_double(stmt, 0);
+        }
+    });
+    return avg;
+}
 ```
 
-`executeSQL` 辅助函数统一处理 prepare → callback/step → finalize 流程。
+`executeSQL` 统一处理 prepare → callback（或无 callback 时直接 step 一次）→ finalize。它没有绑定参数的入口，所以 `getStudentCountByClass` 这类带 `?` 的查询仍是手写 prepare → bind → step → finalize。
 
 ## 六、事务：保证原子性
 
@@ -206,7 +228,7 @@ BEGIN TRANSACTION;
 COMMIT;    -- 或 ROLLBACK;
 ```
 
-连接时 demo 还执行了 `PRAGMA foreign_keys = ON`，启用外键约束。
+连接时 demo 还执行了 `PRAGMA foreign_keys = ON`，启用外键约束（SQLite 默认关闭；当前两张表没声明外键，这行是为日后加约束预留的）。
 
 ## 七、错误处理
 
@@ -217,7 +239,7 @@ SQLite 每个 API 返回 `int` 状态码：
 | `SQLITE_OK` (0) | 成功 |
 | `SQLITE_DONE` (101) | `step` 完成，无更多行 |
 | `SQLITE_ROW` (100) | `step` 返回一行数据 |
-| 其他负值 | 错误，用 `sqlite3_errmsg(db)` 获取描述 |
+| 其他非零值 | 错误（如 `SQLITE_ERROR` = 1、`SQLITE_BUSY` = 5），用 `sqlite3_errmsg(db)` 获取描述 |
 
 ```cpp
 int rc = sqlite3_open(db_path.c_str(), &db);
@@ -233,10 +255,17 @@ if (rc != SQLITE_OK) {
 
 ```cmake
 find_package(SQLite3 QUIET)
-# 回退：pkg-config → 手动 find_path/find_library
+# 回退：pkg-config → 手动 find_path/find_library；都找不到时 message(WARNING) 并 return()，跳过本 demo
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
 add_executable(sqlite3_demo src/main.cpp src/DatabaseManager.cpp)
-target_link_libraries(sqlite3_demo SQLite3::SQLite3)
+
+if(TARGET SQLite3::SQLite3)
+    target_link_libraries(sqlite3_demo SQLite3::SQLite3)
+else()
+    target_include_directories(sqlite3_demo PRIVATE ${SQLite3_INCLUDE_DIRS})
+    target_link_libraries(sqlite3_demo ${SQLite3_LIBRARIES})
+endif()
 
 # 复制预置数据库到构建目录
 configure_file(${CMAKE_SOURCE_DIR}/data/school.db
@@ -247,8 +276,8 @@ configure_file(${CMAKE_SOURCE_DIR}/data/school.db
 
 | 平台 | 命令 |
 |------|------|
-| macOS | `brew install sqlite3` |
-| Ubuntu | `apt-get install libsqlite3-dev` |
+| macOS | `brew install sqlite3`（或直接用系统自带的） |
+| Ubuntu | `apt-get install libsqlite3-dev`（Docker 镜像已预装） |
 
 ## 九、运行 demo
 
@@ -258,20 +287,24 @@ cd ref/cpp_demo/database/sqlite3
 ./build.sh --run    # 或 ./build/sqlite3_demo
 ```
 
+程序用相对路径 `data/school.db` 打开数据库。`./build.sh --run` 和 `./build/sqlite3_demo` 都在项目目录下执行，改的是源码里的 `data/school.db`，每跑一次都会多出几条记录；想保留原始数据，就 `cd build && ./sqlite3_demo`，改的是 CMake 复制过去的那份。
+
 demo 依次演示 10 步：
 
-1. 查询所有学生 / 班级
-2. 添加新班级「计算机科学1班」
-3. 添加新学生「张三」
-4. 按班级查询、成绩 Top 5
-5. 统计平均分 / 人数
-6. 更新学生成绩
-7. 事务批量添加
-8. 输出最终学生列表
+1. 查询所有学生信息
+2. 查询所有班级信息
+3. 添加新班级「计算机科学1班」
+4. 添加新学生「张三」
+5. 查询班级 ID 为 1 的学生
+6. 查询成绩最高的 5 名学生
+7. 统计信息：总人数、班级 1 人数、平均分、班级 1 平均分
+8. 更新学生信息（ID 1 的成绩改为 90）
+9. 事务操作：批量添加「李四」「王五」
+10. 输出最终学生列表
 
 ## 十、与 HTTP 服务组合
 
-[第 24 篇](/2026/07/07/现代C++实战-24-HTTP服务与JSON/) 的 REST API + 本篇的 `DatabaseManager` = 完整后端：
+[第 24 篇](/2026/07/07/现代C++实战-24-HTTP服务与JSON/) 的 REST API + 本篇的 `DatabaseManager` = 完整后端（demo 未实现，思路如下）：
 
 ```
 GET  /students  → dbManager.getAllStudents()  → json.dump()
@@ -291,4 +324,4 @@ POST /students  → json.parse(req.body)        → dbManager.addStudent()
 | 事务 | BEGIN / COMMIT / ROLLBACK |
 | 错误 | 检查返回码 + `sqlite3_errmsg` |
 
-下一篇是两个经典练手项目：LRU 缓存 + JSON 解析器——见 [第 26 篇：LRU 缓存与 JSON 解析器](/2026/07/09/现代C++实战-26-LRU缓存与JSON解析器/)（计划）。
+下一篇是两个经典练手项目：LRU 缓存 + JSON 解析器——见 [第 26 篇：LRU 缓存与 JSON 解析器](/2026/07/09/现代C++实战-26-LRU缓存与JSON解析器/)。

@@ -46,24 +46,30 @@ unordered_map<K, iterator>     list<pair<K,V>>
 
 ## 二、LRU 核心实现
 
+`src/lru_cache/lru_cache.hpp`（节选，位于命名空间 `cpp_learning`）：
+
 ```cpp
 template<typename K, typename V>
 class LRUCache {
-    size_t capacity_;
-    std::list<std::pair<K, V>> items_;
-    std::unordered_map<K, decltype(items_)::iterator> cache_;
-
-    void move_to_front(auto it) {
-        items_.splice(items_.begin(), items_, it);
-    }
-
-    void evict_lru() {
-        cache_.erase(items_.back().first);
-        items_.pop_back();
-    }
-
 public:
-    std::optional<V> get(const K& key) {
+    using KeyValuePair = std::pair<K, V>;
+    using ItemList     = std::list<KeyValuePair>;
+    using ListIterator = typename ItemList::iterator;
+    using CacheMap     = std::unordered_map<K, ListIterator>;
+
+    explicit LRUCache(size_t capacity) : capacity_(capacity) {
+        if (capacity == 0) {
+            throw std::invalid_argument("LRU cache capacity must be greater than 0");
+        }
+    }
+
+    // 禁用拷贝（避免迭代器失效问题），支持移动
+    LRUCache(const LRUCache&) = delete;
+    LRUCache& operator=(const LRUCache&) = delete;
+    LRUCache(LRUCache&&) = default;
+    LRUCache& operator=(LRUCache&&) = default;
+
+    [[nodiscard]] std::optional<V> get(const K& key) {
         auto it = cache_.find(key);
         if (it == cache_.end()) return std::nullopt;
         move_to_front(it->second);
@@ -80,8 +86,25 @@ public:
         items_.emplace_front(key, std::move(value));
         cache_[key] = items_.begin();
     }
+
+private:
+    size_t capacity_;
+    ItemList items_;
+    CacheMap cache_;
+
+    void move_to_front(ListIterator it) {
+        items_.splice(items_.begin(), items_, it);
+    }
+
+    void evict_lru() {
+        if (items_.empty()) return;
+        cache_.erase(items_.back().first);
+        items_.pop_back();
+    }
 };
 ```
+
+此外还有 `get_ref`（返回 `std::optional<std::reference_wrapper<V>>`，可原地修改）、`contains`（不改变访问顺序）、`erase`、`clear`、`for_each`、`most_recent_key` / `least_recent_key` 等辅助接口。
 
 现代 C++ 特性一览：
 
@@ -92,7 +115,7 @@ public:
 | `[[nodiscard]]` | 强制检查返回值 |
 | 删除拷贝 / 默认移动 | 避免迭代器失效 |
 
-demo 还实现了 `LRUCacheWithCallback`——淘汰时触发回调，适合资源清理场景。
+demo 还实现了 `LRUCacheWithCallback`——构造时传入 `std::function<void(const K&, V&)>`，淘汰时触发回调，适合资源清理场景。
 
 ## 三、LRU 应用场景
 
@@ -103,7 +126,7 @@ demo 还实现了 `LRUCacheWithCallback`——淘汰时触发回调，适合资�
 | **数据库缓冲池** | 磁盘页缓存 |
 | **CPU Cache** | 硬件级 LRU 近似 |
 
-demo 模拟 DNS 缓存：第一次查询走慢路径，第二次缓存命中。
+demo 的 `demo_dns_cache()` 用 `LRUCache<std::string, std::string>`（容量 1000）模拟 DNS 缓存：第一次查询走慢路径，第二次缓存命中。
 
 ## 四、JSON 解析器：递归下降
 
@@ -118,18 +141,30 @@ object := '{' (pair (',' pair)*)? '}'
 pair   := string ':' value
 ```
 
-每个规则对应一个解析函数——**递归下降**：
+每个规则对应一个解析函数——**递归下降**（`src/json_parser/json_parser.hpp`）：
 
 ```cpp
-JsonValue parse_value() {
-    switch (peek()) {
+[[nodiscard]] JsonValue parse_value() {
+    skip_whitespace();
+    if (is_end()) {
+        throw JsonParseError("Unexpected end of input", pos_);
+    }
+
+    char c = peek();
+    switch (c) {
         case 'n': return parse_null();
         case 't': return parse_true();
         case 'f': return parse_false();
         case '"': return parse_string();
         case '[': return parse_array();
         case '{': return parse_object();
-        default:  return parse_number();
+        case '-':
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            return parse_number();
+        default:
+            throw JsonParseError(
+                std::string("Unexpected character: '") + c + "'", pos_);
     }
 }
 ```
@@ -138,9 +173,11 @@ JsonValue parse_value() {
 
 ## 五、std::variant 表示 JSON 值
 
+`src/json_parser/json_value.hpp` 中 `JsonNull` 即 `std::monostate`，`JsonArray` / `JsonObject` 分别是 `std::vector<JsonValue>` / `std::map<std::string, JsonValue>`，`struct JsonValue : JsonVariant` 继承 variant 并加上 `is_xxx()` / `as_xxx()` 等便捷方法：
+
 ```cpp
 using JsonVariant = std::variant<
-    std::monostate,  // null
+    JsonNull,        // null
     bool,            // boolean
     double,          // number
     std::string,     // string
@@ -196,14 +233,21 @@ return JsonValue(std::move(result));  // 长字符串移动更高效
 
 ```cpp
 class JsonParseError : public std::runtime_error {
+public:
+    JsonParseError(const std::string& message, size_t position)
+        : std::runtime_error(format_message(message, position))
+        , position_(position) {}
+    [[nodiscard]] size_t position() const { return position_; }
+private:
     size_t position_;
+    // format_message: "JSON parse error at position N: ..."
 };
 
-// 严格模式：抛异常
-auto val = JsonParser::parse(R"({"name": "Alice"})");
+// 严格模式：出错抛 JsonParseError
+auto doc = JsonParser::parse(R"({"name": "Alice"})");   // 或 parse_json(...)
 
 // 容错模式：失败返回 null
-auto val = try_parse_json("invalid");  // noexcept
+auto maybe = try_parse_json("invalid");  // noexcept
 ```
 
 常见错误：尾随逗号、单引号、未闭合括号、`undefined`。
@@ -223,13 +267,18 @@ auto val = try_parse_json("invalid");  // noexcept
 
 ```bash
 cd ref/cpp_demo/projects/learning_guide
-./build.sh          # C++20，FetchContent 拉 fmt/spdlog/json
-./build.sh --run    # 交互选择 LRU / JSON / Coroutine / Actor
+./build.sh                               # C++20，FetchContent 拉 fmt/spdlog/json/CLI11
+./build/cpp_learning_guide --list        # 列出全部 demo（不带参数运行也是列表）
+./build/cpp_learning_guide --demo lru    # 运行 LRU 演示
+./build/cpp_learning_guide --demo json   # 运行 JSON 解析器演示
+./build.sh --run-args "--demo lru"       # 也可以编译后直接带参数运行
 ```
 
-LRU 演示：基本操作、淘汰策略、DNS 缓存、性能测试（百万次 put/get）。
+程序没有交互菜单，用 CLI11 解析 `-d,--demo <name>`，可选值 `lru`、`json`、`coroutine`、`http`、`allocator`、`actor`、`database`、`regex`。
 
-JSON 演示：基本类型、嵌套结构、`std::visit`、错误处理、序列化 `dump()`、与 nlohmann 对比。
+LRU 演示：基本操作、`std::optional` 用法、淘汰策略、带回调的缓存、复杂类型、性能测试（容量 1 万、百万次 put/get）、DNS 缓存，最后跑一组自测。
+
+JSON 演示：基本类型、数组、对象、`std::visit`、错误处理、序列化 `dump()`、与 nlohmann 对比，最后跑一组自测。
 
 ## 十、小结
 
@@ -241,4 +290,4 @@ JSON 演示：基本类型、嵌套结构、`std::visit`、错误处理、序列
 | 移动语义 | 嵌套结构构建时避免拷贝 |
 | 工程选型 | 学习手写，生产用 nlohmann/json |
 
-下一篇进入系列收官：**C++20 协程与 Actor 模型**——见 [第 27 篇：协程与 Actor 模型](/2026/07/10/现代C++实战-27-协程与Actor模型/)（计划）。
+下一篇进入系列收官：**C++20 协程与 Actor 模型**——见 [第 27 篇：协程与 Actor 模型](/2026/07/10/现代C++实战-27-协程与Actor模型/)。

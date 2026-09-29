@@ -97,12 +97,29 @@ for (int x : result)
 
 ## 四、惰性求值：何时真正计算？
 
-```cpp
-auto pipe = nums | std::views::filter(pred) | std::views::transform(f);
-// 此时没有分配新 vector，也没有跑完 filter+transform
+demo 的 `demo_lazy_evaluation()` 在 lambda 里打印日志，直接观察计算时机：
 
-for (int x : pipe) { /* 每前进一步才算一步 */ }
+```cpp
+std::vector<int> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+auto view = nums
+    | std::views::filter([](int n) {
+        std::cout << "  过滤检查: " << n << "\n";
+        return n % 2 == 0;
+    })
+    | std::views::transform([](int n) {
+        std::cout << "  转换: " << n << " -> " << (n * n) << "\n";
+        return n * n;
+    })
+    | std::views::take(3);
+// 此时没有分配新 vector，也没有打印任何「过滤检查」
+
+for (int n : view) {   // 每前进一步才算一步
+    std::cout << "结果: " << n << "\n";
+}
 ```
+
+运行时「过滤检查」「转换」「结果」交替出现，并且拿到 3 个结果后就停止，7 之后的元素根本不会被检查。
 
 | |  eager（传统 + 中间容器） | lazy（views） |
 |--|---------------------------|---------------|
@@ -125,12 +142,17 @@ std::vector<Student> students = { /* ... */ };
 std::ranges::sort(students, {}, &Student::score);
 
 // 降序
-std::ranges::sort(students, std::greater{}, &Student::score);
+std::ranges::sort(students, std::greater<int>{}, &Student::score);
+
+// 查找、计数同样支持投影
+auto it = std::ranges::find(students, 88, &Student::score);
+int high_scores = std::ranges::count_if(students,
+    [](int score) { return score >= 90; }, &Student::score);
 ```
 
 第三个参数 **projection** 告诉算法「用对象的哪个成员参与比较」——不必手写 `[](const Student& a, const Student& b){ return a.score < b.score; }`。
 
-demo 中的管道示例：过滤及格 → 按分排序 → 取前三 → 提取姓名，全用 views + ranges 算法组合。
+demo 的 `demo_pipe_operator()` 里有一个学生成绩管道：`filter`（及格）→ `transform`（提取姓名）→ `take(3)`。视图不能排序，所以 demo 另外用 `std::ranges::copy_if` 把及格学生拷进 `passed`，再 `std::ranges::sort(passed, {}, &Student::score)` 按分数升序排列——「先排序再取前三」需要先落到容器里，这是 views 的一个边界。
 
 ## 六、与传统 STL 的对比
 
@@ -139,8 +161,10 @@ demo 中的管道示例：过滤及格 → 按分排序 → 取前三 → 提取
 | 语法 | `algo(b, e, ...)` | `ranges::algo(range, ...)` |
 | 组合 | 中间容器或手写迭代器 | `\|` 管道 |
 | 惰性 | 否（除非手写生成器） | views 默认惰性 |
-| 编译器 | C++98 起 | **C++20**（GCC 10+ / Clang 13+） |
+| 编译器 | C++98 起 | **C++20**（建议 GCC 12+ / Clang 16+ / Apple Clang 15+） |
 | 性能 | 成熟优化 | 管道常零开销抽象；极端场景需 profiling |
+
+> 编译器版本说明：GCC 10 就带了 `<ranges>`，但 `views::split` 等在 GCC 12 才按 P2210 修订成现在的行为；Clang 自身较早支持 Concepts，真正决定可用性的是标准库——libc++ 到 15 才默认开启 `<ranges>`，16 起补齐常用视图。所以上表给的是「demo 能稳定编过」的版本，而不是最早出现的版本。
 
 **何时用 Ranges**：多步数据变换、只读管道、提高可读性。**何时保留经典 STL**：C++17 及以下、老编译器、或已有成熟 eager 代码路径。
 
@@ -151,7 +175,7 @@ cd ref/cpp_demo/basics/ranges_demo
 ./build.sh --run
 ```
 
-demo 分块演示：基础 ranges 算法、单视图、管道组合、投影排序、与传统 STL 对比、字符串 `split`/`join` 视图等。
+demo 分 8 块演示：基础 ranges 算法（`sort` / `find` / `count` / `for_each` / `transform`）、单视图（`filter` / `transform` / `take` / `drop` / `reverse`）、管道组合（学生成绩 + 用 `views::split(',')` 切分字符串）、投影（排序 / 查找 / 计数）、惰性求值日志、与传统 STL 对比、`iota` 生成（含无限序列 + `take`）、map 的 `keys` / `values` 视图。
 
 最小可运行片段（需 C++20）：
 
@@ -186,6 +210,4 @@ int main() {
 |------|------|------|
 | 09 | [C++20 格式化与编译期计算](/2026/06/22/现代C++实战-09-C++20格式化与编译期计算/) | ✅ |
 | **10** | **Ranges 与函数式风格（本篇）** | ✅ |
-| 11 | Concepts 与模板进阶 | 下一篇 |
-
-完整大纲见工作区 `docs/CPP_SERIES_OUTLINE.md`。
+| 11 | [Concepts 与模板进阶](/2026/06/24/现代C++实战-11-Concepts与模板进阶/) | ✅ |
