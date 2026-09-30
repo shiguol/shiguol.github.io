@@ -1,0 +1,380 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>C++ 调试实战（05）：观察点——谁偷偷改了我的变量？ | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="有一类 bug 特别折磨人：某个变量的值莫名其妙变了，但你翻遍代码也找不到哪里改了它。可能是数组越界写到了隔壁，可能是野指针，可能是另一个线程。断点帮不上忙，因为你根本不知道该在哪一行下断点。这时要用的是观察点（watchpoint）：不是「程序执行到某一行时停」，而是「某块内存被修改时停」。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？">
+<meta property="og:url" content="http://shiguol.github.io/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="有一类 bug 特别折磨人：某个变量的值莫名其妙变了，但你翻遍代码也找不到哪里改了它。可能是数组越界写到了隔壁，可能是野指针，可能是另一个线程。断点帮不上忙，因为你根本不知道该在哪一行下断点。这时要用的是观察点（watchpoint）：不是「程序执行到某一行时停」，而是「某块内存被修改时停」。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cppdebug/watchpoint.webp">
+<meta property="article:published_time" content="2026-10-05T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-30T04:10:32.625Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="GDB">
+<meta property="article:tag" content="LLDB">
+<meta property="article:tag" content="内存越界">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="观察点">
+<meta property="article:tag" content="调试">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cppdebug/watchpoint.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "C++ 调试实战（05）：观察点——谁偷偷改了我的变量？",
+  "url": "http://shiguol.github.io/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/",
+  "image": "http://shiguol.github.io/images/cover/cppdebug/watchpoint.webp",
+  "datePublished": "2026-10-05T12:00:00.000Z",
+  "dateModified": "2026-09-30T04:10:32.625Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-EYQTZZVQWM"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-EYQTZZVQWM')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-EYQTZZVQWM', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'C++ 调试实战（05）：观察点——谁偷偷改了我的变量？',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cppdebug/watchpoint.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">C++ 调试实战（05）：观察点——谁偷偷改了我的变量？</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">C++ 调试实战（05）：观察点——谁偷偷改了我的变量？</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-05T12:00:00.000Z" title="发表于 2026-10-05 20:00:00">2026-10-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-30T04:10:32.625Z" title="更新于 2026-09-30 12:10:32">2026-09-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppDebug/">CppDebug</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>有一类 bug 特别折磨人：某个变量的值莫名其妙变了，但你翻遍代码也找不到哪里改了它。可能是数组越界写到了隔壁，可能是野指针，可能是另一个线程。断点帮不上忙，因为你根本不知道该在哪一行下断点。这时要用的是<strong>观察点</strong>（watchpoint）：不是「程序执行到某一行时停」，而是「<strong>某块内存被修改时停</strong>」。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「C++ 调试实战」系列的第 5 篇。前面讲的<a href="/2026/10/01/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-01-%E6%96%AD%E7%82%B9/">断点</a>是盯着「代码」，观察点是盯着「数据」。</p>
+</blockquote>
+<h2 id="一、一个「账对不上」的-bug"><a href="#一、一个「账对不上」的-bug" class="headerlink" title="一、一个「账对不上」的 bug"></a>一、一个「账对不上」的 bug</h2><p>下面是一个记账程序：<code>Ledger</code> 里有三个账户余额，外加一个审计总额 <code>audit_total</code>，它应该<strong>始终等于三个余额之和</strong>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// watch.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Ledger</span> &#123;</span><br><span class="line">    <span class="type">int</span> balances[<span class="number">3</span>];</span><br><span class="line">    <span class="type">int</span> audit_total;  <span class="comment">// 应当始终等于 balances 之和</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">deposit</span><span class="params">(Ledger&amp; l, <span class="type">int</span> idx, <span class="type">int</span> amount)</span> </span>&#123;</span><br><span class="line">    l.balances[idx] += amount;</span><br><span class="line">    l.audit_total += amount;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">apply_fee</span><span class="params">(Ledger&amp; l, <span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Bug：本该是 i &lt; n，多循环了一次</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt;= n; ++i) &#123;</span><br><span class="line">        l.balances[i] -= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Ledger ledger&#123;&#123;<span class="number">100</span>, <span class="number">200</span>, <span class="number">300</span>&#125;, <span class="number">600</span>&#125;;</span><br><span class="line">    <span class="built_in">deposit</span>(ledger, <span class="number">0</span>, <span class="number">50</span>);</span><br><span class="line">    <span class="built_in">apply_fee</span>(ledger, <span class="number">3</span>);</span><br><span class="line">    std::<span class="built_in">printf</span>(<span class="string">&quot;balances = %d %d %d, audit = %d\n&quot;</span>, ledger.balances[<span class="number">0</span>],</span><br><span class="line">                ledger.balances[<span class="number">1</span>], ledger.balances[<span class="number">2</span>], ledger.audit_total);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>行号</th>
+<th>代码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>9–10</td>
+<td><code>deposit()</code>：改余额、改审计总额</td>
+</tr>
+<tr>
+<td>15–16</td>
+<td><code>apply_fee()</code> 的循环：每个账户扣 1 元手续费</td>
+</tr>
+<tr>
+<td>21–23</td>
+<td><code>main()</code>：初始化、存款、扣费</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ -std=c++20 -g -O0 watch.cpp -o watch &amp;&amp; ./watch</span><br><span class="line"><span class="comment"># balances = 149 199 299, audit = 649</span></span><br></pre></td></tr></table></figure>
+
+<p>三个余额之和是 <code>149 + 199 + 299 = 647</code>，审计总额应该是 <code>600 + 50 - 3 = 647</code>，可程序输出的是 649。bug 已经写在注释里了（<code>i &lt;= n</code> 多循环一次，<code>balances[3]</code> 越界，正好写到了紧挨着的 <code>audit_total</code> 上），但假设你不知道，而且这是一个几万行的项目，<code>audit_total</code> 被几十个地方读写，你该怎么找？</p>
+<p>答案：让调试器盯住 <code>audit_total</code>，谁改它就停在谁那里。</p>
+<h2 id="二、watch：变量被写入时停下"><a href="#二、watch：变量被写入时停下" class="headerlink" title="二、watch：变量被写入时停下"></a>二、<code>watch</code>：变量被写入时停下</h2><p>先停在 <code>main</code> 里、<code>ledger</code> 初始化完成之后（第 22 行），然后设置观察点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break watch.cpp:22</span><br><span class="line">Breakpoint 1 at 0x958: file watch.cpp, line 22.</span><br><span class="line">(gdb) run</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at watch.cpp:22</span><br><span class="line">22	    deposit(ledger, 0, 50);</span><br><span class="line">(gdb) watch ledger.audit_total</span><br><span class="line">Hardware watchpoint 2: ledger.audit_total</span><br></pre></td></tr></table></figure>
+
+<p><code>Hardware watchpoint</code> 表示这是一个<strong>硬件观察点</strong>（第六节解释）。继续运行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware watchpoint 2: ledger.audit_total</span><br><span class="line"></span><br><span class="line">Old value = 600</span><br><span class="line">New value = 650</span><br><span class="line">deposit (l=..., idx=0, amount=50) at watch.cpp:11</span><br><span class="line">11	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一次停下：<code>deposit</code> 把它从 600 改成了 650，这是正常的存款逻辑。再继续：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware watchpoint 2: ledger.audit_total</span><br><span class="line"></span><br><span class="line">Old value = 650</span><br><span class="line">New value = 649</span><br><span class="line">apply_fee (l=..., n=3) at watch.cpp:15</span><br><span class="line">15	    for (int i = 0; i &lt;= n; ++i) &#123;</span><br></pre></td></tr></table></figure>
+
+<p>抓到了：<strong><code>apply_fee</code> 把审计总额从 650 改成了 649</strong>，可这个函数根本不应该碰 <code>audit_total</code>。看看现场：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) bt</span><br><span class="line">#0  apply_fee (l=..., n=3) at watch.cpp:15</span><br><span class="line">#1  0x0000aaaaaaaa0974 in main () at watch.cpp:23</span><br><span class="line">(gdb) print i</span><br><span class="line">$1 = 3</span><br><span class="line">(gdb) print n</span><br><span class="line">$2 = 3</span><br><span class="line">(gdb) print l</span><br><span class="line">$3 = (Ledger &amp;) @0xfffffffffb18: &#123;balances = &#123;149, 199, 299&#125;, audit_total = 649&#125;</span><br><span class="line">(gdb) print &amp;l.balances[i]</span><br><span class="line">$4 = (int *) 0xfffffffffb24</span><br><span class="line">(gdb) print &amp;l.audit_total</span><br><span class="line">$5 = (int *) 0xfffffffffb24</span><br></pre></td></tr></table></figure>
+
+<p><code>i == 3</code>，而 <code>balances</code> 只有 3 个元素（下标 0～2）。最后两行把证据摆得清清楚楚：<code>&amp;l.balances[3]</code> 和 <code>&amp;l.audit_total</code> 是<strong>同一个地址</strong>。越界写入正好落在了结构体的下一个成员上。</p>
+<p>有两个细节要注意：</p>
+<ul>
+<li><strong>停下的位置是「写入之后」</strong>。观察点是在那条写内存的指令执行完之后触发的，所以显示的是下一条要执行的语句——这里是循环头的第 15 行（<code>++i</code> 和判断），而真正的「凶手」是它前面刚执行完的第 16 行 <code>l.balances[i] -= 1;</code>。</li>
+<li><strong><code>Old value</code> &#x2F; <code>New value</code></strong> 直接告诉你改之前和改之后的值，不用自己去比。</li>
+</ul>
+<p>LLDB 的输出（macOS 上结果一样）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">(lldb) watchpoint set variable ledger.audit_total</span><br><span class="line">Watchpoint created: Watchpoint 1: addr = 0x16fdfdd7c size = 4 state = enabled type = m</span><br><span class="line">    watchpoint spec = &#x27;ledger.audit_total&#x27;</span><br><span class="line">...</span><br><span class="line">(lldb) continue</span><br><span class="line"></span><br><span class="line">Watchpoint 1 hit:</span><br><span class="line">old value: 600</span><br><span class="line">new value: 650</span><br><span class="line">Process 5544 stopped</span><br><span class="line">* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = watchpoint 1</span><br><span class="line">       frame #0: 0x0000000100000524 watch.mac`deposit(l=0x000000016fdfdd70, idx=0, amount=50) at watch.cpp:11:1</span><br><span class="line">-&gt; 11  	&#125;</span><br><span class="line">    	^</span><br><span class="line">   12  	</span><br><span class="line">(lldb) continue</span><br><span class="line"></span><br><span class="line">Watchpoint 1 hit:</span><br><span class="line">old value: 650</span><br><span class="line">new value: 649</span><br><span class="line">Process 5544 stopped</span><br><span class="line">* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = watchpoint 1</span><br><span class="line">       frame #0: 0x0000000100000568 watch.mac`apply_fee(l=0x000000016fdfdd70, n=3) at watch.cpp:17:5</span><br><span class="line">-&gt; 17  	    &#125;</span><br><span class="line">    	    ^</span><br><span class="line">   18  	&#125;</span><br><span class="line">(lldb) v i n</span><br><span class="line">(int) i = 3</span><br><span class="line">(int) n = 3</span><br><span class="line">(lldb) p &amp;l.balances[i]</span><br><span class="line">(int *) 0x000000016fdfdd7c</span><br><span class="line">(lldb) p &amp;l.audit_total</span><br><span class="line">(int *) 0x000000016fdfdd7c</span><br></pre></td></tr></table></figure>
+
+<p><code>watchpoint set variable</code> 可以缩写为 <code>w s v ledger.audit_total</code>。输出里的 <code>type = m</code> 表示 modify 类型：值被改变时触发。LLDB 同样停在「写入之后」，Clang 生成的行号让它停在了第 17 行的 <code>}</code> 上。</p>
+<h2 id="三、观察点的作用域"><a href="#三、观察点的作用域" class="headerlink" title="三、观察点的作用域"></a>三、观察点的作用域</h2><p>上面的观察点设置在 <code>main</code> 里的局部变量 <code>ledger</code> 上。当 <code>main</code> 返回、<code>ledger</code> 的生命周期结束时，GDB 会自动删除它：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Watchpoint 2 deleted because the program has left the block in</span><br><span class="line">which its expression is valid.</span><br></pre></td></tr></table></figure>
+
+<p>如果你是在一个<strong>子函数</strong>里、通过引用或指针设置观察点，这个问题就更明显了。比如停在 <code>deposit</code> 里，<code>watch l.audit_total</code>——<code>l</code> 是 <code>deposit</code> 的参数，<code>deposit</code> 一返回观察点就被删了，根本等不到 <code>apply_fee</code> 去改它。</p>
+<p>解决办法是 <strong><code>watch -l</code>（<code>-location</code>）</strong>：先把表达式求值成一个地址，然后盯住这个地址本身，不再关心表达式里的变量是否还在作用域内：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break deposit</span><br><span class="line">(gdb) run</span><br><span class="line">...</span><br><span class="line">(gdb) watch -l l.audit_total</span><br><span class="line">Hardware watchpoint 2: -location l.audit_total</span><br><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware watchpoint 2: -location l.audit_total</span><br><span class="line"></span><br><span class="line">Old value = 600</span><br><span class="line">New value = 650</span><br><span class="line">deposit (l=..., idx=0, amount=50) at watch.cpp:11</span><br><span class="line">11	&#125;</span><br><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware watchpoint 2: -location l.audit_total</span><br><span class="line"></span><br><span class="line">Old value = 650</span><br><span class="line">New value = 649</span><br><span class="line">apply_fee (l=..., n=3) at watch.cpp:15</span><br><span class="line">15	    for (int i = 0; i &lt;= n; ++i) &#123;</span><br></pre></td></tr></table></figure>
+
+<p>离开 <code>deposit</code> 之后观察点依然有效，在 <code>apply_fee</code> 里成功抓到了越界写入。</p>
+<p>LLDB 的 <code>watchpoint set variable</code> 本身就是按地址观察的，另外也可以显式地按地址设置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(lldb) watchpoint set expression -- &amp;l.audit_total</span><br></pre></td></tr></table></figure>
+
+<p><strong>经验：只要被观察的对象不是当前函数的局部变量，就用 <code>watch -l</code>。</strong> 堆上的对象（<code>new</code> 出来的、容器里的元素）尤其如此。</p>
+<h2 id="四、条件观察点"><a href="#四、条件观察点" class="headerlink" title="四、条件观察点"></a>四、条件观察点</h2><p>观察点也可以加条件，只在满足条件时停。比如只关心 <code>balances[1]</code> 什么时候跌破 200：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break apply_fee</span><br><span class="line">(gdb) run</span><br><span class="line">...</span><br><span class="line">(gdb) watch l.balances[1] if l.balances[1] &lt; 200</span><br><span class="line">Hardware watchpoint 2: l.balances[1]</span><br><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware watchpoint 2: l.balances[1]</span><br><span class="line"></span><br><span class="line">Old value = 200</span><br><span class="line">New value = 199</span><br><span class="line">apply_fee (l=..., n=3) at watch.cpp:15</span><br><span class="line">15	    for (int i = 0; i &lt;= n; ++i) &#123;</span><br><span class="line">(gdb) print i</span><br><span class="line">$1 = 1</span><br></pre></td></tr></table></figure>
+
+<p>LLDB 先设置观察点，再用 <code>watchpoint modify -c</code> 加条件。条件里也可以用程序里的其他变量，比如只在循环第 2 轮（<code>i == 1</code>）时停：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(lldb) watchpoint set variable -w read_write l.balances[1]</span><br><span class="line">(lldb) watchpoint modify -c &#x27;i == 1&#x27;</span><br><span class="line">(lldb) continue</span><br><span class="line">...</span><br><span class="line">* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = watchpoint 1</span><br><span class="line">       frame #0: 0x0000000100000560 watch.mac`apply_fee(l=0x000000016fdfdd70, n=3) at watch.cpp:16:23</span><br><span class="line">-&gt; 16  	        l.balances[i] -= 1;</span><br><span class="line">    	                      ^</span><br><span class="line">(lldb) v i</span><br><span class="line">(int) i = 1</span><br></pre></td></tr></table></figure>
+
+<p><code>watchpoint modify</code> 不写编号时，作用于最后创建的那个观察点。这里用的是 <code>-w read_write</code>（读和写都触发，下一节讲），所以在第 16 行 <code>-=</code> <strong>读取</strong>旧值时就停下了，还没来得及写。</p>
+<h2 id="五、读观察点与访问观察点"><a href="#五、读观察点与访问观察点" class="headerlink" title="五、读观察点与访问观察点"></a>五、读观察点与访问观察点</h2><p>除了「写入时停」，还可以「读取时停」：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>GDB</th>
+<th>LLDB</th>
+<th>触发时机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>写观察点</td>
+<td><code>watch expr</code></td>
+<td><code>watchpoint set variable var</code>（默认 <code>-w modify</code>）</td>
+<td>值被修改。GDB 和 LLDB 的默认行为都是只在值<strong>真的变了</strong>时报告；LLDB 用 <code>-w write</code> 可以在「写入了相同的值」时也停</td>
+</tr>
+<tr>
+<td>读观察点</td>
+<td><code>rwatch expr</code></td>
+<td><code>watchpoint set variable -w read var</code></td>
+<td>值被读取</td>
+</tr>
+<tr>
+<td>访问观察点</td>
+<td><code>awatch expr</code></td>
+<td><code>watchpoint set variable -w read_write var</code></td>
+<td>读或写</td>
+</tr>
+</tbody></table>
+<p>读观察点在一些场景里很有用，比如「这个已经释放的对象，还有谁在读它？」。在我们的例子里，<code>audit_total</code> 按说只有 <code>main</code> 最后打印时才会读，看看 <code>rwatch</code> 会抓到什么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break apply_fee</span><br><span class="line">(gdb) run</span><br><span class="line">...</span><br><span class="line">(gdb) rwatch l.audit_total</span><br><span class="line">Hardware read watchpoint 2: l.audit_total</span><br><span class="line">(gdb) continue</span><br><span class="line"></span><br><span class="line">Hardware read watchpoint 2: l.audit_total</span><br><span class="line"></span><br><span class="line">Value = 650</span><br><span class="line">0x0000aaaaaaaa08d4 in apply_fee (l=..., n=3) at watch.cpp:16</span><br><span class="line">16	        l.balances[i] -= 1;</span><br></pre></td></tr></table></figure>
+
+<p><code>apply_fee</code> 在第 16 行<strong>读取</strong>了 <code>audit_total</code>——<code>l.balances[3] -= 1</code> 要先读出旧值再减 1，读的正是 <code>audit_total</code> 那块内存。同一个 bug，读观察点比写观察点还早一步抓到它。</p>
+<h2 id="六、硬件观察点与软件观察点"><a href="#六、硬件观察点与软件观察点" class="headerlink" title="六、硬件观察点与软件观察点"></a>六、硬件观察点与软件观察点</h2><h3 id="6-1-硬件观察点"><a href="#6-1-硬件观察点" class="headerlink" title="6.1 硬件观察点"></a>6.1 硬件观察点</h3><p>现代 CPU 都有专门的<strong>调试寄存器</strong>，可以设置「某个地址被访问时触发异常」，完全由硬件检测，程序全速运行、没有任何性能损失。这就是 <code>Hardware watchpoint</code>。</p>
+<p>但调试寄存器数量很少，x86_64 和常见的 ARM64 处理器都只有 4 个左右，每个能监视的长度也有限（通常最多 8 字节）。LLDB 会直接告诉你：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) watchpoint list</span><br><span class="line">Number of supported hardware watchpoints: 4</span><br></pre></td></tr></table></figure>
+
+<p>超出限制时会报错。在本文的 Docker 环境里，同时设了一个 <code>watch</code>、一个 <code>rwatch</code>、一个 <code>awatch</code>，<code>continue</code> 时就失败了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line">Warning:</span><br><span class="line">Could not insert hardware watchpoint 3.</span><br><span class="line">Could not insert hardware watchpoint 4.</span><br><span class="line">Could not insert hardware breakpoints:</span><br><span class="line">You may have requested too many hardware breakpoints/watchpoints.</span><br></pre></td></tr></table></figure>
+
+<p>（容器跑在虚拟机里，能用的调试寄存器可能比物理机更少。）遇到这种情况就删掉不需要的观察点，一次只盯一两个关键变量。</p>
+<h3 id="6-2-软件观察点"><a href="#6-2-软件观察点" class="headerlink" title="6.2 软件观察点"></a>6.2 软件观察点</h3><p>硬件资源用完、或者要观察的数据太大（比如整个结构体、一个大数组）时，GDB 会退回<strong>软件观察点</strong>：每执行一条指令就停下来检查一次值有没有变。这会让程序慢成百上千倍，只适合很短的代码段。</p>
+<p>可以用 <code>set can-use-hw-watchpoints 0</code> 强制 GDB 使用软件观察点（一般用不上，只在怀疑硬件观察点有问题时用来对照）。</p>
+<h3 id="6-3-观察什么，才能用上硬件观察点"><a href="#6-3-观察什么，才能用上硬件观察点" class="headerlink" title="6.3 观察什么，才能用上硬件观察点"></a>6.3 观察什么，才能用上硬件观察点</h3><ul>
+<li><strong>观察单个标量</strong>（<code>int</code>、指针、<code>double</code>），而不是整个对象。想知道 <code>std::string</code> 什么时候被改，观察它内部的长度字段或数据指针，而不是整个 <code>string</code>；</li>
+<li>表达式里<strong>不要带函数调用</strong>，比如 <code>watch v.size()</code> 是不行的，调试器无法把它映射成一个固定地址；</li>
+<li>优先用 <code>watch -l</code>，按地址观察。</li>
+</ul>
+<h2 id="七、管理观察点"><a href="#七、管理观察点" class="headerlink" title="七、管理观察点"></a>七、管理观察点</h2><p>观察点和断点共用一套编号，GDB 里用管理断点的命令管理它们：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info watchpoints</span><br><span class="line">Num     Type            Disp Enb Address            What</span><br><span class="line">2       hw watchpoint   keep y                      l.balances[0]</span><br><span class="line">3       read watchpoint keep y                      l.audit_total</span><br><span class="line">4       acc watchpoint  keep y                      l.balances[1]</span><br><span class="line">	stop only if l.balances[1] &lt; 200</span><br></pre></td></tr></table></figure>
+
+<p><code>info watchpoints</code> 只列观察点，<code>info breakpoints</code> 会连断点一起列出。<code>disable</code>、<code>enable</code>、<code>delete</code> 用法和断点完全一样。</p>
+<p>LLDB 有独立的一套：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>LLDB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>列出</td>
+<td><code>watchpoint list</code></td>
+</tr>
+<tr>
+<td>禁用 &#x2F; 启用</td>
+<td><code>watchpoint disable 1</code> &#x2F; <code>watchpoint enable 1</code></td>
+</tr>
+<tr>
+<td>删除</td>
+<td><code>watchpoint delete 1</code></td>
+</tr>
+<tr>
+<td>加条件</td>
+<td><code>watchpoint modify -c &#39;条件&#39; 1</code></td>
+</tr>
+<tr>
+<td>忽略前 N 次</td>
+<td><code>watchpoint ignore -i N 1</code></td>
+</tr>
+</tbody></table>
+<h2 id="八、小结"><a href="#八、小结" class="headerlink" title="八、小结"></a>八、小结</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>GDB</th>
+<th>LLDB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>值被写入时停</td>
+<td><code>watch x</code></td>
+<td><code>watchpoint set variable x</code>（<code>w s v x</code>）</td>
+</tr>
+<tr>
+<td>按地址观察（跨作用域）</td>
+<td><code>watch -l expr</code></td>
+<td><code>watchpoint set expression -- &amp;expr</code></td>
+</tr>
+<tr>
+<td>值被读取时停</td>
+<td><code>rwatch x</code></td>
+<td><code>w s v -w read x</code></td>
+</tr>
+<tr>
+<td>读或写都停</td>
+<td><code>awatch x</code></td>
+<td><code>w s v -w read_write x</code></td>
+</tr>
+<tr>
+<td>条件观察点</td>
+<td><code>watch x if 条件</code></td>
+<td><code>watchpoint modify -c &#39;条件&#39;</code></td>
+</tr>
+<tr>
+<td>列出观察点</td>
+<td><code>info watchpoints</code></td>
+<td><code>watchpoint list</code></td>
+</tr>
+</tbody></table>
+<p>观察点最适合的场景：</p>
+<ul>
+<li>变量被<strong>意外修改</strong>，不知道是谁改的；</li>
+<li>怀疑<strong>数组越界、缓冲区溢出</strong>踩坏了相邻数据；</li>
+<li>追踪一个值在复杂逻辑里是<strong>什么时候、被谁</strong>改成错误值的。</li>
+</ul>
+<p>它的局限是只能盯住少数几个小变量。如果你面对的是「程序到处乱写内存、一跑就崩」，更好的工具是下一篇要讲的 AddressSanitizer。</p>
+<blockquote>
+<p>C++ 调试实战系列第 5 篇完。下一篇：<a href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/">崩溃现场分析——段错误、core dump 与 AddressSanitizer</a>。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/">http://shiguol.github.io/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E8%B0%83%E8%AF%95/">调试</a><a class="post-meta__tags" href="/tags/GDB/">GDB</a><a class="post-meta__tags" href="/tags/LLDB/">LLDB</a><a class="post-meta__tags" href="/tags/%E8%A7%82%E5%AF%9F%E7%82%B9/">观察点</a><a class="post-meta__tags" href="/tags/%E5%86%85%E5%AD%98%E8%B6%8A%E7%95%8C/">内存越界</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cppdebug/watchpoint.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</div></div><div class="info-2"><div class="info-item-1">Segmentation fault (core dumped)——大概是每个 C++ 程序员见过最多的一行报错。它只告诉你「程序崩了」，不告诉你崩在哪、为什么崩。这一篇讲三种找到答案的办法：在调试器里运行，崩溃时直接停在现场；事后用 core dump 还原现场；以及用 AddressSanitizer 在内存错误发生的那一刻就抓住它，哪怕这个错误并没有让程序崩溃。    这是「C++ 调试实战」系列的第 6 篇。本篇会大量用到第 04 篇的调用栈知识：崩溃分析的第一步永远是 bt。  一、示例：一个忘了判空的指针123456789101112131415161718192021222324252627// crash.cpp#include &lt;cstdio&gt;#include &lt;string&gt;struct Config &#123;    std::string name;    int retries;&#125;;Config* find_config(const std::string&amp; key) &#123;    if (key == ...</div></div></div></a><a class="pagination-related" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/call-stack.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的</div></div><div class="info-2"><div class="info-item-1">程序停在某个函数里，你往往还想知道：是谁调用了它？调用链上每一层当时的参数是多少？ 一个函数被十个地方调用，出错的是哪一次？回答这些问题要靠调用栈（call stack）。这一篇用一个递归求阶乘的程序，把 backtrace、切换栈帧、查看栈帧信息，以及「finish 作用于选中帧」这些细节讲清楚。    这是「C++ 调试实战」系列的第 4 篇。前面几篇的命令都是在「当前函数」里操作，这一篇开始把视野扩展到整条调用链。  一、示例程序123456789101112131415// fact.cpp#include &lt;cstdio&gt;int factorial(int n) &#123;    if (n &lt;= 1) &#123;        return 1;    &#125;    return n * factorial(n - 1);&#125;int main() &#123;    int result = factorial(5);    std::printf(&quot;5! = %d\n&quot;, result);    return ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/03/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-03-%E6%9F%A5%E7%9C%8B%E4%B8%8E%E4%BF%AE%E6%94%B9%E5%8F%98%E9%87%8F/" title="C++ 调试实战（03）：查看与修改变量——print、display、STL 容器与调用函数"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/inspect-variables.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-03</div><div class="info-item-2">C++ 调试实战（03）：查看与修改变量——print、display、STL 容器与调用函数</div></div><div class="info-2"><div class="info-item-1">程序停下来之后，最常做的事就是「看看现在变量是多少」。调试器在这方面比 printf 强太多：随时想看哪个就看哪个，结构体、容器一次全展开，可以按十六进制、二进制显示，可以算表达式，可以每走一步自动打印，甚至可以直接改掉变量的值、调用程序里的函数，看看「如果是这样会怎样」。    这是「C++ 调试实战」系列的第 3 篇。示例程序仍然是第 00 篇的 orders.cpp。前两篇讲了断点和单步，这一篇讲停下来之后怎么看数据。  本篇大部分操作都停在 line_total 的第 16 行 return total;（break orders.cpp:16，然后 run），第一次命中时处理的是 apple（3 件 × 2.5）。 一、print：打印变量和表达式1.1 基本用法1234(gdb) print o$1 = (const Order &amp;) @0xaaaaaaad3020: &#123;name = &quot;apple&quot;, quantity = 3, price = 2.5&#125;(gdb) print o.quantity * o.price$2...</div></div></div></a><a class="pagination-related" href="/2026/09/30/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-00-%E8%B0%83%E8%AF%95%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87/" title="C++ 调试实战（00）：调试前的准备——编译选项、调试器与第一次会话"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/debug-setup.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-30</div><div class="info-item-2">C++ 调试实战（00）：调试前的准备——编译选项、调试器与第一次会话</div></div><div class="info-2"><div class="info-item-1">写 C++ 的人，大多数时候靠 printf &#x2F; std::cout 调试：加一行输出、重新编译、跑一遍、再加一行……程序小的时候够用，程序一大、一涉及指针和多线程，这招就开始力不从心。调试器能做到的事情多得多：让程序停在任意一行、一行一行往下走、钻进函数里看、看函数返回了什么、随时打印甚至修改变量、在变量被改的一瞬间停下来、在程序崩溃时保留现场。 这个系列就专门讲这件事：用 GDB 和 LLDB 调试 C++ 程序。每一篇都配一段可以直接编译的小程序，所有命令和输出都在真实环境里跑过。    这是「C++ 调试实战」系列的第 0 篇。本篇不讲具体命令的细节，只做三件事：搞清楚编译时要加什么选项、把调试器装好、跑通第一次调试会话。  系列导航   篇 主题 你会学到    00 调试前的准备（本篇） -g &#x2F; -O0、GDB 与 LLDB 的安装、第一次调试会话   01 断点 按行 &#x2F; 按函数下断点、条件断点、临时断点、启用 &#x2F; 禁用 &#x2F; 删除   02 运行与单步 run &#x2F; continue &#x2F; next...</div></div></div></a><a class="pagination-related" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-06</div><div class="info-item-2">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</div></div><div class="info-2"><div class="info-item-1">Segmentation fault (core dumped)——大概是每个 C++ 程序员见过最多的一行报错。它只告诉你「程序崩了」，不告诉你崩在哪、为什么崩。这一篇讲三种找到答案的办法：在调试器里运行，崩溃时直接停在现场；事后用 core dump 还原现场；以及用 AddressSanitizer 在内存错误发生的那一刻就抓住它，哪怕这个错误并没有让程序崩溃。    这是「C++ 调试实战」系列的第 6 篇。本篇会大量用到第 04 篇的调用栈知识：崩溃分析的第一步永远是 bt。  一、示例：一个忘了判空的指针123456789101112131415161718192021222324252627// crash.cpp#include &lt;cstdio&gt;#include &lt;string&gt;struct Config &#123;    std::string name;    int retries;&#125;;Config* find_config(const std::string&amp; key) &#123;    if (key == ...</div></div></div></a><a class="pagination-related" href="/2026/10/01/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-01-%E6%96%AD%E7%82%B9/" title="C++ 调试实战（01）：断点——让程序停在你想停的地方"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/breakpoints.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-01</div><div class="info-item-2">C++ 调试实战（01）：断点——让程序停在你想停的地方</div></div><div class="info-2"><div class="info-item-1">调试的第一步永远是「让程序停下来」。断点（breakpoint）就是你插在代码里的一面小旗：程序跑到这里就暂停，把现场交给你检查。这一篇把断点的各种用法讲全：按函数、按行号、条件断点、临时断点、忽略次数，以及启用、禁用、删除，最后再介绍两种「停下来但不打扰你」的断点——命中时自动执行命令的断点和 dprintf。    这是「C++ 调试实战」系列的第 1 篇。示例程序沿用第 00 篇的 orders.cpp，Linux 版用 g++ -std=c++20 -g -O0 orders.cpp -o orders 编译，macOS 版编译为 orders.mac。  先回顾一下 orders.cpp 的关键行号：    行号 代码    11–17 double line_total(const Order&amp; o)：12 行计算小计，14 行打九折，16 行 return total;   19–25 double sum_orders(const std::vector&lt;Order&gt;&amp; orders)：22 行 sum += line_total(o)...</div></div></div></a><a class="pagination-related" href="/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/" title="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/multithreading.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-07</div><div class="info-item-2">C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争</div></div><div class="info-2"><div class="info-item-1">单线程程序出了问题，大不了一步一步走。多线程程序就麻烦了：断点在哪个线程上命中？单步时别的线程在干什么？程序卡住不动了，到底是谁在等谁？而且多线程 bug 常常「一调试就消失」——调试器改变了线程执行的节奏。这一篇讲多线程调试的基本功：查看和切换线程、给所有线程打印调用栈、attach 到一个卡死的进程定位死锁，以及用 ThreadSanitizer 抓数据竞争。    这是「C++ 调试实战」系列的第 7 篇。本篇的所有命令都建立在前几篇的基础上：线程切换之后，每个线程里的调用栈、变量，查看方式和单线程完全一样。  编译多线程程序时，GCC 需要链接线程库。较新的 glibc 已经把 pthread 并入了 libc，直接编译就行；老系统上需要加 -pthread。 一、示例一：两个线程累加同一个计数器1234567891011121314151617181920// race.cpp#include &lt;cstdio&gt;#include &lt;thread&gt;int counter = 0;  // 没有任何同步void add_many() &#123;   ...</div></div></div></a><a class="pagination-related" href="/2026/10/02/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-02-%E8%BF%90%E8%A1%8C%E4%B8%8E%E5%8D%95%E6%AD%A5/" title="C++ 调试实战（02）：运行与单步——next、step、finish 与函数返回值"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/stepping.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-02</div><div class="info-item-2">C++ 调试实战（02）：运行与单步——next、step、finish 与函数返回值</div></div><div class="info-2"><div class="info-item-1">程序停在断点之后，下一步就是「往前走」：一行一行地走（next），钻进函数里走（step），在函数里看够了就一口气跑到函数返回并看看返回值（finish），或者直接跳出一个很长的循环（until）。这几个命令组合起来，就是调试器里最常用的「方向盘」。    这是「C++ 调试实战」系列的第 2 篇。示例程序仍然是第 00 篇的 orders.cpp。上一篇讲了断点，这一篇讲停下来之后怎么走。  关键行号回顾：    行号 代码    12 &#x2F; 14 &#x2F; 16 line_total()：计算小计 &#x2F; 打九折 &#x2F; return total;   21 &#x2F; 22 &#x2F; 24 sum_orders()：for 循环 &#x2F; sum += line_total(o); &#x2F; return sum;   33 main()：double total = sum_orders(orders);   一、先把几个命令放在一起看   命令 GDB LLDB 一句话说明    启动 run &#x2F; start run st...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">179</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">415</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%80%E4%B8%AA%E3%80%8C%E8%B4%A6%E5%AF%B9%E4%B8%8D%E4%B8%8A%E3%80%8D%E7%9A%84-bug"><span class="toc-number">1.</span> <span class="toc-text">一、一个「账对不上」的 bug</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81watch%EF%BC%9A%E5%8F%98%E9%87%8F%E8%A2%AB%E5%86%99%E5%85%A5%E6%97%B6%E5%81%9C%E4%B8%8B"><span class="toc-number">2.</span> <span class="toc-text">二、watch：变量被写入时停下</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%A7%82%E5%AF%9F%E7%82%B9%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="toc-number">3.</span> <span class="toc-text">三、观察点的作用域</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9D%A1%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">4.</span> <span class="toc-text">四、条件观察点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%AF%BB%E8%A7%82%E5%AF%9F%E7%82%B9%E4%B8%8E%E8%AE%BF%E9%97%AE%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">5.</span> <span class="toc-text">五、读观察点与访问观察点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%A1%AC%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9%E4%B8%8E%E8%BD%AF%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">6.</span> <span class="toc-text">六、硬件观察点与软件观察点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%A1%AC%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 硬件观察点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E8%BD%AF%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 软件观察点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E8%A7%82%E5%AF%9F%E4%BB%80%E4%B9%88%EF%BC%8C%E6%89%8D%E8%83%BD%E7%94%A8%E4%B8%8A%E7%A1%AC%E4%BB%B6%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 观察什么，才能用上硬件观察点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%AE%A1%E7%90%86%E8%A7%82%E5%AF%9F%E7%82%B9"><span class="toc-number">7.</span> <span class="toc-text">七、管理观察点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">八、小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/ide-cheatsheet.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表"/></a><div class="content"><a class="title" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表">C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表</a><time datetime="2026-10-08T12:00:00.000Z" title="发表于 2026-10-08 20:00:00">2026-10-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/" title="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/multithreading.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争"/></a><div class="content"><a class="title" href="/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/" title="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争">C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争</a><time datetime="2026-10-07T12:00:00.000Z" title="发表于 2026-10-07 20:00:00">2026-10-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"/></a><div class="content"><a class="title" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</a><time datetime="2026-10-06T12:00:00.000Z" title="发表于 2026-10-06 20:00:00">2026-10-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/" title="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/watchpoint.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？"/></a><div class="content"><a class="title" href="/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/" title="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？">C++ 调试实战（05）：观察点——谁偷偷改了我的变量？</a><time datetime="2026-10-05T12:00:00.000Z" title="发表于 2026-10-05 20:00:00">2026-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/call-stack.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"/></a><div class="content"><a class="title" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的">C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的</a><time datetime="2026-10-04T12:00:00.000Z" title="发表于 2026-10-04 20:00:00">2026-10-04</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>

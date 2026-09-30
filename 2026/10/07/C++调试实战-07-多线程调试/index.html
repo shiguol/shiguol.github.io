@@ -1,0 +1,510 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争 | WALL-E's Blog</title><meta name="author" content="WALL-E-2000,a@a.co"><meta name="copyright" content="WALL-E-2000"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="单线程程序出了问题，大不了一步一步走。多线程程序就麻烦了：断点在哪个线程上命中？单步时别的线程在干什么？程序卡住不动了，到底是谁在等谁？而且多线程 bug 常常「一调试就消失」——调试器改变了线程执行的节奏。这一篇讲多线程调试的基本功：查看和切换线程、给所有线程打印调用栈、attach 到一个卡死的进程定位死锁，以及用 ThreadSanitizer 抓数据竞争。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争">
+<meta property="og:url" content="http://shiguol.github.io/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/index.html">
+<meta property="og:site_name" content="WALL-E&#39;s Blog">
+<meta property="og:description" content="单线程程序出了问题，大不了一步一步走。多线程程序就麻烦了：断点在哪个线程上命中？单步时别的线程在干什么？程序卡住不动了，到底是谁在等谁？而且多线程 bug 常常「一调试就消失」——调试器改变了线程执行的节奏。这一篇讲多线程调试的基本功：查看和切换线程、给所有线程打印调用栈、attach 到一个卡死的进程定位死锁，以及用 ThreadSanitizer 抓数据竞争。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://shiguol.github.io/images/cover/cppdebug/multithreading.webp">
+<meta property="article:published_time" content="2026-10-07T12:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-30T04:10:32.624Z">
+<meta property="article:author" content="WALL-E-2000">
+<meta property="article:tag" content="2026">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="GDB">
+<meta property="article:tag" content="LLDB">
+<meta property="article:tag" content="ThreadSanitizer">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="死锁">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="调试">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://shiguol.github.io/images/cover/cppdebug/multithreading.webp"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争",
+  "url": "http://shiguol.github.io/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/",
+  "image": "http://shiguol.github.io/images/cover/cppdebug/multithreading.webp",
+  "datePublished": "2026-10-07T12:00:00.000Z",
+  "dateModified": "2026-09-30T04:10:32.624Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WALL-E-2000",
+      "url": "http://shiguol.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://shiguol.github.io/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/index.html"><link rel="preconnect" href="https://registry.npmmirror.com"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="stylesheet" href="/css/index.css?v=5.5.5"><link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/fontawesome-free/7.2.0/files/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-EYQTZZVQWM"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-EYQTZZVQWM')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-EYQTZZVQWM', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://registry.npmmirror.com/@egjs/infinitegrid/4.13.0/files/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: true,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/cover/cppdebug/multithreading.webp);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">WALL-E's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-07T12:00:00.000Z" title="发表于 2026-10-07 20:00:00">2026-10-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-30T04:10:32.624Z" title="更新于 2026-09-30 12:10:32">2026-09-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CppDebug/">CppDebug</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>单线程程序出了问题，大不了一步一步走。多线程程序就麻烦了：断点在哪个线程上命中？单步时别的线程在干什么？程序卡住不动了，到底是谁在等谁？而且多线程 bug 常常「一调试就消失」——调试器改变了线程执行的节奏。这一篇讲多线程调试的基本功：查看和切换线程、给所有线程打印调用栈、attach 到一个卡死的进程定位死锁，以及用 ThreadSanitizer 抓数据竞争。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>这是「C++ 调试实战」系列的第 7 篇。本篇的所有命令都建立在前几篇的基础上：线程切换之后，每个线程里的<a href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/">调用栈</a>、<a href="/2026/10/03/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-03-%E6%9F%A5%E7%9C%8B%E4%B8%8E%E4%BF%AE%E6%94%B9%E5%8F%98%E9%87%8F/">变量</a>，查看方式和单线程完全一样。</p>
+</blockquote>
+<p>编译多线程程序时，GCC 需要链接线程库。较新的 glibc 已经把 pthread 并入了 libc，直接编译就行；老系统上需要加 <code>-pthread</code>。</p>
+<h2 id="一、示例一：两个线程累加同一个计数器"><a href="#一、示例一：两个线程累加同一个计数器" class="headerlink" title="一、示例一：两个线程累加同一个计数器"></a>一、示例一：两个线程累加同一个计数器</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// race.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> counter = <span class="number">0</span>;  <span class="comment">// 没有任何同步</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">add_many</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100000</span>; ++i) &#123;</span><br><span class="line">        ++counter;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::thread <span class="title">t1</span><span class="params">(add_many)</span></span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">t2</span><span class="params">(add_many)</span></span>;</span><br><span class="line">    t<span class="number">1.</span><span class="built_in">join</span>();</span><br><span class="line">    t<span class="number">2.</span><span class="built_in">join</span>();</span><br><span class="line">    std::<span class="built_in">printf</span>(<span class="string">&quot;counter = %d (expect 200000)\n&quot;</span>, counter);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>两个线程各加 10 万次，期望结果是 20 万。运行两次：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ g++ -std=c++20 -g -O0 race.cpp -o race.linux</span><br><span class="line">$ ./race.linux</span><br><span class="line">counter = 121549 (expect 200000)</span><br><span class="line">$ ./race.linux</span><br><span class="line">counter = 121236 (expect 200000)</span><br></pre></td></tr></table></figure>
+
+<p>（和前几篇一样，Linux 版可执行文件带 <code>.linux</code> 后缀，macOS 版带 <code>.mac</code> 后缀，下面输出里的线程名就是程序名。）</p>
+<p>每次结果都不一样，而且都远小于 20 万。先别急着修，用它来熟悉多线程调试命令。</p>
+<h2 id="二、查看与切换线程"><a href="#二、查看与切换线程" class="headerlink" title="二、查看与切换线程"></a>二、查看与切换线程</h2><h3 id="2-1-断点在哪个线程命中"><a href="#2-1-断点在哪个线程命中" class="headerlink" title="2.1 断点在哪个线程命中"></a>2.1 断点在哪个线程命中</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break add_many</span><br><span class="line">Breakpoint 1 at 0xdac: file race.cpp, line 7.</span><br><span class="line">(gdb) run</span><br><span class="line">[New Thread 0xfffff7a3f180 (LWP 17)]</span><br><span class="line">[Switching to Thread 0xfffff7a3f180 (LWP 17)]</span><br><span class="line"></span><br><span class="line">Thread 2 &quot;race.linux&quot; hit Breakpoint 1, add_many () at race.cpp:7</span><br><span class="line">7	    for (int i = 0; i &lt; 100000; ++i) &#123;</span><br></pre></td></tr></table></figure>
+
+<p>和单线程程序相比，多了几条信息：</p>
+<ul>
+<li><code>[New Thread ... (LWP 17)]</code>：新线程创建了。LWP（Light Weight Process）是 Linux 内核里的线程 ID；</li>
+<li><code>[Switching to Thread ...]</code>：断点命中的线程和之前选中的不同，GDB 自动切换过去；</li>
+<li><code>Thread 2 &quot;race.linux&quot; hit Breakpoint 1</code>：命中断点的是 <strong>2 号线程</strong>（GDB 内部编号），线程名是 <code>race.linux</code>（默认就是程序名）。</li>
+</ul>
+<h3 id="2-2-info-threads：列出所有线程"><a href="#2-2-info-threads：列出所有线程" class="headerlink" title="2.2 info threads：列出所有线程"></a>2.2 <code>info threads</code>：列出所有线程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info threads</span><br><span class="line">  Id   Target Id                                   Frame </span><br><span class="line">  1    Thread 0xfffff7fecc00 (LWP 15) &quot;race.linux&quot; __GI___clone3 () at ../sysdeps/unix/sysv/linux/aarch64/clone3.S:60</span><br><span class="line">* 2    Thread 0xfffff7a3f180 (LWP 17) &quot;race.linux&quot; add_many () at race.cpp:7</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>*</code></td>
+<td>当前选中的线程</td>
+</tr>
+<tr>
+<td><code>Id</code></td>
+<td>GDB 的线程编号，切换线程时用它</td>
+</tr>
+<tr>
+<td><code>Target Id</code></td>
+<td>系统层面的线程标识：<code>pthread_t</code> 的值、LWP 号、线程名</td>
+</tr>
+<tr>
+<td><code>Frame</code></td>
+<td>这个线程当前停在哪个函数</td>
+</tr>
+</tbody></table>
+<p>1 号线程是主线程，此时正在 <code>clone3</code> 里——它正在创建第二个工作线程。</p>
+<p><strong>要点：GDB 默认是「全停」模式（all-stop），任何一个线程停下来，所有线程都会停下来。</strong> 所以你看到的是整个进程在同一时刻的快照。</p>
+<p>继续运行，第二个线程也命中了断点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line">[New Thread 0xfffff722f180 (LWP 18)]</span><br><span class="line">[Switching to Thread 0xfffff722f180 (LWP 18)]</span><br><span class="line"></span><br><span class="line">Thread 3 &quot;race.linux&quot; hit Breakpoint 1, add_many () at race.cpp:7</span><br><span class="line">7	    for (int i = 0; i &lt; 100000; ++i) &#123;</span><br><span class="line">(gdb) info threads</span><br><span class="line">  Id   Target Id                                   Frame </span><br><span class="line">  1    Thread 0xfffff7fecc00 (LWP 15) &quot;race.linux&quot; __syscall_cancel_arch () at ../sysdeps/unix/sysv/linux/aarch64/syscall_cancel.S:50</span><br><span class="line">  2    Thread 0xfffff7a3f180 (LWP 17) &quot;race.linux&quot; add_many () at race.cpp:7</span><br><span class="line">* 3    Thread 0xfffff722f180 (LWP 18) &quot;race.linux&quot; add_many () at race.cpp:7</span><br></pre></td></tr></table></figure>
+
+<p>现在有 3 个线程：主线程已经进入 <code>t1.join()</code> 在等待（停在 <code>__syscall_cancel_arch</code>，这是等待类系统调用的入口），两个工作线程都在 <code>add_many</code> 的第 7 行。</p>
+<h3 id="2-3-thread-N：切换线程"><a href="#2-3-thread-N：切换线程" class="headerlink" title="2.3 thread N：切换线程"></a>2.3 <code>thread N</code>：切换线程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) thread 2</span><br><span class="line">[Switching to thread 2 (Thread 0xffff8421f180 (LWP 10))]</span><br><span class="line">#0  futex_wait (futex_word=0xaaaae4850020 &lt;mtx_a&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br></pre></td></tr></table></figure>
+
+<p>（这段输出来自下面的死锁示例。）切换之后，<code>bt</code>、<code>frame</code>、<code>print</code>、<code>info locals</code> 都是针对这个线程的。</p>
+<p>LLDB 的对应命令：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>GDB</th>
+<th>LLDB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>列出线程</td>
+<td><code>info threads</code></td>
+<td><code>thread list</code></td>
+</tr>
+<tr>
+<td>切换线程</td>
+<td><code>thread 2</code></td>
+<td><code>thread select 2</code></td>
+</tr>
+<tr>
+<td>所有线程的调用栈</td>
+<td><code>thread apply all bt</code></td>
+<td><code>bt all</code>（<code>thread backtrace all</code>）</td>
+</tr>
+<tr>
+<td>在指定线程执行命令</td>
+<td><code>thread apply 2 3 print i</code></td>
+<td>——</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-只在某个线程上停"><a href="#2-4-只在某个线程上停" class="headerlink" title="2.4 只在某个线程上停"></a>2.4 只在某个线程上停</h3><p>断点可以限定线程，只有指定线程执行到这里时才停：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break race.cpp:8 thread 2</span><br></pre></td></tr></table></figure>
+
+<p>LLDB 用 <code>breakpoint set -f race.cpp -l 8 -t &lt;线程ID&gt;</code>，或者用 <code>-T &lt;线程名&gt;</code> 按线程名过滤。给线程起名（Linux 上用 <code>pthread_setname_np</code>）能让多线程调试轻松很多，<code>info threads</code> 里一眼就能看出哪个线程是干什么的。</p>
+<h3 id="2-5-单步时别让其他线程乱跑"><a href="#2-5-单步时别让其他线程乱跑" class="headerlink" title="2.5 单步时别让其他线程乱跑"></a>2.5 单步时别让其他线程乱跑</h3><p>在一个线程里 <code>next</code>，默认情况下<strong>其他线程也会跟着运行</strong>。如果你正在单步观察共享变量，它可能在你两次单步之间被别的线程改掉。GDB 可以锁住调度器：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) set scheduler-locking step</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>取值</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>off</code></td>
+<td>所有线程都自由运行</td>
+</tr>
+<tr>
+<td><code>step</code></td>
+<td>单步（<code>next</code> &#x2F; <code>step</code>）时只运行当前线程；<code>continue</code> 时所有线程都运行</td>
+</tr>
+<tr>
+<td><code>on</code></td>
+<td>任何时候都只运行当前线程</td>
+</tr>
+</tbody></table>
+<p>注意 <code>on</code> 模式下如果当前线程在等一个锁、而持有锁的线程被锁住不能运行，程序就「卡死」了——这是你自己造成的，不是程序的 bug。</p>
+<p>LLDB 的单步命令有 <code>--run-mode</code> 选项：<code>thread step-over --run-mode this-thread</code>。</p>
+<h2 id="三、示例二：程序卡住了——定位死锁"><a href="#三、示例二：程序卡住了——定位死锁" class="headerlink" title="三、示例二：程序卡住了——定位死锁"></a>三、示例二：程序卡住了——定位死锁</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// threads.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span></span></span><br><span class="line"></span><br><span class="line">std::mutex mtx_a;</span><br><span class="line">std::mutex mtx_b;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">worker1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">la</span><span class="params">(mtx_a)</span></span>;</span><br><span class="line">    std::this_thread::<span class="built_in">sleep_for</span>(std::chrono::<span class="built_in">milliseconds</span>(<span class="number">100</span>));</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lb</span><span class="params">(mtx_b)</span></span>;  <span class="comment">// 等 mtx_b</span></span><br><span class="line">    std::<span class="built_in">puts</span>(<span class="string">&quot;worker1 done&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">worker2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lb</span><span class="params">(mtx_b)</span></span>;</span><br><span class="line">    std::this_thread::<span class="built_in">sleep_for</span>(std::chrono::<span class="built_in">milliseconds</span>(<span class="number">100</span>));</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">la</span><span class="params">(mtx_a)</span></span>;  <span class="comment">// 等 mtx_a —— 与 worker1 顺序相反</span></span><br><span class="line">    std::<span class="built_in">puts</span>(<span class="string">&quot;worker2 done&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::thread <span class="title">t1</span><span class="params">(worker1)</span></span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">t2</span><span class="params">(worker2)</span></span>;</span><br><span class="line">    t<span class="number">1.</span><span class="built_in">join</span>();</span><br><span class="line">    t<span class="number">2.</span><span class="built_in">join</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>行号</th>
+<th>代码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10 &#x2F; 12</td>
+<td><code>worker1</code>：先锁 <code>mtx_a</code>，再锁 <code>mtx_b</code></td>
+</tr>
+<tr>
+<td>17 &#x2F; 19</td>
+<td><code>worker2</code>：先锁 <code>mtx_b</code>，再锁 <code>mtx_a</code></td>
+</tr>
+<tr>
+<td>26</td>
+<td><code>t1.join();</code></td>
+</tr>
+</tbody></table>
+<p>运行之后，程序什么也不输出，也不退出，就这么卡着。这是经典的<strong>死锁</strong>：<code>worker1</code> 拿着 <code>mtx_a</code> 等 <code>mtx_b</code>，<code>worker2</code> 拿着 <code>mtx_b</code> 等 <code>mtx_a</code>，谁也等不到。（<code>sleep_for</code> 是为了让两个线程几乎必然各自拿到第一把锁，稳定复现死锁。）</p>
+<h3 id="3-1-两种进入调试器的方式"><a href="#3-1-两种进入调试器的方式" class="headerlink" title="3.1 两种进入调试器的方式"></a>3.1 两种进入调试器的方式</h3><p><strong>方式 1：在调试器里运行，卡住后按 <code>Ctrl+C</code>。</strong> GDB 和 LLDB 都会中断程序，停在当前位置，然后就可以查看了。</p>
+<p><strong>方式 2：attach 到已经在运行的进程。</strong> 这是实际工作中更常见的情况：服务已经跑了很久，突然不响应了。你不能重启它（重启就丢失现场了），而是把调试器「挂」上去：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./threads.linux &amp;       <span class="comment"># 模拟一个已经卡住的进程</span></span><br><span class="line">$ pgrep -f threads.linux  <span class="comment"># 找到它的 PID（本文实测为 7）</span></span><br><span class="line">$ gdb -p 7                <span class="comment"># attach 上去</span></span><br></pre></td></tr></table></figure>
+
+<p>LLDB 是 <code>lldb -p &lt;PID&gt;</code>，或者按进程名 <code>lldb -n threads.mac</code>。</p>
+<p>attach 需要权限，两个常见问题：</p>
+<ul>
+<li><strong>Linux 上报 <code>ptrace: Operation not permitted</code></strong>：很多发行版开启了 Yama 安全模块，<code>/proc/sys/kernel/yama/ptrace_scope</code> 为 1 时，只允许调试自己启动的子进程。临时解决办法是用 <code>sudo gdb -p &lt;PID&gt;</code>；Docker 里则需要 <code>--cap-add=SYS_PTRACE</code>（第 00 篇）；</li>
+<li><strong>macOS 上</strong>：attach 到别的进程需要开发者权限，首次使用时系统会弹窗要求授权，或者需要 <code>sudo</code>。系统自带的程序受系统完整性保护（SIP），不能 attach。</li>
+</ul>
+<p>attach 成功后，进程会被暂停；调试结束时用 <code>detach</code> 让进程继续运行，或者直接 <code>quit</code>（GDB 会询问是否 detach）。</p>
+<h3 id="3-2-看所有线程在干什么"><a href="#3-2-看所有线程在干什么" class="headerlink" title="3.2 看所有线程在干什么"></a>3.2 看所有线程在干什么</h3><p>attach 之后，第一个命令就是 <code>info threads</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info threads</span><br><span class="line">  Id   Target Id                                      Frame </span><br><span class="line">* 1    Thread 0xffffb280fc00 (LWP 7) &quot;threads.linux&quot;  __syscall_cancel_arch () at ../sysdeps/unix/sysv/linux/aarch64/syscall_cancel.S:50</span><br><span class="line">  2    Thread 0xffffb1a4f180 (LWP 10) &quot;threads.linux&quot; futex_wait (futex_word=0xaaaabb230020 &lt;mtx_a&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br><span class="line">  3    Thread 0xffffb225f180 (LWP 9) &quot;threads.linux&quot;  futex_wait (futex_word=0xaaaabb230050 &lt;mtx_b&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br></pre></td></tr></table></figure>
+
+<p>GDB 很贴心地把地址翻译成了符号：线程 2 在等 <code>&lt;mtx_a&gt;</code>，线程 3 在等 <code>&lt;mtx_b&gt;</code>。<code>futex_wait</code> 是 Linux 上线程阻塞等待锁的底层系统调用。</p>
+<p>再用 <code>thread apply all bt</code> 看每个线程完整的调用栈（省略了标准库内部的部分帧）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">(gdb) thread apply all bt</span><br><span class="line"></span><br><span class="line">Thread 3 (Thread 0xffffb225f180 (LWP 9) &quot;threads.linux&quot;):</span><br><span class="line">#0  futex_wait (futex_word=0xaaaabb230050 &lt;mtx_b&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br><span class="line">#1  __GI___lll_lock_wait (futex=futex@entry=0xaaaabb230050 &lt;mtx_b&gt;, private=private@entry=0) at ./nptl/lowlevellock.c:49</span><br><span class="line">...</span><br><span class="line">#5  std::mutex::lock (this=0xaaaabb230050 &lt;mtx_b&gt;) at /usr/include/c++/15/bits/std_mutex.h:115</span><br><span class="line">#6  0x0000aaaabb212758 in std::lock_guard&lt;std::mutex&gt;::lock_guard (this=0xffffb225e7b0, __m=...) at /usr/include/c++/15/bits/std_mutex.h:252</span><br><span class="line">#7  0x0000aaaabb210fd0 in worker1 () at threads.cpp:12</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">Thread 2 (Thread 0xffffb1a4f180 (LWP 10) &quot;threads.linux&quot;):</span><br><span class="line">#0  futex_wait (futex_word=0xaaaabb230020 &lt;mtx_a&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br><span class="line">#1  __GI___lll_lock_wait (futex=futex@entry=0xaaaabb230020 &lt;mtx_a&gt;, private=private@entry=0) at ./nptl/lowlevellock.c:49</span><br><span class="line">...</span><br><span class="line">#5  std::mutex::lock (this=0xaaaabb230020 &lt;mtx_a&gt;) at /usr/include/c++/15/bits/std_mutex.h:115</span><br><span class="line">#6  0x0000aaaabb212758 in std::lock_guard&lt;std::mutex&gt;::lock_guard (this=0xffffb1a4e7b0, __m=...) at /usr/include/c++/15/bits/std_mutex.h:252</span><br><span class="line">#7  0x0000aaaabb2110d0 in worker2 () at threads.cpp:19</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">Thread 1 (Thread 0xffffb280fc00 (LWP 7) &quot;threads.linux&quot;):</span><br><span class="line">#0  __syscall_cancel_arch () at ../sysdeps/unix/sysv/linux/aarch64/syscall_cancel.S:50</span><br><span class="line">...</span><br><span class="line">#5  0x0000ffffb23bddb8 [PAC] in __pthread_clockjoin_ex (threadid=281473670574464, thread_return=0x0, clockid=0, abstime=0x0, cancel=&lt;optimized out&gt;) at ./nptl/pthread_join_common.c:67</span><br><span class="line">#6  0x0000ffffb2627944 [PAC] in std::thread::join() () from /usr/lib/aarch64-linux-gnu/libstdc++.so.6</span><br><span class="line">#7  0x0000aaaabb2111bc [PAC] in main () at threads.cpp:26</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>输出里的 <code>[PAC]</code> 是 ARM64 的指针认证（Pointer Authentication）标记，表示这个返回地址是被签名过的，在 x86_64 上不会出现。</p>
+</blockquote>
+<p>用第 04 篇的读栈方法——找第一个属于自己代码的帧：</p>
+<table>
+<thead>
+<tr>
+<th>线程</th>
+<th>自己代码的帧</th>
+<th>在做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3（LWP 9）</td>
+<td><code>#7 worker1 () at threads.cpp:12</code></td>
+<td>在第 12 行等 <code>mtx_b</code></td>
+</tr>
+<tr>
+<td>2（LWP 10）</td>
+<td><code>#7 worker2 () at threads.cpp:19</code></td>
+<td>在第 19 行等 <code>mtx_a</code></td>
+</tr>
+<tr>
+<td>1（LWP 7）</td>
+<td><code>#7 main () at threads.cpp:26</code></td>
+<td>在 <code>t1.join()</code> 等线程 1 结束</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-找到锁的持有者"><a href="#3-3-找到锁的持有者" class="headerlink" title="3.3 找到锁的持有者"></a>3.3 找到锁的持有者</h3><p>知道了谁在<strong>等</strong>哪把锁，还要知道每把锁<strong>被谁拿着</strong>。在 Linux 上，<code>std::mutex</code> 底层是 <code>pthread_mutex_t</code>，它的内部结构里记录了持有者的 LWP：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(gdb) thread 2</span><br><span class="line">[Switching to thread 2 (Thread 0xffff8421f180 (LWP 10))]</span><br><span class="line">#0  futex_wait (futex_word=0xaaaae4850020 &lt;mtx_a&gt;, expected=2, private=0) at ../sysdeps/nptl/futex-internal.h:126</span><br><span class="line">(gdb) frame 7</span><br><span class="line">#7  0x0000aaaae48310d0 in worker2 () at threads.cpp:19</span><br><span class="line">19	    std::lock_guard&lt;std::mutex&gt; la(mtx_a);  // 等 mtx_a —— 与 worker1 顺序相反</span><br><span class="line">(gdb) print mtx_a._M_mutex.__data.__owner</span><br><span class="line">$1 = 9</span><br><span class="line">(gdb) print mtx_b._M_mutex.__data.__owner</span><br><span class="line">$2 = 10</span><br></pre></td></tr></table></figure>
+
+<p>（这次 attach 的是重新运行的进程，所以地址和上面不同，LWP 编号恰好一致。）</p>
+<p>把线索串起来：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">线程 3（LWP 9，worker1）  ──持有──▶  mtx_a  ◀──等待──  线程 2（LWP 10，worker2）</span><br><span class="line">线程 3（LWP 9，worker1）  ──等待──▶  mtx_b  ◀──持有──  线程 2（LWP 10，worker2）</span><br></pre></td></tr></table></figure>
+
+<p>一个完美的环：<strong>循环等待</strong>。这就是死锁的铁证。</p>
+<blockquote>
+<p><code>_M_mutex.__data.__owner</code> 是 libstdc++ 和 glibc 的内部实现细节，不同平台不一样（macOS 的 libc++ 就没有这个字段）。但思路是通用的：先看每个线程<strong>在等什么</strong>（调用栈），再想办法确认<strong>谁持有什么</strong>。实在找不到持有者字段，就在每个线程里看它的调用栈上有哪些 <code>lock_guard</code> 已经构造完成。</p>
+</blockquote>
+<h3 id="3-4-LLDB-版"><a href="#3-4-LLDB-版" class="headerlink" title="3.4 LLDB 版"></a>3.4 LLDB 版</h3><p>在 macOS 上 attach：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">(lldb) process attach --pid 7106</span><br><span class="line">Process 7106 stopped</span><br><span class="line">* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = signal SIGSTOP</span><br><span class="line">...</span><br><span class="line">(lldb) thread list</span><br><span class="line">Process 7106 stopped</span><br><span class="line">* thread #1: tid = 0x72b0c, 0x0000000188831af8 libsystem_kernel.dylib`__ulock_wait + 8, queue = &#x27;com.apple.main-thread&#x27;, stop reason = signal SIGSTOP</span><br><span class="line">  thread #2: tid = 0x72b2d, 0x00000001888329dc libsystem_kernel.dylib`__psynch_mutexwait + 8</span><br><span class="line">  thread #3: tid = 0x72b2e, 0x00000001888329dc libsystem_kernel.dylib`__psynch_mutexwait + 8</span><br><span class="line">(lldb) bt all</span><br><span class="line">* thread #1, queue = &#x27;com.apple.main-thread&#x27;, stop reason = signal SIGSTOP</span><br><span class="line">   * frame #0: 0x0000000188831af8 libsystem_kernel.dylib`__ulock_wait + 8</span><br><span class="line">     frame #1: 0x0000000188876114 libsystem_pthread.dylib`_pthread_join + 616</span><br><span class="line">     frame #2: 0x00000001887aae24 libc++.1.dylib`std::__1::thread::join() + 36</span><br><span class="line">     frame #3: 0x000000010058896c threads.mac`main at threads.cpp:26:8</span><br><span class="line">     frame #4: 0x00000001884a84e4 dyld`start + 6992</span><br><span class="line">  thread #2</span><br><span class="line">       frame #0: 0x00000001888329dc libsystem_kernel.dylib`__psynch_mutexwait + 8</span><br><span class="line">       ...</span><br><span class="line">       frame #4: 0x0000000100588a60 threads.mac`std::__1::lock_guard&lt;std::__1::mutex&gt;::lock_guard[abi:nqe220106](this=0x000000016f8fef10, __m=0x0000000100590040) at lock_guard.h:32:10</span><br><span class="line">       ...</span><br><span class="line">    ﹍ frame #6: 0x0000000100588670 threads.mac`worker1() at threads.cpp:12:33</span><br><span class="line">  thread #3</span><br><span class="line">       frame #0: 0x00000001888329dc libsystem_kernel.dylib`__psynch_mutexwait + 8</span><br><span class="line">       ...</span><br><span class="line">       frame #4: 0x0000000100588a60 threads.mac`std::__1::lock_guard&lt;std::__1::mutex&gt;::lock_guard[abi:nqe220106](this=0x000000016f98af10, __m=0x0000000100590000) at lock_guard.h:31:19</span><br><span class="line">       ...</span><br><span class="line">    ﹍ frame #6: 0x00000001005888c4 threads.mac`worker2() at threads.cpp:19:33</span><br></pre></td></tr></table></figure>
+
+<p>macOS 上等待互斥锁的系统调用叫 <code>__psynch_mutexwait</code>。线程 2 在 <code>worker1</code> 第 12 行等地址 <code>0x...590040</code> 的锁，线程 3 在 <code>worker2</code> 第 19 行等 <code>0x...590000</code> 的锁（两个全局 <code>mutex</code> 相邻存放，前者是 <code>mtx_b</code>，后者是 <code>mtx_a</code>，可以用 <code>p &amp;mtx_a</code> 确认）。结论和 Linux 上完全一致。</p>
+<p><code>﹍</code> 和 <code>﹉</code> 符号表示 LLDB 把中间几个标准库的帧折叠了（第 7、8 帧）。切到自己代码的帧看源码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(lldb) thread select 2</span><br><span class="line">(lldb) frame select 6</span><br><span class="line">frame #6: 0x0000000100588670 threads.mac`worker1() at threads.cpp:12:33</span><br><span class="line">   9   	void worker1() &#123;</span><br><span class="line">   10  	    std::lock_guard&lt;std::mutex&gt; la(mtx_a);</span><br><span class="line">   11  	    std::this_thread::sleep_for(std::chrono::milliseconds(100));</span><br><span class="line">-&gt; 12  	    std::lock_guard&lt;std::mutex&gt; lb(mtx_b);  // 等 mtx_b</span><br><span class="line">    	                                ^</span><br><span class="line">   13  	    std::puts(&quot;worker1 done&quot;);</span><br><span class="line">   14  	&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-修复"><a href="#3-5-修复" class="headerlink" title="3.5 修复"></a>3.5 修复</h3><p>死锁的根源是两个线程<strong>加锁顺序相反</strong>。修复方法：</p>
+<ul>
+<li>所有线程按<strong>统一的顺序</strong>加锁（都先 <code>mtx_a</code> 再 <code>mtx_b</code>）；</li>
+<li>或者用 C++17 的 <code>std::scoped_lock</code>，一次性锁住多把锁，它内部用死锁避免算法：</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">worker1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::scoped_lock <span class="title">lock</span><span class="params">(mtx_a, mtx_b)</span></span>;  <span class="comment">// 同时锁两把，不会死锁</span></span><br><span class="line">    std::<span class="built_in">puts</span>(<span class="string">&quot;worker1 done&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、数据竞争：ThreadSanitizer"><a href="#四、数据竞争：ThreadSanitizer" class="headerlink" title="四、数据竞争：ThreadSanitizer"></a>四、数据竞争：ThreadSanitizer</h2><p>回到第一个例子 <code>race.cpp</code>。计数器结果不对的原因是 <code>++counter</code> 不是原子操作，它实际上是「读、加一、写回」三步，两个线程交错执行时会丢失更新。</p>
+<p>这类 bug 用调试器很难抓：你在 <code>++counter</code> 上下断点，线程就被暂停了，时序完全被改变；而且它不崩溃、不卡死，只是结果「偶尔不对」。专门的工具是 <strong>ThreadSanitizer（TSan）</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ -std=c++20 -g -O0 -fsanitize=thread race.cpp -o race.tsan</span><br><span class="line">./race.tsan</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">==================</span><br><span class="line">WARNING: ThreadSanitizer: data race (pid=12)</span><br><span class="line">  Read of size 4 at 0xaaaae1b7001c by thread T2:</span><br><span class="line">    #0 add_many() /work/race.cpp:8 (race.tsan+0x1098)</span><br><span class="line">    ...</span><br><span class="line">  Previous write of size 4 at 0xaaaae1b7001c by thread T1:</span><br><span class="line">    #0 add_many() /work/race.cpp:8 (race.tsan+0x10b4)</span><br><span class="line">    ...</span><br><span class="line">  Location is global &#x27;counter&#x27; of size 4 at 0xaaaae1b7001c (race.tsan+0x2001c)</span><br><span class="line">  ...</span><br><span class="line">SUMMARY: ThreadSanitizer: data race /work/race.cpp:8 in add_many()</span><br><span class="line">==================</span><br><span class="line">...</span><br><span class="line">counter = 200000 (expect 200000)</span><br></pre></td></tr></table></figure>
+
+<p>（为了篇幅省略了 BuildId 和标准库的栈帧。）报告的结构和 ASan 很像：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Read of size 4 ... by thread T2</code></td>
+<td>线程 T2 在 <code>race.cpp:8</code> <strong>读</strong>了这块内存</td>
+</tr>
+<tr>
+<td><code>Previous write ... by thread T1</code></td>
+<td>此前线程 T1 在 <code>race.cpp:8</code> <strong>写</strong>过同一块内存，两次访问之间没有任何同步</td>
+</tr>
+<tr>
+<td><code>Location is global &#39;counter&#39;</code></td>
+<td>出问题的变量是全局变量 <code>counter</code></td>
+</tr>
+</tbody></table>
+<p>这正是 <code>++counter</code> 那一行。有意思的是，这次运行打印出了正确的 200000——TSan 的插桩改变了程序的执行节奏，竞争碰巧没有造成丢失更新。<strong>但 TSan 照样报告了问题</strong>：它检测的是「两个线程访问同一内存且没有同步」这个事实本身，不依赖于这次运行是否真的算错了。这正是它比「多跑几次看结果」可靠的地方。</p>
+<p>修复：把 <code>counter</code> 改成 <code>std::atomic&lt;int&gt;</code>，或者用 <code>std::mutex</code> 保护。</p>
+<p>TSan 的注意事项：</p>
+<ul>
+<li>不能和 ASan 同时使用；</li>
+<li>运行开销比 ASan 大，程序可能慢 5～15 倍，内存占用也更多；</li>
+<li>同样只能发现<strong>实际执行到</strong>的竞争，所以测试要覆盖到并发路径。</li>
+</ul>
+<h2 id="五、多线程调试的几条经验"><a href="#五、多线程调试的几条经验" class="headerlink" title="五、多线程调试的几条经验"></a>五、多线程调试的几条经验</h2><table>
+<thead>
+<tr>
+<th>经验</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>程序卡住，先抓全体线程的栈</strong></td>
+<td><code>thread apply all bt</code>（LLDB：<code>bt all</code>）是定位死锁、卡死的第一步；可以把输出保存下来慢慢分析</td>
+</tr>
+<tr>
+<td><strong>不要急着重启</strong></td>
+<td>卡死的进程就是最好的现场，先 attach，看完再说</td>
+</tr>
+<tr>
+<td><strong>给线程起名字</strong></td>
+<td><code>info threads</code> 里一眼能认出每个线程是干什么的</td>
+</tr>
+<tr>
+<td><strong>调试器会改变时序</strong></td>
+<td>断点、单步都会让线程停下来，竞争类 bug 可能因此消失。这类问题优先用 TSan</td>
+</tr>
+<tr>
+<td><strong>单步时锁住调度器</strong></td>
+<td>想专注观察一个线程时，<code>set scheduler-locking step</code></td>
+</tr>
+<tr>
+<td><strong>崩溃在别的线程</strong></td>
+<td>多线程程序崩溃时，GDB &#x2F; LLDB 会自动切到出问题的线程，直接 <code>bt</code> 即可；core dump 里也包含所有线程</td>
+</tr>
+</tbody></table>
+<p>一个实用的小脚本：不用进入交互界面，直接抓取某个进程所有线程的调用栈并保存下来：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb -p &lt;PID&gt; -batch -ex <span class="string">&quot;thread apply all bt&quot;</span> &gt; stacks.txt</span><br></pre></td></tr></table></figure>
+
+<p><code>-batch</code> 表示执行完命令就退出（并 detach，进程继续运行）。线上服务偶发卡顿时，隔几秒抓一次，对比几份栈，就能看出线程长时间卡在哪里。</p>
+<h2 id="六、小结"><a href="#六、小结" class="headerlink" title="六、小结"></a>六、小结</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>GDB</th>
+<th>LLDB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>列出线程</td>
+<td><code>info threads</code></td>
+<td><code>thread list</code></td>
+</tr>
+<tr>
+<td>切换线程</td>
+<td><code>thread N</code></td>
+<td><code>thread select N</code></td>
+</tr>
+<tr>
+<td>所有线程的调用栈</td>
+<td><code>thread apply all bt</code></td>
+<td><code>bt all</code></td>
+</tr>
+<tr>
+<td>指定线程的断点</td>
+<td><code>break 位置 thread N</code></td>
+<td><code>br set ... -t 线程ID</code></td>
+</tr>
+<tr>
+<td>单步时只跑当前线程</td>
+<td><code>set scheduler-locking step</code></td>
+<td><code>thread step-over --run-mode this-thread</code></td>
+</tr>
+<tr>
+<td>attach 到进程</td>
+<td><code>gdb -p PID</code></td>
+<td><code>lldb -p PID</code> &#x2F; <code>lldb -n 进程名</code></td>
+</tr>
+<tr>
+<td>脱离进程</td>
+<td><code>detach</code></td>
+<td><code>detach</code></td>
+</tr>
+<tr>
+<td>检测数据竞争</td>
+<td><code>-fsanitize=thread</code></td>
+<td><code>-fsanitize=thread</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>C++ 调试实战系列第 7 篇完。下一篇：<a href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/">IDE 图形化调试与速查表——VS Code 调试配置，以及 GDB &#x2F; LLDB 命令对照总表</a>。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://shiguol.github.io">WALL-E-2000</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://shiguol.github.io/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/">http://shiguol.github.io/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="http://shiguol.github.io" target="_blank">WALL-E's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/2026/">2026</a><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/%E8%B0%83%E8%AF%95/">调试</a><a class="post-meta__tags" href="/tags/GDB/">GDB</a><a class="post-meta__tags" href="/tags/LLDB/">LLDB</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/">多线程</a><a class="post-meta__tags" href="/tags/%E6%AD%BB%E9%94%81/">死锁</a><a class="post-meta__tags" href="/tags/ThreadSanitizer/">ThreadSanitizer</a></div><div class="post-share"><div class="social-share" data-image="/images/cover/cppdebug/multithreading.webp" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/ide-cheatsheet.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表</div></div><div class="info-2"><div class="info-item-1">前面七篇全是命令行。命令行是调试的「内功」：服务器上、容器里、SSH 远程，只有命令行可用；很多高级功能（dprintf、watch -l、thread apply all bt）也只有命令行里才用得顺手。但日常写代码时，在编辑器里点一下行号就下断点、鼠标悬停就看变量值，确实更舒服。这一篇介绍 VS Code 里的图形化调试配置，以及它和命令行的对应关系，最后把整个系列的命令整理成一张速查表。    这是「C++ 调试实战」系列的第 8 篇，也是最后一篇。IDE 的调试界面本质上只是 GDB &#x2F; LLDB 的一层「外壳」，理解了前面的命令，图形界面上的每个按钮都知道它在做什么。  一、IDE 调试的本质VS Code、CLion、Xcode、Qt Creator 这些 IDE 自己都不会调试程序，它们是在后台启动 GDB 或 LLDB，把你在界面上的操作翻译成调试器命令：    你在界面上做的 背后执行的命令（大致相当于）    点击行号左侧下断点 break orders.cpp:22   右键断点 → 编辑条件 condition 1 o.quantity &gt;...</div></div></div></a><a class="pagination-related" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</div></div><div class="info-2"><div class="info-item-1">Segmentation fault (core dumped)——大概是每个 C++ 程序员见过最多的一行报错。它只告诉你「程序崩了」，不告诉你崩在哪、为什么崩。这一篇讲三种找到答案的办法：在调试器里运行，崩溃时直接停在现场；事后用 core dump 还原现场；以及用 AddressSanitizer 在内存错误发生的那一刻就抓住它，哪怕这个错误并没有让程序崩溃。    这是「C++ 调试实战」系列的第 6 篇。本篇会大量用到第 04 篇的调用栈知识：崩溃分析的第一步永远是 bt。  一、示例：一个忘了判空的指针123456789101112131415161718192021222324252627// crash.cpp#include &lt;cstdio&gt;#include &lt;string&gt;struct Config &#123;    std::string name;    int retries;&#125;;Config* find_config(const std::string&amp; key) &#123;    if (key == ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/01/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-01-%E6%96%AD%E7%82%B9/" title="C++ 调试实战（01）：断点——让程序停在你想停的地方"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/breakpoints.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-01</div><div class="info-item-2">C++ 调试实战（01）：断点——让程序停在你想停的地方</div></div><div class="info-2"><div class="info-item-1">调试的第一步永远是「让程序停下来」。断点（breakpoint）就是你插在代码里的一面小旗：程序跑到这里就暂停，把现场交给你检查。这一篇把断点的各种用法讲全：按函数、按行号、条件断点、临时断点、忽略次数，以及启用、禁用、删除，最后再介绍两种「停下来但不打扰你」的断点——命中时自动执行命令的断点和 dprintf。    这是「C++ 调试实战」系列的第 1 篇。示例程序沿用第 00 篇的 orders.cpp，Linux 版用 g++ -std=c++20 -g -O0 orders.cpp -o orders 编译，macOS 版编译为 orders.mac。  先回顾一下 orders.cpp 的关键行号：    行号 代码    11–17 double line_total(const Order&amp; o)：12 行计算小计，14 行打九折，16 行 return total;   19–25 double sum_orders(const std::vector&lt;Order&gt;&amp; orders)：22 行 sum += line_total(o)...</div></div></div></a><a class="pagination-related" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB &#x2F; LLDB 速查表"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/ide-cheatsheet.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">C++ 调试实战（08）：IDE 图形化调试与 GDB &#x2F; LLDB 速查表</div></div><div class="info-2"><div class="info-item-1">前面七篇全是命令行。命令行是调试的「内功」：服务器上、容器里、SSH 远程，只有命令行可用；很多高级功能（dprintf、watch -l、thread apply all bt）也只有命令行里才用得顺手。但日常写代码时，在编辑器里点一下行号就下断点、鼠标悬停就看变量值，确实更舒服。这一篇介绍 VS Code 里的图形化调试配置，以及它和命令行的对应关系，最后把整个系列的命令整理成一张速查表。    这是「C++ 调试实战」系列的第 8 篇，也是最后一篇。IDE 的调试界面本质上只是 GDB &#x2F; LLDB 的一层「外壳」，理解了前面的命令，图形界面上的每个按钮都知道它在做什么。  一、IDE 调试的本质VS Code、CLion、Xcode、Qt Creator 这些 IDE 自己都不会调试程序，它们是在后台启动 GDB 或 LLDB，把你在界面上的操作翻译成调试器命令：    你在界面上做的 背后执行的命令（大致相当于）    点击行号左侧下断点 break orders.cpp:22   右键断点 → 编辑条件 condition 1 o.quantity &gt;...</div></div></div></a><a class="pagination-related" href="/2026/10/02/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-02-%E8%BF%90%E8%A1%8C%E4%B8%8E%E5%8D%95%E6%AD%A5/" title="C++ 调试实战（02）：运行与单步——next、step、finish 与函数返回值"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/stepping.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-02</div><div class="info-item-2">C++ 调试实战（02）：运行与单步——next、step、finish 与函数返回值</div></div><div class="info-2"><div class="info-item-1">程序停在断点之后，下一步就是「往前走」：一行一行地走（next），钻进函数里走（step），在函数里看够了就一口气跑到函数返回并看看返回值（finish），或者直接跳出一个很长的循环（until）。这几个命令组合起来，就是调试器里最常用的「方向盘」。    这是「C++ 调试实战」系列的第 2 篇。示例程序仍然是第 00 篇的 orders.cpp。上一篇讲了断点，这一篇讲停下来之后怎么走。  关键行号回顾：    行号 代码    12 &#x2F; 14 &#x2F; 16 line_total()：计算小计 &#x2F; 打九折 &#x2F; return total;   21 &#x2F; 22 &#x2F; 24 sum_orders()：for 循环 &#x2F; sum += line_total(o); &#x2F; return sum;   33 main()：double total = sum_orders(orders);   一、先把几个命令放在一起看   命令 GDB LLDB 一句话说明    启动 run &#x2F; start run st...</div></div></div></a><a class="pagination-related" href="/2026/10/03/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-03-%E6%9F%A5%E7%9C%8B%E4%B8%8E%E4%BF%AE%E6%94%B9%E5%8F%98%E9%87%8F/" title="C++ 调试实战（03）：查看与修改变量——print、display、STL 容器与调用函数"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/inspect-variables.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-03</div><div class="info-item-2">C++ 调试实战（03）：查看与修改变量——print、display、STL 容器与调用函数</div></div><div class="info-2"><div class="info-item-1">程序停下来之后，最常做的事就是「看看现在变量是多少」。调试器在这方面比 printf 强太多：随时想看哪个就看哪个，结构体、容器一次全展开，可以按十六进制、二进制显示，可以算表达式，可以每走一步自动打印，甚至可以直接改掉变量的值、调用程序里的函数，看看「如果是这样会怎样」。    这是「C++ 调试实战」系列的第 3 篇。示例程序仍然是第 00 篇的 orders.cpp。前两篇讲了断点和单步，这一篇讲停下来之后怎么看数据。  本篇大部分操作都停在 line_total 的第 16 行 return total;（break orders.cpp:16，然后 run），第一次命中时处理的是 apple（3 件 × 2.5）。 一、print：打印变量和表达式1.1 基本用法1234(gdb) print o$1 = (const Order &amp;) @0xaaaaaaad3020: &#123;name = &quot;apple&quot;, quantity = 3, price = 2.5&#125;(gdb) print o.quantity * o.price$2...</div></div></div></a><a class="pagination-related" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/call-stack.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-04</div><div class="info-item-2">C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的</div></div><div class="info-2"><div class="info-item-1">程序停在某个函数里，你往往还想知道：是谁调用了它？调用链上每一层当时的参数是多少？ 一个函数被十个地方调用，出错的是哪一次？回答这些问题要靠调用栈（call stack）。这一篇用一个递归求阶乘的程序，把 backtrace、切换栈帧、查看栈帧信息，以及「finish 作用于选中帧」这些细节讲清楚。    这是「C++ 调试实战」系列的第 4 篇。前面几篇的命令都是在「当前函数」里操作，这一篇开始把视野扩展到整条调用链。  一、示例程序123456789101112131415// fact.cpp#include &lt;cstdio&gt;int factorial(int n) &#123;    if (n &lt;= 1) &#123;        return 1;    &#125;    return n * factorial(n - 1);&#125;int main() &#123;    int result = factorial(5);    std::printf(&quot;5! = %d\n&quot;, result);    return ...</div></div></div></a><a class="pagination-related" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-06</div><div class="info-item-2">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</div></div><div class="info-2"><div class="info-item-1">Segmentation fault (core dumped)——大概是每个 C++ 程序员见过最多的一行报错。它只告诉你「程序崩了」，不告诉你崩在哪、为什么崩。这一篇讲三种找到答案的办法：在调试器里运行，崩溃时直接停在现场；事后用 core dump 还原现场；以及用 AddressSanitizer 在内存错误发生的那一刻就抓住它，哪怕这个错误并没有让程序崩溃。    这是「C++ 调试实战」系列的第 6 篇。本篇会大量用到第 04 篇的调用栈知识：崩溃分析的第一步永远是 bt。  一、示例：一个忘了判空的指针123456789101112131415161718192021222324252627// crash.cpp#include &lt;cstdio&gt;#include &lt;string&gt;struct Config &#123;    std::string name;    int retries;&#125;;Config* find_config(const std::string&amp; key) &#123;    if (key == ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/wall-e-ai.webp" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WALL-E-2000</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">179</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">415</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">16</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%A4%BA%E4%BE%8B%E4%B8%80%EF%BC%9A%E4%B8%A4%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%B4%AF%E5%8A%A0%E5%90%8C%E4%B8%80%E4%B8%AA%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="toc-number">1.</span> <span class="toc-text">一、示例一：两个线程累加同一个计数器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9F%A5%E7%9C%8B%E4%B8%8E%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">二、查看与切换线程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%96%AD%E7%82%B9%E5%9C%A8%E5%93%AA%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%91%BD%E4%B8%AD"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 断点在哪个线程命中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-info-threads%EF%BC%9A%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 info threads：列出所有线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-thread-N%EF%BC%9A%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 thread N：切换线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%8F%AA%E5%9C%A8%E6%9F%90%E4%B8%AA%E7%BA%BF%E7%A8%8B%E4%B8%8A%E5%81%9C"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 只在某个线程上停</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%8D%95%E6%AD%A5%E6%97%B6%E5%88%AB%E8%AE%A9%E5%85%B6%E4%BB%96%E7%BA%BF%E7%A8%8B%E4%B9%B1%E8%B7%91"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 单步时别让其他线程乱跑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%A4%BA%E4%BE%8B%E4%BA%8C%EF%BC%9A%E7%A8%8B%E5%BA%8F%E5%8D%A1%E4%BD%8F%E4%BA%86%E2%80%94%E2%80%94%E5%AE%9A%E4%BD%8D%E6%AD%BB%E9%94%81"><span class="toc-number">3.</span> <span class="toc-text">三、示例二：程序卡住了——定位死锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%A4%E7%A7%8D%E8%BF%9B%E5%85%A5%E8%B0%83%E8%AF%95%E5%99%A8%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 两种进入调试器的方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%9C%8B%E6%89%80%E6%9C%89%E7%BA%BF%E7%A8%8B%E5%9C%A8%E5%B9%B2%E4%BB%80%E4%B9%88"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 看所有线程在干什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%89%BE%E5%88%B0%E9%94%81%E7%9A%84%E6%8C%81%E6%9C%89%E8%80%85"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 找到锁的持有者</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-LLDB-%E7%89%88"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 LLDB 版</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E4%BF%AE%E5%A4%8D"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 修复</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%95%B0%E6%8D%AE%E7%AB%9E%E4%BA%89%EF%BC%9AThreadSanitizer"><span class="toc-number">4.</span> <span class="toc-text">四、数据竞争：ThreadSanitizer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95%E7%9A%84%E5%87%A0%E6%9D%A1%E7%BB%8F%E9%AA%8C"><span class="toc-number">5.</span> <span class="toc-text">五、多线程调试的几条经验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">六、小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/ide-cheatsheet.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表"/></a><div class="content"><a class="title" href="/2026/10/08/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-08-IDE%E5%9B%BE%E5%BD%A2%E5%8C%96%E8%B0%83%E8%AF%95%E4%B8%8E%E9%80%9F%E6%9F%A5%E8%A1%A8/" title="C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表">C++ 调试实战（08）：IDE 图形化调试与 GDB / LLDB 速查表</a><time datetime="2026-10-08T12:00:00.000Z" title="发表于 2026-10-08 20:00:00">2026-10-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/" title="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/multithreading.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争"/></a><div class="content"><a class="title" href="/2026/10/07/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-07-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%B0%83%E8%AF%95/" title="C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争">C++ 调试实战（07）：多线程调试——线程切换、死锁定位与数据竞争</a><time datetime="2026-10-07T12:00:00.000Z" title="发表于 2026-10-07 20:00:00">2026-10-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/crash-analysis.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer"/></a><div class="content"><a class="title" href="/2026/10/06/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-06-%E5%B4%A9%E6%BA%83%E7%8E%B0%E5%9C%BA%E5%88%86%E6%9E%90/" title="C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer">C++ 调试实战（06）：崩溃现场分析——段错误、core dump 与 AddressSanitizer</a><time datetime="2026-10-06T12:00:00.000Z" title="发表于 2026-10-06 20:00:00">2026-10-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/" title="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/watchpoint.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？"/></a><div class="content"><a class="title" href="/2026/10/05/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-05-%E8%A7%82%E5%AF%9F%E7%82%B9/" title="C++ 调试实战（05）：观察点——谁偷偷改了我的变量？">C++ 调试实战（05）：观察点——谁偷偷改了我的变量？</a><time datetime="2026-10-05T12:00:00.000Z" title="发表于 2026-10-05 20:00:00">2026-10-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-lazy-src="/images/cover/cppdebug/call-stack.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的"/></a><div class="content"><a class="title" href="/2026/10/04/C++%E8%B0%83%E8%AF%95%E5%AE%9E%E6%88%98-04-%E8%B0%83%E7%94%A8%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7/" title="C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的">C++ 调试实战（04）：调用栈与栈帧——我是怎么走到这里的</a><time datetime="2026-10-04T12:00:00.000Z" title="发表于 2026-10-04 20:00:00">2026-10-04</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By WALL-E-2000</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.5"></script><script src="/js/main.js?v=5.5.5"></script><script src="https://registry.npmmirror.com/vanilla-lazyload/19.1.3/files/dist/lazyload.iife.min.js"></script><div class="js-pjax"></div><script>!function(){var e=["busuanzi_value_site_uv","busuanzi_value_site_pv","busuanzi_value_page_pv"],t=!1;new MutationObserver(function(n){n.forEach(function(n){n.target&&n.target.id&&-1!==n.target.id.indexOf("busuanzi")&&(n=n.target.innerHTML)&&-1===n.indexOf("fa-spinner")&&"N/A"!==n&&(t=!0)})}).observe(document.body,{childList:!0,subtree:!0,characterData:!0});setTimeout(function(){t||e.forEach(function(e){var t=document.getElementById(e);t&&-1!==t.innerHTML.indexOf("fa-spinner")&&(t.innerHTML="N/A")})},8e3)}();</script><script defer src="/js/starfield.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://registry.npmmirror.com/butterfly-extsrc/1.1.6/files/dist/canvas-nest.min.js"></script><script async data-pjax src="https://vercount.one/js"></script></div></body></html>
